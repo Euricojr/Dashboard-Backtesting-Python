@@ -9,30 +9,59 @@ def get_data(ticker, period="5y"):
     print(f"Baixando dados para {ticker}...")
     df = yf.download(ticker, period=period)
     
-    # Garantir que temos dados
     if df.empty:
         raise ValueError(f"Nenhum dado encontrado para o ticker: {ticker}")
         
-    # Manter apenas as colunas necessárias para o backtest
     return df[['Open', 'High', 'Low', 'Close', 'Volume']]
+
+def calculate_metrics(daily_returns):
+    """
+    Calcula métricas de performance para uma série de retornos diários.
+    Corrigido para evitar FutureWarnings usando .iloc.
+    """
+    returns = daily_returns.dropna()
+    if returns.empty:
+        return {
+            "Total Return": 0, "CAGR": 0, "Vol Anual": 0, 
+            "Sharpe Ratio": 0, "Max Drawdown": 0
+        }
+
+    # 1. Retorno Total (Corrigido com .iloc[-1])
+    cumulative_series = (1 + returns).cumprod()
+    total_return = cumulative_series.iloc[-1] - 1
+    
+    # 2. CAGR (Retorno Anualizado)
+    # Assumindo 252 dias úteis por ano
+    n_days = len(returns)
+    cagr = (1 + total_return) ** (252 / n_days) - 1
+    
+    # 3. Volatilidade Anualizada
+    vol_anual = returns.std() * np.sqrt(252)
+    
+    # 4. Sharpe Ratio (Risk-Free = 0)
+    sharpe = cagr / vol_anual if vol_anual != 0 else 0
+    
+    # 5. Max Drawdown
+    peak = cumulative_series.cummax()
+    drawdown = (cumulative_series - peak) / peak
+    max_drawdown = drawdown.min()
+    
+    return {
+        "Total Return": total_return,
+        "CAGR": cagr,
+        "Vol Anual": vol_anual,
+        "Sharpe Ratio": sharpe,
+        "Max Drawdown": max_drawdown
+    }
 
 def strategy_buy_and_hold(df):
     """
     Estratégia Buy & Hold: Compra no primeiro dia e mantém.
     """
     data = df.copy()
-    
-    # Cálculo do retorno simples do ativo (diário)
     data['Asset_Returns'] = data['Close'].pct_change()
-    
-    # Sinal: 1 para todos os dias (sempre comprado)
     data['Signal'] = 1
-    
-    # --- EVITANDO LOOK-AHEAD BIAS ---
-    # No Buy & Hold, o sinal é constante, mas para consistência métrica:
-    # O retorno da estratégia no dia (t) é o sinal do dia (t-1) * retorno do ativo no dia (t).
     data['Strategy_Returns'] = data['Signal'].shift(1) * data['Asset_Returns']
-    
     return data[['Close', 'Signal', 'Strategy_Returns']]
 
 def strategy_sma_crossover(df, short_window=20, long_window=50):
@@ -40,53 +69,58 @@ def strategy_sma_crossover(df, short_window=20, long_window=50):
     Estratégia de Cruzamento de Médias Móveis Simples (SMA).
     """
     data = df.copy()
-    
-    # 1. Cálculo das Médias Móveis
     data['SMA_Short'] = data['Close'].rolling(window=short_window).mean()
     data['SMA_Long'] = data['Close'].rolling(window=long_window).mean()
-    
-    # 2. Geração de Sinais (Baseado no fechamento do dia t)
-    # 1 = Comprado (SMA Curta > SMA Longa)
-    # 0 = Neutro/Venda (SMA Curta <= SMA Longa)
     data['Signal'] = np.where(data['SMA_Short'] > data['SMA_Long'], 1, 0)
-    
-    # 3. Cálculo dos Retornos do Ativo
     data['Asset_Returns'] = data['Close'].pct_change()
     
     # --- CRÍTICO: EVITANDO LOOK-AHEAD BIAS ---
-    # O sinal gerado no FECHAMENTO do dia 't' só pode ser executado no dia 't+1'.
-    # Portanto, o retorno da estratégia no dia 't' é o sinal do dia 't-1' multiplicado pelo retorno do dia 't'.
-    # Usamos .shift(1) para garantir que não estamos usando informações do futuro.
     data['Strategy_Returns'] = data['Signal'].shift(1) * data['Asset_Returns']
     
     return data[['Close', 'Signal', 'Strategy_Returns']]
 
+def print_metrics_report(title, metrics):
+    """
+    Imprime um relatório formatado das métricas.
+    """
+    print(f"\n{'='*40}")
+    print(f" {title.upper()} ")
+    print(f"{'='*40}")
+    for key, value in metrics.items():
+        if "Ratio" in key:
+            print(f"{key:.<25} {value:.2f}")
+        else:
+            print(f"{key:.<25} {value:.2%}")
+    print(f"{'='*40}")
+
 if __name__ == "__main__":
-    # Exemplo de uso
     ticker = "PETR4.SA"
     
     try:
-        # 1. Coleta
-        df_base = get_data(ticker)
+        # 1. Coleta de Dados
+        df_full = get_data(ticker)
         
-        # 2. Backtest SMA Crossover
-        print("\nExecutando Backtest: SMA Crossover (20/50)...")
-        results_sma = strategy_sma_crossover(df_base, short_window=20, long_window=50)
+        # 2. Divisão In-Sample (70%) e Out-of-Sample (30%)
+        split_idx = int(len(df_full) * 0.7)
+        df_in_sample = df_full.iloc[:split_idx].copy()
+        df_out_of_sample = df_full.iloc[split_idx:].copy()
         
-        # 3. Backtest Buy & Hold
-        print("Executando Backtest: Buy & Hold...")
-        results_bh = strategy_buy_and_hold(df_base)
+        print(f"\n--- Divisão de Dados ---")
+        print(f"Total: {len(df_full)} dias")
+        print(f"In-Sample (Treino): {len(df_in_sample)} dias")
+        print(f"Out-of-Sample (Teste): {len(df_out_of_sample)} dias")
         
-        # 4. Demonstração dos Resultados
-        print("\n--- Resultados SMA Crossover (Últimos 10 dias) ---")
-        print(results_sma.tail(10))
+        # 3. Execução In-Sample
+        res_in = strategy_sma_crossover(df_in_sample)
+        metrics_in = calculate_metrics(res_in['Strategy_Returns'])
         
-        # Verificação de Retorno Acumulado Simples (Apenas para conferência rápida)
-        cum_ret_sma = (1 + results_sma['Strategy_Returns'].fillna(0)).cumprod()[-1] - 1
-        cum_ret_bh = (1 + results_bh['Strategy_Returns'].fillna(0)).cumprod()[-1] - 1
+        # 4. Execução Out-of-Sample
+        res_out = strategy_sma_crossover(df_out_of_sample)
+        metrics_out = calculate_metrics(res_out['Strategy_Returns'])
         
-        print(f"\nRetorno Acumulado SMA: {cum_ret_sma:.2%}")
-        print(f"Retorno Acumulado Buy & Hold: {cum_ret_bh:.2%}")
+        # 5. Relatórios
+        print_metrics_report("Métricas SMA: In-Sample", metrics_in)
+        print_metrics_report("Métricas SMA: Out-of-Sample", metrics_out)
         
     except Exception as e:
-        print(f"Erro durante a execução: {e}")
+        print(f"\n[ERRO]: {e}")
