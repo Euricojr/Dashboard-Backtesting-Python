@@ -97,25 +97,108 @@ def generate_analysis(metrics_in, metrics_out):
 # --- BARRA LATERAL (SIDEBAR) ---
 st.sidebar.title("🎯 Configurações")
 
-# 1. Seleção de Ativo Simplificada
+# 1. Listas Categorizadas
+BR_STOCKS = {
+    "PETR4.SA": "Petrobras (PETR4)", "VALE3.SA": "Vale (VALE3)", "ITUB4.SA": "Itaú Unibanco (ITUB4)",
+    "BBAS3.SA": "Banco do Brasil (BBAS3)", "BBDC4.SA": "Bradesco (BBDC4)", "ABEV3.SA": "Ambev (ABEV3)",
+    "WEGE3.SA": "Weg (WEGE3)", "JBSS3.SA": "JBS (JBSS3)", "ELET3.SA": "Eletrobras (ELET3)",
+    "B3SA3.SA": "B3 (B3SA3)", "RENT3.SA": "Localiza (RENT3)", "SUZB3.SA": "Suzano (SUZB3)",
+    "GGBR4.SA": "Gerdau (GGBR4)", "RDOR3.SA": "Rede D'Or (RDOR3)", "RADL3.SA": "RaiaDrogasil (RADL3)",
+    "HAPV3.SA": "Hapvida (HAPV3)", "CSAN3.SA": "Cosan (CSAN3)", "VIVT3.SA": "Vivo (VIVT3)",
+    "CPLE6.SA": "Copel (CPLE6)", "EQTL3.SA": "Equatorial (EQTL3)", "BBSE3.SA": "BB Seguridade (BBSE3)",
+    "RAIZ4.SA": "Raízen (RAIZ4)", "UGPA3.SA": "Ultrapar (UGPA3)", "LREN3.SA": "Lojas Renner (LREN3)",
+    "PRIO3.SA": "Prio (PRIO3)", "CMIG4.SA": "Cemig (CMIG4)", "ENEV3.SA": "Eneva (ENEV3)",
+    "ASAI3.SA": "Assaí (ASAI3)", "TOTS3.SA": "Totvs (TOTS3)", "SBSP3.SA": "Sabesp (SBSP3)",
+    "VBBR3.SA": "Vibra (VBBR3)", "CCRO3.SA": "CCR (CCRO3)", "TIMS3.SA": "TIM (TIMS3)",
+    "CPFE3.SA": "CPFL Energia (CPFE3)", "STBP3.SA": "Santos Brasil (STBP3)", "EMBR3.SA": "Embraer (EMBR3)",
+    "GOAU4.SA": "Gerdau Metalúrgica (GOAU4)", "ALOS3.SA": "Allos (ALOS3)", "CYRE3.SA": "Cyrela (CYRE3)",
+    "EGIE3.SA": "Engie (EGIE3)", "CSNA3.SA": "Siderúrgica Nac (CSNA3)", "YDUQ3.SA": "Yduqs (YDUQ3)",
+    "MRFG3.SA": "Marfrig (MRFG3)", "COGN3.SA": "Cogna (COGN3)", "MRVE3.SA": "MRV (MRVE3)",
+    "BRKM5.SA": "Braskem (BRKM5)", "MULT3.SA": "Multiplan (MULT3)", "CRFB3.SA": "Carrefour BR (CRFB3)",
+    "PCAR3.SA": "Pão de Açúcar (PCAR3)", "MGLU3.SA": "Magalu (MGLU3)"
+}
+
+US_STOCKS = {
+    "AAPL": "Apple (AAPL)", "MSFT": "Microsoft (MSFT)", "NVDA": "NVIDIA (NVDA)", "GOOGL": "Alphabet (GOOGL)",
+    "AMZN": "Amazon (AMZN)", "META": "Meta (META)", "TSLA": "Tesla (TSLA)", "BRK-B": "Berkshire (BRK-B)",
+    "LLY": "Eli Lilly (LLY)", "AVGO": "Broadcom (AVGO)", "WMT": "Walmart (WMT)", "JPM": "JPMorgan (JPM)",
+    "V": "Visa (V)", "ORCL": "Oracle (ORCL)", "XOM": "Exxon Mobil (XOM)", "MA": "Mastercard (MA)",
+    "JNJ": "Johnson & Johnson (JNJ)", "NFLX": "Netflix (NFLX)", "BAC": "Bank of America (BAC)",
+    "ABBV": "AbbVie (ABBV)", "COST": "Costco (COST)", "PG": "Procter & Gamble (PG)", "HD": "Home Depot (HD)",
+    "AMD": "AMD (AMD)", "ADBE": "Adobe (ADBE)", "CRM": "Salesforce (CRM)", "KO": "Coca-Cola (KO)",
+    "PEP": "PepsiCo (PEP)", "TMO": "Thermo Fisher (TMO)", "DIS": "Disney (DIS)", "CSCO": "Cisco (CSCO)",
+    "INTU": "Intuit (INTU)", "PFE": "Pfizer (PFE)", "LIN": "Linde (LIN)", "AMAT": "Applied Materials (AMAT)",
+    "CMCSA": "Comcast (CMCSA)", "TXN": "Texas Instr (TXN)", "QCOM": "Qualcomm (QCOM)", "AMD": "AMD (AMD)",
+    "PLTR": "Palantir (PLTR)", "MU": "Micron (MU)", "GE": "General Electric (GE)", "CAT": "Caterpillar (CAT)",
+    "IBM": "IBM (IBM)", "UBER": "Uber (UBER)", "BA": "Boeing (BA)", "INTC": "Intel (INTC)",
+    "GS": "Goldman Sachs (GS)", "MS": "Morgan Stanley (MS)", "SBUX": "Starbucks (SBUX)"
+}
+
+CRYPTO = {
+    "BTC-USD": "Bitcoin (BTC)", "ETH-USD": "Ethereum (ETH)", "SOL-USD": "Solana (SOL)", "BNB-USD": "BNB (BNB)",
+    "XRP-USD": "XRP (XRP)", "DOGE-USD": "Dogecoin (DOGE)", "ADA-USD": "Cardano (ADA)", "TRX-USD": "TRON (TRX)",
+    "AVAX-USD": "Avalanche (AVAX)", "DOT-USD": "Polkadot (DOT)", "LINK-USD": "Chainlink (LINK)",
+    "SHIB-USD": "Shiba Inu (SHIB)", "BCH-USD": "Bitcoin Cash (BCH)", "LTC-USD": "Litecoin (LTC)",
+    "NEAR-USD": "NEAR Protocol (NEAR)", "UNI-USD": "Uniswap (UNI)", "MATIC-USD": "Polygon (MATIC)",
+    "ICP-USD": "Internet Computer (ICP)", "ETC-USD": "Ethereum Classic (ETC)", "FIL-USD": "Filecoin (FIL)",
+    "XLM-USD": "Stellar (XLM)", "XMR-USD": "Monero (XMR)", "ATOM-USD": "Cosmos (ATOM)", "APT-USD": "Aptos (APT)",
+    "HBAR-USD": "Hedera (HBAR)", "VET-USD": "VeChain (VET)", "OP-USD": "Optimism (OP)", "ARB-USD": "Arbitrum (ARB)",
+    "RNDR-USD": "Render (RNDR)", "INJ-USD": "Injective (INJ)", "STX-USD": "Stacks (STX)", "KAS-USD": "Kaspa (KAS)",
+    "FTM-USD": "Fantom (FTM)", "AAVE-USD": "Aave (AAVE)", "TIA-USD": "Celestia (TIA)", "THETA-USD": "Theta (THETA)",
+    "EGLD-USD": "MultiversX (EGLD)", "SAND-USD": "The Sandbox (SAND)", "MANA-USD": "Decentraland (MANA)",
+    "EOS-USD": "EOS (EOS)", "FLOW-USD": "Flow (FLOW)", "QNT-USD": "Quant (QNT)", "AXS-USD": "Axie Infinity (AXS)",
+    "MKR-USD": "Maker (MKR)", "GRT-USD": "The Graph (GRT)", "SNX-USD": "Synthetix (SNX)", "GALA-USD": "Gala (GALA)",
+    "ALGO-USD": "Algorand (ALGO)", "LDO-USD": "Lido DAO (LDO)", "KAVA-USD": "Kava (KAVA)"
+}
+
+INDICES = {
+    "^BVSP": "IBOVESPA (BR)", "^GSPC": "S&P 500 (US)", "^DJI": "Dow Jones (US)", "^IXIC": "NASDAQ (US)",
+    "^NDX": "NASDAQ 100 (US)", "^FTSE": "FTSE 100 (UK)", "^GDAXI": "DAX (GER)", "^FCHI": "CAC 40 (FR)",
+    "^N225": "Nikkei 225 (JP)", "^HSI": "Hang Seng (HK)", "^AXJO": "ASX 200 (AU)", "^NSEI": "NIFTY 50 (IN)",
+    "^GSPTSE": "S&P/TSX (CA)", "^STOXX50E": "Euro Stoxx 50 (EU)", "000001.SS": "SSE Comp (CN)",
+    "399001.SZ": "SZSE Comp (CN)", "^SSMI": "SMI (CH)", "^KS11": "KOSPI (KR)", "^STI": "Straits Times (SG)",
+    "^TWII": "TSEC Weighted (TW)"
+}
+
+# Unindo tudo para o seletor
+CATEGORIES = {
+    "🇧🇷 Ações Brasil": BR_STOCKS,
+    "🇺🇸 Ações EUA": US_STOCKS,
+    "₿ Criptomoedas": CRYPTO,
+    "📊 Índices Globais": INDICES
+}
+
 st.sidebar.subheader("Escolha o Ativo")
-busca = st.sidebar.text_input("Digite o nome ou ticker (Ex: Vale, AAPL)", placeholder="Pesquisar...")
 
-# Tickers padrão caso não haja busca
-opcoes_finais = ["PETR4.SA", "VALE3.SA", "ITUB4.SA", "AAPL", "BTC-USD"]
+# Flatten list for selectbox options
+all_options = []
+for cat, stocks in CATEGORIES.items():
+    all_options.append(f"--- {cat} ---")
+    all_options.extend(stocks.keys())
+all_options.append("🔍 PESQUISAR OUTRO...")
 
-if busca:
-    try:
-        res = yf.Search(busca, max_results=5).quotes
-        if res:
-            opcoes_finais = [q['symbol'] for q in res]
-            # Adiciona a busca manual no topo se não estiver na lista
-            if busca.upper() not in opcoes_finais:
-                opcoes_finais.insert(0, busca.upper())
-    except:
-        opcoes_finais = [busca.upper()]
+selected_option = st.sidebar.selectbox(
+    "Selecione um ativo ou pesquise:",
+    options=all_options,
+    index=1 # Começa em PETR4
+)
 
-ticker_final = st.sidebar.selectbox("Confirme o Ticker:", options=opcoes_finais)
+# Lógica de seleção
+if selected_option == "🔍 PESQUISAR OUTRO...":
+    busca = st.sidebar.text_input("Digite o ticker (Ex: WEGE3.SA, GOOG):", placeholder="Ticker...")
+    ticker_final = busca.upper() if busca else "PETR4.SA"
+elif selected_option.startswith("---"):
+    st.sidebar.warning("Selecione um ativo válido (não um cabeçalho)")
+    ticker_final = "PETR4.SA"
+else:
+    ticker_final = selected_option
+
+# Nome amigável para exibição
+friendly_name = ticker_final
+for cat, stocks in CATEGORIES.items():
+    if ticker_final in stocks:
+        friendly_name = stocks[ticker_final]
+        break
 
 st.sidebar.divider()
 
@@ -162,7 +245,7 @@ if run_backtest:
             m_oos['BH_Total'] = m_bh_oos['Total']
             
             # --- GRÁFICOS ---
-            st.subheader(f"Análise Gráfica: {ticker_final}")
+            st.subheader(f"Análise Gráfica: {friendly_name}")
             fig_p = go.Figure()
             fig_p.add_trace(go.Scatter(x=df.index, y=df['Close'], name="Preço", line=dict(color='#888', width=1)))
             fig_p.add_trace(go.Scatter(x=df.index, y=df['SMA_S'], name=f"SMA {s_win}", line=dict(color='cyan', width=1.5)))
