@@ -57,6 +57,43 @@ def compute_metrics(returns):
     
     return {"Total": total_ret, "CAGR": cagr, "Vol": vol, "Sharpe": sharpe, "MaxDD": max_dd}
 
+
+def generate_analysis(metrics_in, metrics_out):
+    """
+    Gera um relatório interpretativo comparando treino e teste.
+    """
+    analysis = "### 🤖 Análise da IA (Simulada)\n\n"
+    
+    # 1. Lucratividade e Comparação (Check se existe info de B&H)
+    total_oos = metrics_out['Total']
+    bh_total = metrics_out.get('BH_Total')
+    
+    if bh_total is not None:
+        if total_oos > bh_total:
+            analysis += f"🚀 **Performance Excepcional:** A estratégia superou o Buy & Hold no período de teste ({total_oos:.2%} vs {bh_total:.2%}).\n\n"
+        else:
+            analysis += f"🐢 **Abaixo do Mercado:** A estratégia não superou o Buy & Hold ({total_oos:.2%} vs {bh_total:.2%}).\n\n"
+    elif total_oos > 0:
+        analysis += f"✅ **Lucratividade:** A estratégia foi lucrativa no período de teste com retorno de {total_oos:.2%}.\n\n"
+    else:
+        analysis += f"❌ **Prejuízo:** A estratégia não foi lucrativa no período de teste ({total_oos:.2%}).\n\n"
+    
+    # 2. Overfitting (Comparação de Sharpe)
+    sharpe_is = metrics_in['Sharpe']
+    sharpe_oos = metrics_out['Sharpe']
+    
+    if sharpe_is > 0 and (sharpe_oos < 0 or sharpe_oos < sharpe_is * 0.5):
+        analysis += "⚠️ **Alerta de Possível Overfitting:** O Sharpe caiu drasticamente no teste (Out-of-Sample). Isso sugere que os parâmetros podem estar muito 'viciados' no passado.\n\n"
+    else:
+        analysis += "💎 **Robustez:** O desempenho no teste foi consistente com o treino, indicando uma estratégia mais confiável.\n\n"
+        
+    # 3. Risco (Drawdown)
+    max_dd = abs(metrics_out['MaxDD'])
+    if max_dd > 0.30:
+        analysis += f"🚩 **Risco Elevado:** O Drawdown Máximo de {max_dd:.2%} ultrapassa o limite prudencial de 30%. Cuidado com a volatilidade!\n\n"
+    
+    return analysis
+
 # --- BARRA LATERAL (SIDEBAR) ---
 st.sidebar.title("🎯 Configurações")
 
@@ -120,6 +157,10 @@ if run_backtest:
             m_is = compute_metrics(df_is['Strat_Ret'])
             m_oos = compute_metrics(df_oos['Strat_Ret'])
             
+            # Adicionando B&H para comparação na IA
+            m_bh_oos = compute_metrics(df_oos['Asset_Ret'])
+            m_oos['BH_Total'] = m_bh_oos['Total']
+            
             # --- GRÁFICOS ---
             st.subheader(f"Análise Gráfica: {ticker_final}")
             fig_p = go.Figure()
@@ -155,7 +196,26 @@ if run_backtest:
                 "Out-of-Sample": [f"{m_oos['Total']:.2%}", f"{m_oos['CAGR']:.2%}", f"{m_oos['Vol']:.2%}", f"{m_oos['Sharpe']:.2f}", f"{m_oos['MaxDD']:.2%}"]
             })
             st.table(res_table)
+
+            # --- IA EXPLICATIVA ---
+            st.divider()
+            analysis_text = generate_analysis(m_is, m_oos)
+            
+            if "Overfitting" in analysis_text or "Prejuízo" in analysis_text or "não superou" in analysis_text:
+                st.warning(analysis_text)
+            else:
+                st.info(analysis_text)
+
         else:
             st.error(f"❌ Não foi possível realizar o backtest para {ticker_final}. Tente um período maior ou verifique o ticker.")
 else:
     st.info("📊 Configure as opções acima e execute o backtest.")
+
+# --- RODAPÉ ---
+st.markdown("---")
+st.markdown(
+    "<div style='text-align: center; color: #888;'>"
+    "Projeto de Backtesting Quantitativo | Desenvolvido por <b>Eurico Júnior</b>"
+    "</div>", 
+    unsafe_allow_html=True
+)
