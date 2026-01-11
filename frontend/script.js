@@ -138,6 +138,19 @@ function initChart() {
         wickDownColor: '#ef5350',
     });
     
+    // SMA Series Initialization
+    window.smaShortSeries = mainChart.addLineSeries({
+        color: '#ff9800', // Laranja
+        lineWidth: 2,
+        title: 'SMA Curta'
+    });
+
+    window.smaLongSeries = mainChart.addLineSeries({
+        color: '#9c27b0', // Roxo
+        lineWidth: 2,
+        title: 'SMA Longa'
+    });
+    
     window.vLineSeries = mainChart.addHistogramSeries({ 
         color: '#FFD700', 
         lastValueVisible: false, 
@@ -203,11 +216,16 @@ async function runBacktest() {
             alert("Erro: " + data.error); 
             btn.disabled = false; 
             btn.classList.remove('opacity-50');
-            btn.innerText = "🚀 EXECUTAR BACKTEST"; 
+            btn.innerText = "EXECUTAR BACKTEST"; 
             return; 
         }
 
         candleSeries.setData(data.candle_data);
+        
+        // Plot SMAs
+        if (data.sma_short_data) window.smaShortSeries.setData(data.sma_short_data);
+        if (data.sma_long_data) window.smaLongSeries.setData(data.sma_long_data);
+
         let finalMarkers = [...data.markers];
         if (data.split_date) {
             window.vLineSeries.setData([{ time: data.split_date, value: 1000000000 }]);
@@ -266,10 +284,18 @@ async function runBacktest() {
     } finally {
         btn.disabled = false;
         btn.classList.remove('opacity-50');
-        btn.innerHTML = "🚀 EXECUTAR BACKTEST";
+        btn.innerHTML = "EXECUTAR BACKTEST";
         // Forçar resize final para garantir layout perfeito
         setTimeout(() => {
-            mainChart.resize(document.getElementById('chart').clientWidth, 500);
+            const chartDiv = document.getElementById('chart');
+            const perfDiv = document.getElementById('perf_chart');
+            
+            if (chartDiv) mainChart.resize(chartDiv.clientWidth, 500);
+            if (perfDiv && perfDiv.offsetParent !== null) {
+                // Checa se está visível
+                perfChart.resize(perfDiv.clientWidth, 350);
+                perfChart.timeScale().fitContent();
+            }
         }, 100);
     }
 }

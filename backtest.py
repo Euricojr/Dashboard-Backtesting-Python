@@ -77,7 +77,7 @@ def strategy_sma_crossover(df, short_window=20, long_window=50):
     # --- CRÍTICO: EVITANDO LOOK-AHEAD BIAS ---
     data['Strategy_Returns'] = data['Signal'].shift(1) * data['Asset_Returns']
     
-    return data[['Close', 'Signal', 'Strategy_Returns']]
+    return data[['Close', 'Signal', 'Strategy_Returns', 'SMA_Short', 'SMA_Long']]
 
 def print_metrics_report(title, metrics):
     """

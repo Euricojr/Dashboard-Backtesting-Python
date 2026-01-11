@@ -117,22 +117,22 @@ def generate_analysis_text(metrics_in, metrics_out):
     sharpe_oos = metrics_out.get('Sharpe Ratio', 0)
     max_dd = abs(metrics_out.get('Max Drawdown', 0))
 
-    analysis = "<strong>🤖 Análise da IA (Simulada)</strong><br><br>"
+    analysis = "<strong>Análise da IA (Simulada)</strong><br><br>"
     
     if total_oos > bh_total:
-        analysis += f"🚀 <b>Performance Excepcional:</b> A estratégia superou o Buy & Hold no período de teste ({total_oos:.2%} vs {bh_total:.2%}).<br><br>"
+        analysis += f"<b>Performance Excepcional:</b> A estratégia superou o Buy & Hold no período de teste ({total_oos:.2%} vs {bh_total:.2%}).<br><br>"
     elif total_oos > 0:
-        analysis += f"✅ <b>Lucratividade:</b> A estratégia foi lucrativa no teste ({total_oos:.2%}), mas não bateu o B&H ({bh_total:.2%}).<br><br>"
+        analysis += f"<b>Lucratividade:</b> A estratégia foi lucrativa no teste ({total_oos:.2%}), mas não bateu o B&H ({bh_total:.2%}).<br><br>"
     else:
-        analysis += f"❌ <b>Prejuízo:</b> A performance foi negativa no teste ({total_oos:.2%}).<br><br>"
+        analysis += f"<b>Prejuízo:</b> A performance foi negativa no teste ({total_oos:.2%}).<br><br>"
     
     if sharpe_is > 0 and (sharpe_oos < 0 or sharpe_oos < sharpe_is * 0.5):
-        analysis += "⚠️ <b>Alerta de Overfitting:</b> O Sharpe caiu drasticamente no teste. Cuidado com o vício de parâmetros!<br><br>"
+        analysis += "<b>Alerta de Overfitting:</b> O Sharpe caiu drasticamente no teste. Cuidado com o vício de parâmetros!<br><br>"
     else:
-        analysis += "💎 <b>Robustez:</b> O desempenho se manteve consistente entre treino e teste.<br><br>"
+        analysis += "<b>Robustez:</b> O desempenho se manteve consistente entre treino e teste.<br><br>"
         
     if max_dd > 0.30:
-        analysis += f"🚩 <b>Risco Elevado:</b> O Drawdown de {max_dd:.2%} é preocupante.<br><br>"
+        analysis += f"<b>Risco Elevado:</b> O Drawdown de {max_dd:.2%} é preocupante.<br><br>"
     
     is_warning = "Overfitting" in analysis or "Prejuízo" in analysis or bh_total > total_oos
     return analysis, is_warning
@@ -220,10 +220,24 @@ def run_backtest():
                 "close": float(r['Close'])
             })
         
+        # Prepare SMA Data
+        sma_short_data = []
+        sma_long_data = []
+        
+        # Iterar apenas onde os dados existem (dropna parcial para evitar envio excessivo de nulos, 
+        # mas mantendo alinhamento de data se necessário, o frontend lida bem com datas)
+        for i, r in res.iterrows():
+            if not pd.isna(r['SMA_Short']):
+                sma_short_data.append({"time": i.strftime('%Y-%m-%d'), "value": float(r['SMA_Short'])})
+            if not pd.isna(r['SMA_Long']):
+                sma_long_data.append({"time": i.strftime('%Y-%m-%d'), "value": float(r['SMA_Long'])})
+
         response_data = {
             "ticker": ticker,
             "candle_data": candle_data,
-            "perf_data": perf_data, # Nova série de performance
+            "sma_short_data": sma_short_data, # SMA Short Data
+            "sma_long_data": sma_long_data,   # SMA Long Data
+            "perf_data": perf_data, 
             "markers": markers,
             "metrics_is": m_is,
             "metrics_oos": m_oos,
