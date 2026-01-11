@@ -111,7 +111,6 @@ function selectAsset(ticker, name) {
 function initChart() {
     const chartElement = document.getElementById('chart');
     const perfElement = document.getElementById('perf_chart');
-    const rsiElement = document.getElementById('rsi_chart');
     
     if (!chartElement) { console.error("Chart element not found"); return; }
     
@@ -157,7 +156,16 @@ function initChart() {
     window.smaShortSeries = mainChart.addLineSeries({ color: '#ff9800', lineWidth: 2, title: 'SMA Curta' });
     window.smaLongSeries = mainChart.addLineSeries({ color: '#9c27b0', lineWidth: 2, title: 'SMA Longa' });
     
-    window.vLineSeries = mainChart.addHistogramSeries({ color: '#FFD700', lastValueVisible: false, priceScaleId: 'left' });
+    // Split Line Series (Custom Scale to avoid messing with Price or RSI)
+    window.vLineSeries = mainChart.addHistogramSeries({ 
+        color: '#FFD700', 
+        lastValueVisible: false, 
+        priceScaleId: 'split_scale' 
+    });
+    // Configure hidden split scale
+    mainChart.priceScale('split_scale').applyOptions({ visible: false, autoScale: true });
+    
+    // RSI default hidden
     mainChart.priceScale('left').applyOptions({ visible: false });
 
     // Performance Chart
@@ -165,35 +173,19 @@ function initChart() {
     strategySeries = perfChart.addLineSeries({ color: '#00d4ff', lineWidth: 3, title: 'Estratégia' });
     assetSeries = perfChart.addLineSeries({ color: '#8b949e', lineWidth: 2, lineStyle: 2, title: 'Buy & Hold' });
     
-    // RSI Chart
-    rsiChart = LightweightCharts.createChart(rsiElement, {
-        ...commonOptions,
-        rightPriceScale: {
-             ...commonOptions.rightPriceScale,
-             scaleMargins: { top: 0.1, bottom: 0.1 },
-        }
+    // RSI Integration (Same Chart)
+    window.rsiSeries = mainChart.addLineSeries({ 
+        color: '#7E57C2', 
+        lineWidth: 2, 
+        priceScaleId: 'left',
+        title: 'RSI (14)'
     });
-    rsiSeries = rsiChart.addLineSeries({ color: '#7E57C2', lineWidth: 2, title: 'RSI (14)' });
-    // Add RSI Levels
-    const rsiUpper = rsiChart.addLineSeries({ color: 'rgba(255, 255, 255, 0.3)', lineWidth: 1, lineStyle: 2, title: '70' });
-    const rsiLower = rsiChart.addLineSeries({ color: 'rgba(255, 255, 255, 0.3)', lineWidth: 1, lineStyle: 2, title: '35' });
-    // We will set this data later or just straight lines if supported, but here we can just add a single point far in past/future or leave empty and use CreatePriceLine. 
-    // Actually PriceLine is better for static levels.
-    rsiSeries.createPriceLine({ price: 70, color: '#ef5350', lineWidth: 1, lineStyle: 2, axisLabelVisible: false });
-    rsiSeries.createPriceLine({ price: 35, color: '#26a69a', lineWidth: 1, lineStyle: 2, axisLabelVisible: false });
+    // Levels will be added via createPriceLine dynamically
 
-    // Sync Charts (TimeScale)
-    mainChart.timeScale().subscribeVisibleLogicalRangeChange(range => {
-        rsiChart.timeScale().setVisibleLogicalRange(range);
-    });
-    rsiChart.timeScale().subscribeVisibleLogicalRangeChange(range => {
-        mainChart.timeScale().setVisibleLogicalRange(range);
-    });
 
     const handleResize = () => {
         mainChart.resize(chartElement.clientWidth, chartElement.clientHeight);
         perfChart.resize(perfElement.clientWidth, perfElement.clientHeight);
-        rsiChart.resize(rsiElement.clientWidth, rsiElement.clientHeight);
     };
     window.addEventListener('resize', handleResize);
     // Garantir resize inicial após carregamento
@@ -263,19 +255,44 @@ async function runBacktest() {
         candleSeries.setMarkers(finalMarkers);
         mainChart.timeScale().fitContent();
 
-        // RSI Data Handler
+        // RSI Data Handler (Panel Merge)
         if (data.rsi_data && data.rsi_data.length > 0) {
-            const rsiCard = document.getElementById('rsi_card');
-            rsiCard.style.display = 'block';
+            // Mode: RSI Active (Two Panels on One Chart)
             
-            // Força resize IMEDIATO antes de setar dados
-            const rsiDiv = document.getElementById('rsi_chart');
-            rsiChart.resize(rsiDiv.clientWidth, 250);
+            // 1. Squish Candles Up to make room
+            mainChart.priceScale('right').applyOptions({
+                scaleMargins: { top: 0.1, bottom: 0.30 }
+            });
             
-            rsiSeries.setData(data.rsi_data);
-            rsiChart.timeScale().fitContent();
+            // 2. Enable RSI Scale at Bottom (Left Axis)
+            mainChart.priceScale('left').applyOptions({
+                visible: true,
+                scaleMargins: { top: 0.75, bottom: 0 }
+            });
+            
+            // 3. Set Data
+            window.rsiSeries.setData(data.rsi_data);
+            
+            // 4. Add Levels
+            // Removing previous lines if tracked would be ideal, but for now we re-create.
+            window.rsiSeries.createPriceLine({ price: 70, color: '#ef5350', lineWidth: 1, lineStyle: 2, axisLabelVisible: false });
+            window.rsiSeries.createPriceLine({ price: 35, color: '#26a69a', lineWidth: 1, lineStyle: 2, axisLabelVisible: false });
+
         } else {
-            document.getElementById('rsi_card').style.display = 'none';
+            // Mode: SMA / No RSI (Full Chart)
+            
+            // 1. Reset Candles to Full Height
+            mainChart.priceScale('right').applyOptions({
+                scaleMargins: { top: 0.1, bottom: 0.1 }
+            });
+            
+            // 2. Hide RSI Scale
+            mainChart.priceScale('left').applyOptions({
+                visible: false
+            });
+            
+            // 3. Clear RSI Data
+            window.rsiSeries.setData([]);
         }
 
         if (data.perf_data) {
@@ -287,7 +304,19 @@ async function runBacktest() {
         const mIS = data.metrics_is;
         const mOOS = data.metrics_oos;
         
-        // ... (rest of function) ...
+        // Update Card Metrics (OOS Values)
+        document.getElementById('m_total').innerText = formatPct(mOOS['Total Return']);
+        document.getElementById('m_cagr').innerText = formatPct(mOOS['CAGR']);
+        document.getElementById('m_sharpe').innerText = (mOOS['Sharpe Ratio'] || 0).toFixed(2);
+        document.getElementById('m_maxdd').innerText = formatPct(mOOS['Max Drawdown']);
+        
+        const aiBox = document.getElementById('ai_analysis');
+        if (aiBox) {
+            aiBox.innerHTML = data.ai_analysis;
+            aiBox.className = "p-3 " + (data.is_warning ? "bg-warning-lt" : "bg-success-lt");
+        }
+
+        document.getElementById('results_area').style.display = 'block';
 
     } catch (err) {
         console.error(err);
@@ -300,7 +329,6 @@ async function runBacktest() {
         setTimeout(() => {
             const chartDiv = document.getElementById('chart');
             const perfDiv = document.getElementById('perf_chart');
-            const rsiDiv = document.getElementById('rsi_chart');
             
             if (chartDiv) mainChart.resize(chartDiv.clientWidth, 500);
             if (perfDiv && perfDiv.offsetParent !== null) {
@@ -308,10 +336,7 @@ async function runBacktest() {
                 perfChart.resize(perfDiv.clientWidth, 350);
                 perfChart.timeScale().fitContent();
             }
-            if (rsiDiv && rsiDiv.offsetParent !== null) {
-                rsiChart.resize(rsiDiv.clientWidth, 250);
-                rsiChart.timeScale().fitContent();
-            }
+
         }, 100);
     }
 }
