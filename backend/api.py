@@ -148,8 +148,10 @@ def run_backtest():
         ticker = data_req.get('ticker', 'PETR4.SA')
         start_date = data_req.get('start', '2020-01-01')
         end_date = data_req.get('end', '2024-01-01')
+        sma_short = int(data_req.get('sma_short', 20))
+        sma_long = int(data_req.get('sma_long', 50))
         
-        print(f"Executando backtest para {ticker} ({start_date} a {end_date})")
+        print(f"Executando backtest para {ticker} (SMA {sma_short}/{sma_long})")
         
         df = yf.download(ticker, start=start_date, end=end_date, progress=False)
         if df.empty:
@@ -164,7 +166,7 @@ def run_backtest():
                 return jsonify({"error": f"Coluna {col} ausente nos dados baixados."}), 400
 
         # Executa Estratégia
-        res = strategy_sma_crossover(df)
+        res = strategy_sma_crossover(df, short_window=sma_short, long_window=sma_long)
         
         # Divisão IS/OOS
         limit = int(len(res) * 0.7)
@@ -191,6 +193,19 @@ def run_backtest():
             elif row['trades'] == -1:
                 markers.append({"time": index.strftime('%Y-%m-%d'), "position": "aboveBar", "color": "#ef5350", "shape": "arrowDown", "text": "VENDA"})
 
+        # Ganho Acumulado OOS para o gráfico de performance
+        res_oos = res_oos.copy()
+        res_oos['Strategy_Cumulative'] = (1 + res_oos['Strategy_Returns'].fillna(0)).cumprod()
+        res_oos['Asset_Cumulative'] = (1 + asset_rets_oos.fillna(0)).cumprod()
+        
+        perf_data = []
+        for i, r in res_oos.iterrows():
+            perf_data.append({
+                "time": i.strftime('%Y-%m-%d'),
+                "strategy": float(r['Strategy_Cumulative']),
+                "asset": float(r['Asset_Cumulative'])
+            })
+
         # IA Analysis
         ai_text, is_warning = generate_analysis_text(m_is, m_oos)
 
@@ -208,6 +223,7 @@ def run_backtest():
         response_data = {
             "ticker": ticker,
             "candle_data": candle_data,
+            "perf_data": perf_data, # Nova série de performance
             "markers": markers,
             "metrics_is": m_is,
             "metrics_oos": m_oos,
