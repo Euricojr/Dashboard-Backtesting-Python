@@ -146,8 +146,9 @@ def run_backtest():
         end_date = data_req.get('end', '2024-01-01')
         sma_short = int(data_req.get('sma_short', 20))
         sma_long = int(data_req.get('sma_long', 50))
+        strategy_name = data_req.get('strategy', 'SMA') # SMA or RSI
         
-        print(f"Executando backtest para {ticker} (SMA {sma_short}/{sma_long})")
+        print(f"Executando backtest para {ticker}. Estratégia: {strategy_name}")
         
         df = yf.download(ticker, start=start_date, end=end_date, progress=False)
         if df.empty:
@@ -161,8 +162,13 @@ def run_backtest():
             if col not in df.columns:
                 return jsonify({"error": f"Coluna {col} ausente nos dados baixados."}), 400
 
-        # Executa Estratégia
-        res = backtest.strategy_sma_crossover(df, short_window=sma_short, long_window=sma_long)
+        # Executa Estratégia Selecionada
+        if strategy_name == "RSI":
+            # Parâmetros fixos por enquanto ou poderiam vir do JSON também
+            res = backtest.strategy_rsi_weekly(df, lower=35, upper=70)
+        else:
+            # Default to SMA
+            res = backtest.strategy_sma_crossover(df, short_window=sma_short, long_window=sma_long)
         
         # Divisão IS/OOS
         limit = int(len(res) * 0.7)

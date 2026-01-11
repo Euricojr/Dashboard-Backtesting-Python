@@ -64,6 +64,57 @@ def strategy_buy_and_hold(df):
     data['Strategy_Returns'] = data['Signal'].shift(1) * data['Asset_Returns']
     return data[['Close', 'Signal', 'Strategy_Returns']]
 
+def calculate_rsi(series, period=14):
+    """
+    Calcula o RSI (Relative Strength Index).
+    """
+    delta = series.diff()
+    gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
+    loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
+
+    rs = gain / loss
+    rsi = 100 - (100 / (1 + rs))
+    return rsi
+
+def strategy_rsi_weekly(df, lower=35, upper=70):
+    """
+    Estratégia RSI Semanal:
+    1. Resample para Semanal.
+    2. Calcula RSI(14).
+    3. Sinais: RSI < 35 (Compra), RSI > 70 (Venda).
+    4. Projeta sinais de volta para Diário.
+    """
+    # Passo A: Resample para Semanal (usando último valor da semana)
+    df_weekly = df.resample('W').last().copy()
+    
+    # Passo B: Calcula RSI Semanal
+    df_weekly['RSI'] = calculate_rsi(df_weekly['Close'], period=14)
+    
+    # Passo C: Sinais Semanais
+    # 1 = Compra, 0 = Venda, NaN = Manter
+    df_weekly['Signal_Weekly'] = np.nan
+    df_weekly.loc[df_weekly['RSI'] < lower, 'Signal_Weekly'] = 1
+    df_weekly.loc[df_weekly['RSI'] > upper, 'Signal_Weekly'] = 0
+    
+    # Passo D: Merge (Joga sinais semanais volta para diário)
+    # Reindex para o índice diário original e preenche para frente (ffill)
+    # Isso faz com que o sinal da semana passada persista durante a semana atual
+    daily_signals = df_weekly['Signal_Weekly'].reindex(df.index).ffill()
+    
+    # Prepara DataFrame de saída
+    data = df.copy()
+    data['Signal'] = daily_signals
+    
+    # Preenche NaNs iniciais com 0 ou mantém (se ffill não cobrir o início) -> assumimos flat (0)
+    data['Signal'] = data['Signal'].fillna(0)
+    
+    data['Asset_Returns'] = data['Close'].pct_change()
+    
+    # Passo E: Viés (Trade no dia seguinte ao sinal)
+    data['Strategy_Returns'] = data['Signal'].shift(1) * data['Asset_Returns']
+    
+    return data[['Close', 'Signal', 'Strategy_Returns']]
+
 def strategy_sma_crossover(df, short_window=20, long_window=50):
     """
     Estratégia de Cruzamento de Médias Móveis Simples (SMA).
