@@ -1,299 +1,312 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InvestDashboard PRO | Eurico Júnior</title>
-    <!-- Bootstrap 5 -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
+    <title>QuantDashboard</title>
+    <!-- Tabler Core -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/css/tabler.min.css">
+    <!-- Fonts -->
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
     <style>
-        :root {
-            --bg-dark: #0e1117;
-            --card-bg: #161b22;
-            --border-color: #30363d;
-            --accent: #00d4ff;
-            --text-gray: #8b949e;
-        }
+      :root {
+      	--tblr-font-sans-serif: 'Inter', -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif;
+      }
+      body {
+      	font-feature-settings: "cv03", "cv04", "cv11";
+      }
+      
+      /* Command Palette Styles */
+      .search-modal {
+          position: fixed;
+          top: 0; left: 0; right: 0; bottom: 0;
+          background: rgba(0,0,0,0.85);
+          backdrop-filter: blur(8px);
+          z-index: 11000;
+          display: none;
+          justify-content: center;
+          align-items: flex-start;
+          padding-top: 80px;
+      }
+      .search-content {
+          width: 95%;
+          max-width: 650px;
+          background-color: #1c2128;
+          border: 1px solid var(--tblr-primary);
+          border-radius: 8px;
+          box-shadow: 0 30px 80px rgba(0,0,0,1);
+          overflow: hidden;
+          animation: modalIn 0.25s ease-out;
+      }
+      .search-header {
+          padding: 20px;
+          border-bottom: 1px solid rgba(255,255,255,0.1);
+          display: flex;
+          align-items: center;
+      }
+      .search-modal-input {
+          width: 100%;
+          background-color: transparent !important;
+          color: white !important;
+          border: none;
+          font-size: 1.3rem;
+          outline: none;
+          padding: 0 10px;
+      }
+      .search-modal-results {
+          max-height: 400px;
+          overflow-y: auto;
+      }
+      .search-modal-group {
+          padding: 8px 20px;
+          font-size: 0.75rem;
+          text-transform: uppercase;
+          color: #666;
+          background: rgba(255,255,255,0.03);
+          font-weight: 600;
+      }
+      .search-modal-item {
+          padding: 12px 20px;
+          cursor: pointer;
+          display: flex;
+          justify-content: space-between;
+          border-bottom: 1px solid rgba(255,255,255,0.05);
+          transition: background 0.1s;
+      }
+      .search-modal-item:hover, .search-modal-item.active {
+          background-color: rgba(32, 107, 196, 0.2); 
+      }
+      @keyframes modalIn {
+          from { opacity: 0; transform: translateY(-20px); }
+          to { opacity: 1; transform: translateY(0); }
+      }
 
-        * {
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        body { 
-            background-color: var(--bg-dark); 
-            color: #c9d1d9; 
-            font-family: 'Outfit', sans-serif;
-            margin: 0;
-            overflow-x: hidden;
-        }
-
-        /* --- GLOBAL DARK RESET --- */
-        input:-webkit-autofill,
-        input:-webkit-autofill:hover, 
-        input:-webkit-autofill:focus, 
-        input:-webkit-autofill:active  {
-            -webkit-box-shadow: 0 0 0 30px #1c2128 inset !important;
-            -webkit-text-fill-color: white !important;
-        }
-
-        /* --- FLOATING COMMAND PALETTE SEARCH --- */
-        .search-modal {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.85);
-            backdrop-filter: blur(8px);
-            z-index: 11000;
-            display: none;
-            justify-content: center;
-            align-items: flex-start;
-            padding-top: 80px;
-        }
-        .search-content {
-            width: 95%;
-            max-width: 650px;
-            background-color: #1c2128;
-            border: 1px solid var(--accent);
-            border-radius: 16px;
-            box-shadow: 0 30px 80px rgba(0,0,0,1);
-            overflow: hidden;
-            animation: modalIn 0.25s ease-out;
-        }
-        @keyframes modalIn { 
-            from { transform: scale(0.95) translateY(-20px); opacity: 0; } 
-            to { transform: scale(1) translateY(0); opacity: 1; } 
-        }
-
-        .search-header {
-            padding: 25px;
-            background-color: #0e1117;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            align-items: center;
-        }
-        .search-modal-input {
-            width: 100%;
-            background-color: transparent !important;
-            color: white !important;
-            border: none;
-            font-size: 1.3rem;
-            outline: none;
-            margin-left: 15px;
-        }
-        
-        .search-modal-results {
-            max-height: 450px;
-            overflow-y: auto;
-            padding: 15px;
-            scrollbar-width: thin;
-        }
-        .search-modal-results::-webkit-scrollbar { width: 6px; }
-        .search-modal-results::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
-
-        .search-modal-item {
-            padding: 14px 20px;
-            cursor: pointer;
-            border-radius: 10px;
-            transition: all 0.2s;
-            margin-bottom: 6px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(255,255,255,0.02);
-            border: 1px solid transparent;
-        }
-        .search-modal-item:hover { 
-            background-color: var(--accent); 
-            color: black; 
-            border-color: white;
-            transform: translateX(5px);
-        }
-        .search-modal-item .ticker { font-family: monospace; font-weight: 600; opacity: 0.8; }
-
-        .search-modal-group {
-            font-size: 0.75rem;
-            color: var(--accent);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            padding: 20px 10px 10px 10px;
-            font-weight: 600;
-        }
-
-        /* Trigger minimalista na sidebar */
-        .sidebar-search-trigger {
-            width: 100%;
-            background-color: #1c2128;
-            border: 1px solid var(--border-color);
-            color: #c9d1d9;
-            padding: 14px 18px;
-            border-radius: 10px;
-            cursor: pointer;
-            text-align: left;
-            transition: all 0.2s;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .sidebar-search-trigger:hover { border-color: var(--accent); background: #252d37; }
-        .kbd-box { background: #0e1117; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; border: 1px solid var(--border-color); }
-
-        /* Resto do CSS */
-        .sidebar { background-color: var(--card-bg); min-height: 100vh; padding: 25px; border-right: 1px solid var(--border-color); }
-        .card { background-color: var(--card-bg); border: 1px solid var(--border-color); color: white; border-radius: 12px; margin-bottom: 20px; }
-        #chart { width: 100%; height: 500px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color); }
-        .metric-label { color: var(--text-gray); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; }
-        .metric-value { font-size: 1.4rem; font-weight: 600; color: var(--accent); }
-        .ai-box { padding: 20px; border-radius: 12px; margin-top: 20px; line-height: 1.6; border-left: 5px solid var(--accent); }
-        .ai-info { background: rgba(0, 212, 255, 0.1); border-color: var(--accent); }
-        .ai-warning { background: rgba(255, 171, 0, 0.1); border-color: #ffab00; }
-        footer { text-align: center; padding: 40px; color: #6e7681; font-size: 0.9rem; border-top: 1px solid var(--border-color); margin-top: 40px; }
-        select.form-control, input.form-control { background-color: #1c2128; color: white; border: 1px solid var(--border-color); }
-        table { color: #c9d1d9 !important; }
-        th { color: var(--text-gray); font-weight: 400; font-size: 0.8rem; }
-
-        .chart-wrapper { position: relative; width: 100%; height: 500px; }
-        .chart-placeholder {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #161b22;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 10;
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            color: var(--text-gray);
-        }
+      /* Chart Placeholder */
+      .chart-placeholder {
+          position: absolute;
+          top: 0; left: 0; right: 0; bottom: 0;
+          background-color: #1d222b; /* Slightly lighter than card bg */
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          z-index: 10;
+          border-radius: 4px;
+          color: #666;
+      }
     </style>
-</head>
-<body>
-
-    <div class="container-fluid">
-        <div class="row">
-            <!-- Sidebar -->
-            <div class="col-md-3 sidebar">
-                <h3 class="mb-4">Configurações</h3>
-                
-                <div class="mb-4">
-                    <label class="mb-2">Escolha o Ativo</label>
-                    <div id="sidebar_trigger" class="sidebar-search-trigger">
-                        <span id="trigger_label">Petrobras (PETR4.SA)</span>
+    <!-- Lightweight Charts (Stable Version) -->
+    <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
+  </head>
+  <body class="layout-fluid theme-dark" data-bs-theme="dark">
+    <div class="page">
+      <!-- Navbar -->
+      <header class="navbar navbar-expand-md d-print-none" >
+        <div class="container-xl">
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu" aria-controls="navbar-menu" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <h1 class="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3">
+            <a href=".">
+              Dashboard
+            </a>
+          </h1>
+        </div>
+      </header>
+      
+      <div class="page-wrapper">
+        <!-- Page body -->
+        <div class="page-body">
+          <div class="container-xl">
+            <div class="row g-3">
+              
+              <!-- Sidebar / Settings -->
+              <div class="col-md-3">
+                <div class="card">
+                  <div class="card-header">
+                    <h3 class="card-title">Configurações</h3>
+                  </div>
+                  <div class="card-body">
+                    <div class="mb-3">
+                      <label class="form-label">Ativo</label>
+                      <div id="sidebar_trigger" class="form-control d-flex justify-content-between align-items-center" style="cursor: pointer; background-color: #232e3c;">
+                          <span id="trigger_label">Petrobras (PETR4.SA)</span>
+                      </div>
                     </div>
-                </div>
-
-                <!-- Floating Search Modal -->
-                <div id="search_modal" class="search-modal">
-                    <div class="search-content">
-                        <div class="search-header">
-                            <input type="text" id="modal_search_input" class="search-modal-input" placeholder="Pesquisar ativo ou ticker..." autocomplete="off">
-                        </div>
-                        <div id="modal_results" class="search-modal-results"></div>
-                        <div class="p-3 border-top border-secondary opacity-50 text-center" style="font-size: 0.75rem; background: #0e1117;">
-                            ESC para fechar | ↑↓ para navegar | Enter para selecionar
-                        </div>
-                    </div>
-                </div>
-                <input type="hidden" id="selected_ticker" value="PETR4.SA">
-                
-                <div id="custom_ticker_div" class="mb-3" style="display: none;">
-                    <label class="mb-2">Ticker Customizado</label>
-                    <input type="text" id="custom_ticker" class="form-control" placeholder="Ex: AAPL">
-                </div>
-                
-                <div class="row g-2 mb-3">
-                    <div class="col-6">
-                        <label>Início</label>
-                        <input type="date" id="start_date" class="form-control" value="2020-01-01">
-                    </div>
-                    <div class="col-6">
-                        <label>Fim</label>
-                        <input type="date" id="end_date" class="form-control" value="2024-01-01">
-                    </div>
-                </div>
-
-                <div class="row g-2 mb-4">
-                    <div class="col-6">
-                        <label>SMA Curta</label>
-                        <input type="number" id="sma_short" class="form-control" value="20">
-                    </div>
-                    <div class="col-6">
-                        <label>SMA Longa</label>
-                        <input type="number" id="sma_long" class="form-control" value="50">
-                    </div>
-                </div>
-
-                <button id="run_btn" class="btn btn-primary w-100 mb-4 py-2 fw-bold shadow-sm">EXECUTAR BACKTEST</button>
-
-                <div id="quick_metrics" style="display: none;">
-                    <h5>Resumo OOS</h5>
-                    <div class="card p-3 mb-2">
-                        <div class="metric-label">Retorno Total</div>
-                        <div id="m_total" class="metric-value">-</div>
-                    </div>
-                    <div class="card p-3">
-                        <div class="metric-label">Sharpe Ratio</div>
-                        <div id="m_sharpe" class="metric-value">-</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Main Area -->
-            <div class="col-md-9 p-4">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h2 class="mb-0">Dashboard Quantitativo</h2>
-                </div>
-
-                <h5 class="mt-4 mb-3" style="color: var(--text-gray);">Gráfico de Preços</h5>
-                <div class="chart-wrapper">
-                    <div id="chart" style="width: 100%; height: 100%;"></div>
-                    <div id="chart_placeholder" class="chart-placeholder">
-                        <div class="text-center">
-                            <h4 class="mb-2" style="color: var(--text-gray);">Aguardando Backtest</h4>
-                            <p class="text-muted small">Selecione os parâmetros e clique em EXECUTAR para visualizar.</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div id="results_area" style="display: none;">
-                    <h5 class="mt-5 mb-3" style="color: var(--text-gray);">Curva de Patrimônio (Out-of-Sample)</h5>
-                    <div id="perf_chart" style="width: 100%; height: 350px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color); margin-bottom: 20px;"></div>
                     
-                    <div class="row mt-4">
-                        <div class="col-12">
-                            <div class="card p-4">
-                                <h5 class="mb-4">Relatório de Performance</h5>
-                                <div class="table-responsive">
-                                    <table class="table table-dark table-hover mb-0">
-                                        <thead>
-                                            <tr>
-                                                <th>Métrica</th>
-                                                <th>Treino (In-Sample)</th>
-                                                <th>Teste (Out-of-Sample)</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="metrics_table_body"></tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
+                    <input type="hidden" id="selected_ticker" value="PETR4.SA">
+                    
+                    <div id="custom_ticker_div" class="mb-3" style="display: none;">
+                        <label class="form-label">Ticker Customizado</label>
+                        <input type="text" id="custom_ticker" class="form-control" placeholder="Ex: AAPL">
                     </div>
 
-                    <!-- AI Interpretation -->
-                    <div id="ai_container" class="ai-box"></div>
+                    <div class="row g-2">
+                      <div class="col-6">
+                        <label class="form-label">Início</label>
+                        <input type="date" id="start_date" class="form-control" value="2020-01-01">
+                      </div>
+                      <div class="col-6">
+                         <label class="form-label">Fim</label>
+                        <input type="date" id="end_date" class="form-control" value="2024-01-01">
+                      </div>
+                    </div>
+                    
+                    <div class="row g-2 mt-2">
+                        <div class="col-6">
+                          <label class="form-label">SMA Curta</label>
+                          <input type="number" id="sma_short" class="form-control" value="20">
+                        </div>
+                        <div class="col-6">
+                          <label class="form-label">SMA Longa</label>
+                          <input type="number" id="sma_long" class="form-control" value="50">
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                      <button id="run_btn" class="btn btn-primary w-100">
+                        Executar Backtest
+                      </button>
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Main Content -->
+              <div class="col-md-9">
+                <!-- Metrics Row -->
+                <div class="row row-cards mb-3">
+                  <div class="col-sm-6 col-lg-3">
+                    <div class="card card-sm">
+                      <div class="card-body">
+                        <div class="row align-items-center">
+                          <div class="col-auto">
+                            <span class="bg-primary text-white avatar"><!-- Download SVG icon from http://tabler-icons.io/i/currency-dollar -->
+                              <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M16.7 8a3 3 0 0 0 -2.7 -2h-4a3 3 0 0 0 0 6h4a3 3 0 0 1 0 6h-4a3 3 0 0 1 -2.7 -2" /><path d="M12 3v3m0 12v3" /></svg>
+                            </span>
+                          </div>
+                          <div class="col">
+                            <div class="font-weight-medium">Retorno Total</div>
+                            <div class="text-muted" id="m_total">-</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-sm-6 col-lg-3">
+                    <div class="card card-sm">
+                      <div class="card-body">
+                         <div class="row align-items-center">
+                          <div class="col-auto">
+                            <span class="bg-green text-white avatar"><!-- Download SVG icon from http://tabler-icons.io/i/trending-up -->
+                              <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 17l6 -6l4 4l8 -8" /><path d="M14 7l7 0l0 7" /></svg>
+                            </span>
+                          </div>
+                          <div class="col">
+                            <div class="font-weight-medium">CAGR</div>
+                            <div class="text-muted" id="m_cagr">-</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                   <div class="col-sm-6 col-lg-3">
+                    <div class="card card-sm">
+                      <div class="card-body">
+                         <div class="row align-items-center">
+                          <div class="col-auto">
+                            <span class="bg-yellow text-white avatar">
+                              <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-activity" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 12h4l3 8l4 -16l3 8h4" /></svg>
+                            </span>
+                          </div>
+                          <div class="col">
+                            <div class="font-weight-medium">Sharpe</div>
+                            <div class="text-muted" id="m_sharpe">-</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                   <div class="col-sm-6 col-lg-3">
+                    <div class="card card-sm">
+                      <div class="card-body">
+                         <div class="row align-items-center">
+                          <div class="col-auto">
+                            <span class="bg-red text-white avatar">
+                              <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-arrow-down-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M7 7l10 10" /><path d="M17 8l0 9l-9 0" /></svg>
+                            </span>
+                          </div>
+                          <div class="col">
+                            <div class="font-weight-medium">Max Drawdown</div>
+                            <div class="text-muted" id="m_maxdd">-</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
-                <footer>
-                    Projeto de Backtesting Quantitativo | Desenvolvido por <b>Eurico Júnior</b>
-                </footer>
+                <!-- Chart -->
+                <div class="card">
+                  <div class="card-header">
+                     <h3 class="card-title">Gráfico de Preços (In-Sample / Out-of-Sample)</h3>
+                  </div>
+                  <div class="card-body p-0">
+                     <div class="chart-wrapper" style="position: relative; height: 500px; width: 100%;">
+                        <div id="chart" style="width: 100%; height: 100%;"></div>
+                        <div id="chart_placeholder" class="chart-placeholder">
+                             <h3 class="text-secondary">Aguardando Backtest</h3>
+                             <p class="text-secondary opacity-50">Configure e execute para visualizar</p>
+                        </div>
+                     </div>
+                  </div>
+                </div>
+                
+                <!-- Results Area -->
+                <div id="results_area" class="mt-3" style="display: none;">
+                    <div class="row row-cards">
+                        <div class="col-md-12">
+                             <div class="card">
+                                  <div class="card-header"><h3 class="card-title">Curva de Patrimônio (OOS)</h3></div>
+                                  <div class="card-body p-0">
+                                       <div id="perf_chart" style="width: 100%; height: 350px;"></div>
+                                  </div>
+                             </div>
+                        </div>
+                        <div class="col-md-12">
+                             <div class="card">
+                                 <div class="card-body">
+                                      <div id="ai_analysis"></div>
+                                 </div>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Floating Search Modal -->
+    <div id="search_modal" class="search-modal">
+        <div class="search-content">
+            <div class="search-header">
+                <input type="text" id="modal_search_input" class="search-modal-input" placeholder="Pesquisar ativo ou ticker..." autocomplete="off">
+            </div>
+            <div id="modal_results" class="search-modal-results"></div>
+            <div class="p-3 border-top border-secondary opacity-50 text-center" style="font-size: 0.75rem; background: #161b22;">
+                ESC para fechar | ↑↓ para navegar | Enter para selecionar
             </div>
         </div>
     </div>
 
     <!-- Scripts -->
-    <script src="https://unpkg.com/lightweight-charts@3.8.0/dist/lightweight-charts.standalone.production.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/js/tabler.min.js"></script>
     <script src="script.js"></script>
-</body>
+  </body>
 </html>

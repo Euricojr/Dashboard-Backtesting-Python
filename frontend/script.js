@@ -112,13 +112,21 @@ function initChart() {
     const chartElement = document.getElementById('chart');
     const perfElement = document.getElementById('perf_chart');
     
+    if (!chartElement) { console.error("Chart element not found"); return; }
+    
+    // Ensure container has dimensions
+    if (chartElement.clientWidth === 0) {
+        chartElement.style.width = '100%';
+        chartElement.style.height = '500px';
+    }
+
     // Configuração Premium do Gráfico
     const commonOptions = {
         layout: { 
             background: { type: 'solid', color: '#161b22' }, 
             textColor: '#d1d4dc',
             fontSize: 12,
-            fontFamily: 'Outfit, sans-serif'
+            fontFamily: 'Inter, sans-serif'
         },
         grid: { 
             vertLines: { color: 'rgba(42, 46, 57, 0.3)' }, 
@@ -128,7 +136,12 @@ function initChart() {
         timeScale: { borderColor: 'rgba(197, 203, 206, 0.3)' },
     };
 
-    mainChart = LightweightCharts.createChart(chartElement, commonOptions);
+    try {
+        mainChart = LightweightCharts.createChart(chartElement, commonOptions);
+    } catch (e) {
+        console.error("Failed to create chart:", e);
+        return;
+    }
 
     candleSeries = mainChart.addCandlestickSeries({
         upColor: '#26a69a', 
@@ -251,34 +264,21 @@ async function runBacktest() {
 
         const mIS = data.metrics_is;
         const mOOS = data.metrics_oos;
-        const tableBody = document.getElementById('metrics_table_body');
         
-        const metricsList = [
-            { label: "Retorno Total", key: "Total Return", isPct: true },
-            { label: "CAGR", key: "CAGR", isPct: true },
-            { label: "Volatilidade Anual", key: "Vol Anual", isPct: true },
-            { label: "Sharpe Ratio", key: "Sharpe Ratio", isPct: false },
-            { label: "Max Drawdown", key: "Max Drawdown", isPct: true }
-        ];
-
-        tableBody.innerHTML = '';
-        metricsList.forEach(m => {
-            const row = document.createElement('tr');
-            const valIS = m.isPct ? formatPct(mIS[m.key]) : (mIS[m.key] || 0).toFixed(2);
-            const valOOS = m.isPct ? formatPct(mOOS[m.key]) : (mOOS[m.key] || 0).toFixed(2);
-            row.innerHTML = `<td>${m.label}</td><td class="fw-bold">${valIS}</td><td class="fw-bold text-info">${valOOS}</td>`;
-            tableBody.appendChild(row);
-        });
-
+        // Update Card Metrics (OOS Values)
         document.getElementById('m_total').innerText = formatPct(mOOS['Total Return']);
+        document.getElementById('m_cagr').innerText = formatPct(mOOS['CAGR']);
         document.getElementById('m_sharpe').innerText = (mOOS['Sharpe Ratio'] || 0).toFixed(2);
+        document.getElementById('m_maxdd').innerText = formatPct(mOOS['Max Drawdown']);
         
-        const aiBox = document.getElementById('ai_container');
-        aiBox.innerHTML = data.ai_analysis;
-        aiBox.className = "ai-box " + (data.is_warning ? "ai-warning" : "ai-info");
+        const aiBox = document.getElementById('ai_analysis');
+        if (aiBox) {
+            aiBox.innerHTML = data.ai_analysis;
+            aiBox.className = "p-3 " + (data.is_warning ? "bg-warning-lt" : "bg-success-lt");
+        }
 
         document.getElementById('results_area').style.display = 'block';
-        document.getElementById('quick_metrics').style.display = 'block';
+        // document.getElementById('quick_metrics').style.display = 'block'; // Removed in Tabler
 
     } catch (err) {
         console.error(err);
