@@ -3,14 +3,10 @@ from flask_cors import CORS
 import pandas as pd
 import numpy as np
 import yfinance as yf
-import sys
-import os
 import traceback
 from datetime import datetime
 
-# Adiciona o diretório raiz ao path para importar o backtest.py
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from backtest import strategy_sma_crossover, calculate_metrics
+import backtest  # Agora no mesmo diretório
 
 app = Flask(__name__)
 CORS(app)
@@ -166,7 +162,7 @@ def run_backtest():
                 return jsonify({"error": f"Coluna {col} ausente nos dados baixados."}), 400
 
         # Executa Estratégia
-        res = strategy_sma_crossover(df, short_window=sma_short, long_window=sma_long)
+        res = backtest.strategy_sma_crossover(df, short_window=sma_short, long_window=sma_long)
         
         # Divisão IS/OOS
         limit = int(len(res) * 0.7)
@@ -176,12 +172,12 @@ def run_backtest():
         res_is = res.iloc[:limit]
         res_oos = res.iloc[limit:]
         
-        m_is = calculate_metrics(res_is['Strategy_Returns'])
-        m_oos = calculate_metrics(res_oos['Strategy_Returns'])
+        m_is = backtest.calculate_metrics(res_is['Strategy_Returns'])
+        m_oos = backtest.calculate_metrics(res_oos['Strategy_Returns'])
         
         # B&H check
         asset_rets_oos = res_oos['Close'].pct_change()
-        bh_metrics = calculate_metrics(asset_rets_oos)
+        bh_metrics = backtest.calculate_metrics(asset_rets_oos)
         m_oos['BH_Total'] = bh_metrics['Total Return']
 
         # Marcadores
