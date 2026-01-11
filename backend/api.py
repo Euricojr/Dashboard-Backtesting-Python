@@ -226,19 +226,30 @@ def run_backtest():
         sma_short_data = []
         sma_long_data = []
         
-        # Iterar apenas onde os dados existem (dropna parcial para evitar envio excessivo de nulos, 
-        # mas mantendo alinhamento de data se necessário, o frontend lida bem com datas)
+        # Prepare SMA Data
+        sma_short_data = []
+        sma_long_data = []
+        rsi_data = []
+
+        # Check if columns exist
+        has_sma_short = 'SMA_Short' in res.columns
+        has_sma_long = 'SMA_Long' in res.columns
+        has_rsi = 'RSI' in res.columns
+
         for i, r in res.iterrows():
-            if not pd.isna(r['SMA_Short']):
+            if has_sma_short and not pd.isna(r['SMA_Short']):
                 sma_short_data.append({"time": i.strftime('%Y-%m-%d'), "value": float(r['SMA_Short'])})
-            if not pd.isna(r['SMA_Long']):
+            if has_sma_long and not pd.isna(r['SMA_Long']):
                 sma_long_data.append({"time": i.strftime('%Y-%m-%d'), "value": float(r['SMA_Long'])})
+            if has_rsi and not pd.isna(r['RSI']):
+                rsi_data.append({"time": i.strftime('%Y-%m-%d'), "value": float(r['RSI'])})
 
         response_data = {
             "ticker": ticker,
             "candle_data": candle_data,
-            "sma_short_data": sma_short_data, # SMA Short Data
-            "sma_long_data": sma_long_data,   # SMA Long Data
+            "sma_short_data": sma_short_data, 
+            "sma_long_data": sma_long_data,
+            "rsi_data": rsi_data,   # Dados do RSI
             "perf_data": perf_data, 
             "markers": markers,
             "metrics_is": m_is,

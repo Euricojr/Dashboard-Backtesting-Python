@@ -111,6 +111,7 @@ function selectAsset(ticker, name) {
 function initChart() {
     const chartElement = document.getElementById('chart');
     const perfElement = document.getElementById('perf_chart');
+    const rsiElement = document.getElementById('rsi_chart');
     
     if (!chartElement) { console.error("Chart element not found"); return; }
     
@@ -133,7 +134,8 @@ function initChart() {
             horzLines: { color: 'rgba(42, 46, 57, 0.3)' } 
         },
         rightPriceScale: { borderColor: 'rgba(197, 203, 206, 0.3)' },
-        timeScale: { borderColor: 'rgba(197, 203, 206, 0.3)' },
+        timeScale: { borderColor: 'rgba(197, 203, 206, 0.3)', timeVisible: true },
+        crosshair: { mode: 1 } // Normal Mode
     };
 
     try {
@@ -152,42 +154,46 @@ function initChart() {
     });
     
     // SMA Series Initialization
-    window.smaShortSeries = mainChart.addLineSeries({
-        color: '#ff9800', // Laranja
-        lineWidth: 2,
-        title: 'SMA Curta'
-    });
-
-    window.smaLongSeries = mainChart.addLineSeries({
-        color: '#9c27b0', // Roxo
-        lineWidth: 2,
-        title: 'SMA Longa'
-    });
+    window.smaShortSeries = mainChart.addLineSeries({ color: '#ff9800', lineWidth: 2, title: 'SMA Curta' });
+    window.smaLongSeries = mainChart.addLineSeries({ color: '#9c27b0', lineWidth: 2, title: 'SMA Longa' });
     
-    window.vLineSeries = mainChart.addHistogramSeries({ 
-        color: '#FFD700', 
-        lastValueVisible: false, 
-        priceScaleId: 'left' 
-    });
+    window.vLineSeries = mainChart.addHistogramSeries({ color: '#FFD700', lastValueVisible: false, priceScaleId: 'left' });
     mainChart.priceScale('left').applyOptions({ visible: false });
 
+    // Performance Chart
     perfChart = LightweightCharts.createChart(perfElement, commonOptions);
-
-    strategySeries = perfChart.addLineSeries({ 
-        color: '#00d4ff', 
-        lineWidth: 3, 
-        title: 'Estratégia' 
+    strategySeries = perfChart.addLineSeries({ color: '#00d4ff', lineWidth: 3, title: 'Estratégia' });
+    assetSeries = perfChart.addLineSeries({ color: '#8b949e', lineWidth: 2, lineStyle: 2, title: 'Buy & Hold' });
+    
+    // RSI Chart
+    rsiChart = LightweightCharts.createChart(rsiElement, {
+        ...commonOptions,
+        rightPriceScale: {
+             ...commonOptions.rightPriceScale,
+             scaleMargins: { top: 0.1, bottom: 0.1 },
+        }
     });
-    assetSeries = perfChart.addLineSeries({ 
-        color: '#8b949e', 
-        lineWidth: 2, 
-        lineStyle: 2, 
-        title: 'Buy & Hold' 
+    rsiSeries = rsiChart.addLineSeries({ color: '#7E57C2', lineWidth: 2, title: 'RSI (14)' });
+    // Add RSI Levels
+    const rsiUpper = rsiChart.addLineSeries({ color: 'rgba(255, 255, 255, 0.3)', lineWidth: 1, lineStyle: 2, title: '70' });
+    const rsiLower = rsiChart.addLineSeries({ color: 'rgba(255, 255, 255, 0.3)', lineWidth: 1, lineStyle: 2, title: '35' });
+    // We will set this data later or just straight lines if supported, but here we can just add a single point far in past/future or leave empty and use CreatePriceLine. 
+    // Actually PriceLine is better for static levels.
+    rsiSeries.createPriceLine({ price: 70, color: '#ef5350', lineWidth: 1, lineStyle: 2, axisLabelVisible: false });
+    rsiSeries.createPriceLine({ price: 35, color: '#26a69a', lineWidth: 1, lineStyle: 2, axisLabelVisible: false });
+
+    // Sync Charts (TimeScale)
+    mainChart.timeScale().subscribeVisibleLogicalRangeChange(range => {
+        rsiChart.timeScale().setVisibleLogicalRange(range);
+    });
+    rsiChart.timeScale().subscribeVisibleLogicalRangeChange(range => {
+        mainChart.timeScale().setVisibleLogicalRange(range);
     });
 
     const handleResize = () => {
         mainChart.resize(chartElement.clientWidth, chartElement.clientHeight);
         perfChart.resize(perfElement.clientWidth, perfElement.clientHeight);
+        rsiChart.resize(rsiElement.clientWidth, rsiElement.clientHeight);
     };
     window.addEventListener('resize', handleResize);
     // Garantir resize inicial após carregamento
@@ -209,6 +215,7 @@ async function runBacktest() {
 
     const start = document.getElementById('start_date').value;
     const end = document.getElementById('end_date').value;
+    const strategy = document.getElementById('strategy_select').value;
     const smaShort = document.getElementById('sma_short').value;
     const smaLong = document.getElementById('sma_long').value;
     const btn = document.getElementById('run_btn');
@@ -221,7 +228,7 @@ async function runBacktest() {
         const response = await fetch('http://localhost:5000/run_backtest', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ticker, start, end, sma_short: smaShort, sma_long: smaLong })
+            body: JSON.stringify({ ticker, start, end, strategy, sma_short: smaShort, sma_long: smaLong })
         });
 
         const data = await response.json();
@@ -256,6 +263,21 @@ async function runBacktest() {
         candleSeries.setMarkers(finalMarkers);
         mainChart.timeScale().fitContent();
 
+        // RSI Data Handler
+        if (data.rsi_data && data.rsi_data.length > 0) {
+            const rsiCard = document.getElementById('rsi_card');
+            rsiCard.style.display = 'block';
+            
+            // Força resize IMEDIATO antes de setar dados
+            const rsiDiv = document.getElementById('rsi_chart');
+            rsiChart.resize(rsiDiv.clientWidth, 250);
+            
+            rsiSeries.setData(data.rsi_data);
+            rsiChart.timeScale().fitContent();
+        } else {
+            document.getElementById('rsi_card').style.display = 'none';
+        }
+
         if (data.perf_data) {
             strategySeries.setData(data.perf_data.map(d => ({ time: d.time, value: d.strategy })));
             assetSeries.setData(data.perf_data.map(d => ({ time: d.time, value: d.asset })));
@@ -265,20 +287,7 @@ async function runBacktest() {
         const mIS = data.metrics_is;
         const mOOS = data.metrics_oos;
         
-        // Update Card Metrics (OOS Values)
-        document.getElementById('m_total').innerText = formatPct(mOOS['Total Return']);
-        document.getElementById('m_cagr').innerText = formatPct(mOOS['CAGR']);
-        document.getElementById('m_sharpe').innerText = (mOOS['Sharpe Ratio'] || 0).toFixed(2);
-        document.getElementById('m_maxdd').innerText = formatPct(mOOS['Max Drawdown']);
-        
-        const aiBox = document.getElementById('ai_analysis');
-        if (aiBox) {
-            aiBox.innerHTML = data.ai_analysis;
-            aiBox.className = "p-3 " + (data.is_warning ? "bg-warning-lt" : "bg-success-lt");
-        }
-
-        document.getElementById('results_area').style.display = 'block';
-        // document.getElementById('quick_metrics').style.display = 'block'; // Removed in Tabler
+        // ... (rest of function) ...
 
     } catch (err) {
         console.error(err);
@@ -291,12 +300,17 @@ async function runBacktest() {
         setTimeout(() => {
             const chartDiv = document.getElementById('chart');
             const perfDiv = document.getElementById('perf_chart');
+            const rsiDiv = document.getElementById('rsi_chart');
             
             if (chartDiv) mainChart.resize(chartDiv.clientWidth, 500);
             if (perfDiv && perfDiv.offsetParent !== null) {
                 // Checa se está visível
                 perfChart.resize(perfDiv.clientWidth, 350);
                 perfChart.timeScale().fitContent();
+            }
+            if (rsiDiv && rsiDiv.offsetParent !== null) {
+                rsiChart.resize(rsiDiv.clientWidth, 250);
+                rsiChart.timeScale().fitContent();
             }
         }, 100);
     }
@@ -306,4 +320,16 @@ document.addEventListener('DOMContentLoaded', () => {
     initChart();
     loadAssets();
     document.getElementById('run_btn').addEventListener('click', runBacktest);
+    
+    // Strategy Logic
+    const strategySelect = document.getElementById('strategy_select');
+    const smaSettings = document.getElementById('sma_settings');
+    
+    strategySelect.addEventListener('change', () => {
+        if (strategySelect.value === 'SMA') {
+            smaSettings.style.display = 'block';
+        } else {
+            smaSettings.style.display = 'none';
+        }
+    });
 });

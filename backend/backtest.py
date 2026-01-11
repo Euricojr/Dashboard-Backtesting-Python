@@ -89,6 +89,8 @@ def strategy_rsi_weekly(df, lower=35, upper=70):
     
     # Passo B: Calcula RSI Semanal
     df_weekly['RSI'] = calculate_rsi(df_weekly['Close'], period=14)
+    print(f"[DEBUG] Weekly RSI Count (Not NaN): {df_weekly['RSI'].count()}")
+    print(f"[DEBUG] Weekly RSI Head: {df_weekly['RSI'].head(20).tolist()}")
     
     # Passo C: Sinais Semanais
     # 1 = Compra, 0 = Venda, NaN = Manter
@@ -96,14 +98,26 @@ def strategy_rsi_weekly(df, lower=35, upper=70):
     df_weekly.loc[df_weekly['RSI'] < lower, 'Signal_Weekly'] = 1
     df_weekly.loc[df_weekly['RSI'] > upper, 'Signal_Weekly'] = 0
     
+    print(f"[DEBUG] Signals before ffill: {df_weekly['Signal_Weekly'].value_counts(dropna=False)}")
+
+    # --- CORREÇÃO IMPORTANTE ---
+    # Propagar o último sinal válido para as semanas seguintes (State Machine)
+    # Se não fizer isso, quando o RSI ficar "neutro" (entre 35 e 70), a posição zera (NaN virava 0)
+    df_weekly['Signal_Weekly'] = df_weekly['Signal_Weekly'].ffill()
+    
+    print(f"[DEBUG] Signals after ffill: {df_weekly['Signal_Weekly'].value_counts(dropna=False)}")
+
     # Passo D: Merge (Joga sinais semanais volta para diário)
-    # Reindex para o índice diário original e preenche para frente (ffill)
-    # Isso faz com que o sinal da semana passada persista durante a semana atual
-    daily_signals = df_weekly['Signal_Weekly'].reindex(df.index).ffill()
+    # Reindex com method='ffill' para buscar o valor da semana anterior (Sunday -> Monday/etc)
+    daily_signals = df_weekly['Signal_Weekly'].reindex(df.index, method='ffill')
+    daily_rsi = df_weekly['RSI'].reindex(df.index, method='ffill')
+    
+    print(f"[DEBUG] Daily Signals Count: {daily_signals.count()}")
     
     # Prepara DataFrame de saída
     data = df.copy()
     data['Signal'] = daily_signals
+    data['RSI'] = daily_rsi
     
     # Preenche NaNs iniciais com 0 ou mantém (se ffill não cobrir o início) -> assumimos flat (0)
     data['Signal'] = data['Signal'].fillna(0)
@@ -113,7 +127,7 @@ def strategy_rsi_weekly(df, lower=35, upper=70):
     # Passo E: Viés (Trade no dia seguinte ao sinal)
     data['Strategy_Returns'] = data['Signal'].shift(1) * data['Asset_Returns']
     
-    return data[['Close', 'Signal', 'Strategy_Returns']]
+    return data[['Close', 'Signal', 'Strategy_Returns', 'RSI']]
 
 def strategy_sma_crossover(df, short_window=20, long_window=50):
     """
