@@ -220,6 +220,8 @@ async function runBacktest() {
             return; 
         }
 
+        document.getElementById('chart_placeholder').style.display = 'none';
+
         candleSeries.setData(data.candle_data);
         
         // Plot SMAs

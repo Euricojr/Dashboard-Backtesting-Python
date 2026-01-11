@@ -152,6 +152,21 @@
         select.form-control, input.form-control { background-color: #1c2128; color: white; border: 1px solid var(--border-color); }
         table { color: #c9d1d9 !important; }
         th { color: var(--text-gray); font-weight: 400; font-size: 0.8rem; }
+
+        .chart-wrapper { position: relative; width: 100%; height: 500px; }
+        .chart-placeholder {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #161b22;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-gray);
+        }
     </style>
 </head>
 <body>
@@ -232,7 +247,15 @@
                 </div>
 
                 <h5 class="mt-4 mb-3" style="color: var(--text-gray);">Gráfico de Preços</h5>
-                <div id="chart"></div>
+                <div class="chart-wrapper">
+                    <div id="chart" style="width: 100%; height: 100%;"></div>
+                    <div id="chart_placeholder" class="chart-placeholder">
+                        <div class="text-center">
+                            <h4 class="mb-2" style="color: var(--text-gray);">Aguardando Backtest</h4>
+                            <p class="text-muted small">Selecione os parâmetros e clique em EXECUTAR para visualizar.</p>
+                        </div>
+                    </div>
+                </div>
                 
                 <div id="results_area" style="display: none;">
                     <h5 class="mt-5 mb-3" style="color: var(--text-gray);">Curva de Patrimônio (Out-of-Sample)</h5>
