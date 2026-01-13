@@ -162,7 +162,7 @@ def run_backtest():
             if col not in df.columns:
                 return jsonify({"error": f"Coluna {col} ausente nos dados baixados."}), 400
 
-        # Executa Estratégia Selecionada
+        # Executa Estratégia Selecionada (Retorna DF completo)
         if strategy_name == "RSI":
             # Parâmetros fixos por enquanto ou poderiam vir do JSON também
             res = backtest.strategy_rsi_weekly(df, lower=35, upper=70)
@@ -170,48 +170,51 @@ def run_backtest():
             # Default to SMA
             res = backtest.strategy_sma_crossover(df, short_window=sma_short, long_window=sma_long)
         
-        # Divisão IS/OOS
+        # Divisão IS/OOS Data-Based (70%)
         limit = int(len(res) * 0.7)
-        if limit < 20: # Evita erro em períodos muito curtos
+        if limit < 20: 
              return jsonify({"error": "Período muito curto para análise IS/OOS (mínimo 30-50 dias)."}), 400
              
-        res_is = res.iloc[:limit]
-        res_oos = res.iloc[limit:]
+        res_is = res.iloc[:limit].copy()
+        res_oos = res.iloc[limit:].copy()
+        split_date = res.index[limit].strftime('%Y-%m-%d')
         
-        m_is = backtest.calculate_metrics(res_is['Strategy_Returns'])
-        m_oos = backtest.calculate_metrics(res_oos['Strategy_Returns'])
+        # Cálculo de Métricas (DUPLO OBRIGATÓRIO)
+        m_is_raw = backtest.calculate_metrics(res_is['Strategy_Returns'])
+        m_oos_raw = backtest.calculate_metrics(res_oos['Strategy_Returns'])
         
-        # B&H check
-        asset_rets_oos = res_oos['Close'].pct_change()
-        bh_metrics = backtest.calculate_metrics(asset_rets_oos)
-        m_oos['BH_Total'] = bh_metrics['Total Return']
+        # Converter chaves para snake_case
+        def normalize_metrics(m):
+            return {
+                "total_return": f"{m.get('Total Return', 0):.2%}",
+                "cagr": f"{m.get('CAGR', 0):.2%}",
+                "volatilidade_anual": f"{m.get('Vol Anual', 0):.2%}",
+                "sharpe_ratio": f"{m.get('Sharpe Ratio', 0):.2f}",
+                "max_drawdown": f"{m.get('Max Drawdown', 0):.2%}"
+            }
 
-        # Marcadores
-        res['trades'] = res['Signal'].diff()
-        markers = []
-        for index, row in res.iterrows():
-            if row['trades'] == 1:
-                markers.append({"time": index.strftime('%Y-%m-%d'), "position": "belowBar", "color": "#26a69a", "shape": "arrowUp", "text": "COMPRA"})
-            elif row['trades'] == -1:
-                markers.append({"time": index.strftime('%Y-%m-%d'), "position": "aboveBar", "color": "#ef5350", "shape": "arrowDown", "text": "VENDA"})
-
-        # Ganho Acumulado OOS para o gráfico de performance
-        res_oos = res_oos.copy()
-        res_oos['Strategy_Cumulative'] = (1 + res_oos['Strategy_Returns'].fillna(0)).cumprod()
-        res_oos['Asset_Cumulative'] = (1 + asset_rets_oos.fillna(0)).cumprod()
+        metrics_in = normalize_metrics(m_is_raw)
+        metrics_out = normalize_metrics(m_oos_raw)
         
-        perf_data = []
-        for i, r in res_oos.iterrows():
-            perf_data.append({
+        # Dados para Gráficos
+        
+        # 1. Equity Data (Curva de Patrimônio)
+        # Recalcular indices acumulados para o período todo ou separado? 
+        # Geralmente mostra o gráfico todo, mas marcando onde cortou.
+        # Vamos mandar tudo, o frontend pinta o background diferente.
+        res['Strategy_Cumulative'] = (1 + res['Strategy_Returns'].fillna(0)).cumprod()
+        asset_rets = res['Close'].pct_change()
+        res['Asset_Cumulative'] = (1 + asset_rets.fillna(0)).cumprod()
+        
+        equity_data = []
+        for i, r in res.iterrows():
+            equity_data.append({
                 "time": i.strftime('%Y-%m-%d'),
                 "strategy": float(r['Strategy_Cumulative']),
                 "asset": float(r['Asset_Cumulative'])
             })
 
-        # IA Analysis
-        ai_text, is_warning = generate_analysis_text(m_is, m_oos)
-
-        # Candle Data
+        # 2. Candle Data
         candle_data = []
         for i, r in df.iterrows():
             candle_data.append({
@@ -221,42 +224,34 @@ def run_backtest():
                 "low": float(r['Low']), 
                 "close": float(r['Close'])
             })
+            
+        # Marcadores (Trades)
+        res['trades'] = res['Signal'].diff()
+        markers = []
+        for index, row in res.iterrows():
+            if row['trades'] == 1:
+                markers.append({"time": index.strftime('%Y-%m-%d'), "position": "belowBar", "color": "#26a69a", "shape": "arrowUp", "text": "COMPRA"})
+            elif row['trades'] == -1:
+                markers.append({"time": index.strftime('%Y-%m-%d'), "position": "aboveBar", "color": "#ef5350", "shape": "arrowDown", "text": "VENDA"})
+
+        # IA Analysis (Pode usar raw data para lógica)
+        # Adicionar B&H ao OOS Raw para comparação na IA
+        bh_metrics = backtest.calculate_metrics(res_oos['Close'].pct_change())
+        m_oos_raw['BH_Total'] = bh_metrics['Total Return']
         
-        # Prepare SMA Data
-        sma_short_data = []
-        sma_long_data = []
-        
-        # Prepare SMA Data
-        sma_short_data = []
-        sma_long_data = []
-        rsi_data = []
+        ai_text, is_warning = generate_analysis_text(m_is_raw, m_oos_raw)
 
-        # Check if columns exist
-        has_sma_short = 'SMA_Short' in res.columns
-        has_sma_long = 'SMA_Long' in res.columns
-        has_rsi = 'RSI' in res.columns
-
-        for i, r in res.iterrows():
-            if has_sma_short and not pd.isna(r['SMA_Short']):
-                sma_short_data.append({"time": i.strftime('%Y-%m-%d'), "value": float(r['SMA_Short'])})
-            if has_sma_long and not pd.isna(r['SMA_Long']):
-                sma_long_data.append({"time": i.strftime('%Y-%m-%d'), "value": float(r['SMA_Long'])})
-            if has_rsi and not pd.isna(r['RSI']):
-                rsi_data.append({"time": i.strftime('%Y-%m-%d'), "value": float(r['RSI'])})
-
+        # Montagem do JSON Final
         response_data = {
-            "ticker": ticker,
+            "metrics_in": metrics_in,
+            "metrics_out": metrics_out,
             "candle_data": candle_data,
-            "sma_short_data": sma_short_data, 
-            "sma_long_data": sma_long_data,
-            "rsi_data": rsi_data,   # Dados do RSI
-            "perf_data": perf_data, 
+            "equity_data": equity_data,
+            "split_date": split_date,
             "markers": markers,
-            "metrics_is": m_is,
-            "metrics_oos": m_oos,
             "ai_analysis": ai_text,
             "is_warning": is_warning,
-            "split_date": res.index[limit].strftime('%Y-%m-%d')
+            "ticker": ticker
         }
         
         return jsonify(clean_for_json(response_data))

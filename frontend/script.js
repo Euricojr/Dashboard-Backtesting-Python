@@ -301,14 +301,23 @@ async function runBacktest() {
             perfChart.timeScale().fitContent();
         }
 
-        const mIS = data.metrics_is;
-        const mOOS = data.metrics_oos;
+        const mIn = data.metrics_in;
+        const mOut = data.metrics_out;
         
-        // Update Card Metrics (OOS Values)
-        document.getElementById('m_total').innerText = formatPct(mOOS['Total Return']);
-        document.getElementById('m_cagr').innerText = formatPct(mOOS['CAGR']);
-        document.getElementById('m_sharpe').innerText = (mOOS['Sharpe Ratio'] || 0).toFixed(2);
-        document.getElementById('m_maxdd').innerText = formatPct(mOOS['Max Drawdown']);
+        // Update Table Cells
+        // In-Sample
+        document.getElementById('td_total_in').innerText = mIn.total_return;
+        document.getElementById('td_cagr_in').innerText = mIn.cagr;
+        document.getElementById('td_sharpe_in').innerText = mIn.sharpe_ratio;
+        document.getElementById('td_vol_in').innerText = mIn.volatilidade_anual;
+        document.getElementById('td_dd_in').innerText = mIn.max_drawdown;
+
+        // Out-of-Sample
+        document.getElementById('td_total_out').innerText = mOut.total_return;
+        document.getElementById('td_cagr_out').innerText = mOut.cagr;
+        document.getElementById('td_sharpe_out').innerText = mOut.sharpe_ratio;
+        document.getElementById('td_vol_out').innerText = mOut.volatilidade_anual;
+        document.getElementById('td_dd_out').innerText = mOut.max_drawdown;
         
         const aiBox = document.getElementById('ai_analysis');
         if (aiBox) {

@@ -253,153 +253,52 @@
               <div class="col-md-9">
                 <!-- Metrics Row -->
                 <div class="row row-cards mb-3">
-                  <div class="col-sm-6 col-lg-3">
-                    <div class="card card-sm">
-                      <div class="card-body">
-                        <div class="row align-items-center">
-                          <div class="col-auto">
-                            <span class="bg-primary text-white avatar"
-                              ><!-- Download SVG icon from http://tabler-icons.io/i/currency-dollar -->
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                class="icon"
-                                width="24"
-                                height="24"
-                                viewBox="0 0 24 24"
-                                stroke-width="2"
-                                stroke="currentColor"
-                                fill="none"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                              >
-                                <path
-                                  stroke="none"
-                                  d="M0 0h24v24H0z"
-                                  fill="none"
-                                />
-                                <path
-                                  d="M16.7 8a3 3 0 0 0 -2.7 -2h-4a3 3 0 0 0 0 6h4a3 3 0 0 1 0 6h-4a3 3 0 0 1 -2.7 -2"
-                                />
-                                <path d="M12 3v3m0 12v3" />
-                              </svg>
-                            </span>
-                          </div>
-                          <div class="col">
-                            <div class="font-weight-medium">Retorno Total</div>
-                            <div class="text-muted" id="m_total">-</div>
-                          </div>
-                        </div>
-                      </div>
+                <!-- Comparative Table -->
+                <div class="col-12 mb-3">
+                  <div class="card">
+                    <div class="card-header">
+                      <h3 class="card-title">Relatório de Performance: Treino vs Teste</h3>
+                    </div>
+                    <div class="table-responsive">
+                      <table class="table table-vcenter card-table">
+                        <thead>
+                          <tr>
+                            <th>Métrica</th>
+                            <th class="text-secondary">Treino (In-Sample)</th>
+                            <th class="text-primary fw-bold">Teste (Out-of-Sample)</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td>Retorno Total</td>
+                            <td class="text-secondary" id="td_total_in">-</td>
+                            <td class="fw-bold" id="td_total_out">-</td>
+                          </tr>
+                          <tr>
+                            <td>CAGR (Anual)</td>
+                            <td class="text-secondary" id="td_cagr_in">-</td>
+                            <td class="fw-bold" id="td_cagr_out">-</td>
+                          </tr>
+                          <tr>
+                            <td>Sharpe Ratio</td>
+                            <td class="text-secondary" id="td_sharpe_in">-</td>
+                            <td class="fw-bold" id="td_sharpe_out">-</td>
+                          </tr>
+                          <tr>
+                            <td>Volatilidade</td>
+                            <td class="text-secondary" id="td_vol_in">-</td>
+                            <td class="fw-bold" id="td_vol_out">-</td>
+                          </tr>
+                          <tr>
+                            <td>Max Drawdown</td>
+                            <td class="text-secondary" id="td_dd_in">-</td>
+                            <td class="fw-bold" id="td_dd_out">-</td>
+                          </tr>
+                        </tbody>
+                      </table>
                     </div>
                   </div>
-                  <div class="col-sm-6 col-lg-3">
-                    <div class="card card-sm">
-                      <div class="card-body">
-                        <div class="row align-items-center">
-                          <div class="col-auto">
-                            <span class="bg-green text-white avatar"
-                              ><!-- Download SVG icon from http://tabler-icons.io/i/trending-up -->
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                class="icon"
-                                width="24"
-                                height="24"
-                                viewBox="0 0 24 24"
-                                stroke-width="2"
-                                stroke="currentColor"
-                                fill="none"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                              >
-                                <path
-                                  stroke="none"
-                                  d="M0 0h24v24H0z"
-                                  fill="none"
-                                />
-                                <path d="M3 17l6 -6l4 4l8 -8" />
-                                <path d="M14 7l7 0l0 7" />
-                              </svg>
-                            </span>
-                          </div>
-                          <div class="col">
-                            <div class="font-weight-medium">CAGR</div>
-                            <div class="text-muted" id="m_cagr">-</div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="col-sm-6 col-lg-3">
-                    <div class="card card-sm">
-                      <div class="card-body">
-                        <div class="row align-items-center">
-                          <div class="col-auto">
-                            <span class="bg-yellow text-white avatar">
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                class="icon icon-tabler icon-tabler-activity"
-                                width="24"
-                                height="24"
-                                viewBox="0 0 24 24"
-                                stroke-width="2"
-                                stroke="currentColor"
-                                fill="none"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                              >
-                                <path
-                                  stroke="none"
-                                  d="M0 0h24v24H0z"
-                                  fill="none"
-                                />
-                                <path d="M3 12h4l3 8l4 -16l3 8h4" />
-                              </svg>
-                            </span>
-                          </div>
-                          <div class="col">
-                            <div class="font-weight-medium">Sharpe</div>
-                            <div class="text-muted" id="m_sharpe">-</div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="col-sm-6 col-lg-3">
-                    <div class="card card-sm">
-                      <div class="card-body">
-                        <div class="row align-items-center">
-                          <div class="col-auto">
-                            <span class="bg-red text-white avatar">
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                class="icon icon-tabler icon-tabler-arrow-down-right"
-                                width="24"
-                                height="24"
-                                viewBox="0 0 24 24"
-                                stroke-width="2"
-                                stroke="currentColor"
-                                fill="none"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                              >
-                                <path
-                                  stroke="none"
-                                  d="M0 0h24v24H0z"
-                                  fill="none"
-                                />
-                                <path d="M7 7l10 10" />
-                                <path d="M17 8l0 9l-9 0" />
-                              </svg>
-                            </span>
-                          </div>
-                          <div class="col">
-                            <div class="font-weight-medium">Max Drawdown</div>
-                            <div class="text-muted" id="m_maxdd">-</div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                </div>
                 </div>
 
                 <!-- Chart -->
