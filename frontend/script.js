@@ -295,9 +295,9 @@ async function runBacktest() {
             window.rsiSeries.setData([]);
         }
 
-        if (data.perf_data) {
-            strategySeries.setData(data.perf_data.map(d => ({ time: d.time, value: d.strategy })));
-            assetSeries.setData(data.perf_data.map(d => ({ time: d.time, value: d.asset })));
+        if (data.equity_data) {
+            strategySeries.setData(data.equity_data.map(d => ({ time: d.time, value: d.strategy })));
+            assetSeries.setData(data.equity_data.map(d => ({ time: d.time, value: d.asset })));
             perfChart.timeScale().fitContent();
         }
 
