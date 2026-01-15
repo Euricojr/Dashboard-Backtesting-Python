@@ -24,6 +24,8 @@ python3 -m venv .venv
 
 # Ativar o ambiente
 source .venv/bin/activate
+# Ativar o programa
+python backend/api.py
 ```
 
 ---
