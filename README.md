@@ -22,7 +22,11 @@ Uma plataforma web profissional para backtesting de estratégias de investimento
 - **Frontend**: HTML5, JavaScript (ES6+), Tabler (CSS Framework), Lightweight Charts.
 - **Dados**: Yahoo Finance (via biblioteca `yfinance`).
 
+<<<<<<< HEAD
 ## Instalação e Configuração
+=======
+## Instalação e Execução
+>>>>>>> origin/main
 
 Siga este guia prático para configurar seu ambiente de desenvolvimento.
 
@@ -39,8 +43,20 @@ python -m venv .venv
 # Ativar o ambiente
 .\.venv\Scripts\activate
 
+<<<<<<< HEAD
 
 ```
+=======
+    ```bash
+    # Windows
+    python -m venv .venv
+    .\.venv\Scripts\Activate.ps1
+
+    # Linux/Mac
+    python3 -m venv .venv
+    source .venv/bin/activate
+    ```
+>>>>>>> origin/main
 
 #### Linux / macOS
 
@@ -96,7 +112,11 @@ pip install -r requirements.txt
 3.  Defina o período de **Início** e **Fim**.
 4.  Selecione a **Estratégia**:
     - **SMA**: Configure as médias Curta e Longa.
+<<<<<<< HEAD
     - **RSI**: Parâmetros fixos (Semanal, Sobrevenda 35, Sobrecompra 70).
+=======
+    - **RSI**: Utiliza parâmetros fixos (Semanal, Sobrevenda 35, Sobrecompra 70).
+>>>>>>> origin/main
 5.  Clique em **"Executar Backtest"**.
 6.  Analise os resultados nos gráficos e cards de métricas.
 
