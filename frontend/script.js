@@ -111,7 +111,6 @@ function selectAsset(ticker, name) {
 function initChart() {
     const chartElement = document.getElementById('chart');
     const perfElement = document.getElementById('perf_chart');
-    const rsiElement = document.getElementById('rsi_chart');
     
     if (!chartElement) { console.error("Chart element not found"); return; }
     
@@ -157,7 +156,16 @@ function initChart() {
     window.smaShortSeries = mainChart.addLineSeries({ color: '#ff9800', lineWidth: 2, title: 'SMA Curta' });
     window.smaLongSeries = mainChart.addLineSeries({ color: '#9c27b0', lineWidth: 2, title: 'SMA Longa' });
     
-    window.vLineSeries = mainChart.addHistogramSeries({ color: '#FFD700', lastValueVisible: false, priceScaleId: 'left' });
+    // Split Line Series (Custom Scale to avoid messing with Price or RSI)
+    window.vLineSeries = mainChart.addHistogramSeries({ 
+        color: '#FFD700', 
+        lastValueVisible: false, 
+        priceScaleId: 'split_scale' 
+    });
+    // Configure hidden split scale
+    mainChart.priceScale('split_scale').applyOptions({ visible: false, autoScale: true });
+    
+    // RSI default hidden
     mainChart.priceScale('left').applyOptions({ visible: false });
 
     // Performance Chart
@@ -165,35 +173,19 @@ function initChart() {
     strategySeries = perfChart.addLineSeries({ color: '#00d4ff', lineWidth: 3, title: 'Estratégia' });
     assetSeries = perfChart.addLineSeries({ color: '#8b949e', lineWidth: 2, lineStyle: 2, title: 'Buy & Hold' });
     
-    // RSI Chart
-    rsiChart = LightweightCharts.createChart(rsiElement, {
-        ...commonOptions,
-        rightPriceScale: {
-             ...commonOptions.rightPriceScale,
-             scaleMargins: { top: 0.1, bottom: 0.1 },
-        }
+    // RSI Integration (Same Chart)
+    window.rsiSeries = mainChart.addLineSeries({ 
+        color: '#7E57C2', 
+        lineWidth: 2, 
+        priceScaleId: 'left',
+        title: 'RSI (14)'
     });
-    rsiSeries = rsiChart.addLineSeries({ color: '#7E57C2', lineWidth: 2, title: 'RSI (14)' });
-    // Add RSI Levels
-    const rsiUpper = rsiChart.addLineSeries({ color: 'rgba(255, 255, 255, 0.3)', lineWidth: 1, lineStyle: 2, title: '70' });
-    const rsiLower = rsiChart.addLineSeries({ color: 'rgba(255, 255, 255, 0.3)', lineWidth: 1, lineStyle: 2, title: '35' });
-    // We will set this data later or just straight lines if supported, but here we can just add a single point far in past/future or leave empty and use CreatePriceLine. 
-    // Actually PriceLine is better for static levels.
-    rsiSeries.createPriceLine({ price: 70, color: '#ef5350', lineWidth: 1, lineStyle: 2, axisLabelVisible: false });
-    rsiSeries.createPriceLine({ price: 35, color: '#26a69a', lineWidth: 1, lineStyle: 2, axisLabelVisible: false });
+    // Levels will be added via createPriceLine dynamically
 
-    // Sync Charts (TimeScale)
-    mainChart.timeScale().subscribeVisibleLogicalRangeChange(range => {
-        rsiChart.timeScale().setVisibleLogicalRange(range);
-    });
-    rsiChart.timeScale().subscribeVisibleLogicalRangeChange(range => {
-        mainChart.timeScale().setVisibleLogicalRange(range);
-    });
 
     const handleResize = () => {
         mainChart.resize(chartElement.clientWidth, chartElement.clientHeight);
         perfChart.resize(perfElement.clientWidth, perfElement.clientHeight);
-        rsiChart.resize(rsiElement.clientWidth, rsiElement.clientHeight);
     };
     window.addEventListener('resize', handleResize);
     // Garantir resize inicial após carregamento
@@ -263,31 +255,95 @@ async function runBacktest() {
         candleSeries.setMarkers(finalMarkers);
         mainChart.timeScale().fitContent();
 
-        // RSI Data Handler
+        // RSI Data Handler (Panel Merge)
         if (data.rsi_data && data.rsi_data.length > 0) {
-            const rsiCard = document.getElementById('rsi_card');
-            rsiCard.style.display = 'block';
+            // Mode: RSI Active (Two Panels on One Chart)
             
-            // Força resize IMEDIATO antes de setar dados
-            const rsiDiv = document.getElementById('rsi_chart');
-            rsiChart.resize(rsiDiv.clientWidth, 250);
+            // 1. Squish Candles Up to make room
+            mainChart.priceScale('right').applyOptions({
+                scaleMargins: { top: 0.1, bottom: 0.30 }
+            });
             
-            rsiSeries.setData(data.rsi_data);
-            rsiChart.timeScale().fitContent();
+            // 2. Enable RSI Scale at Bottom (Left Axis)
+            mainChart.priceScale('left').applyOptions({
+                visible: true,
+                scaleMargins: { top: 0.75, bottom: 0 }
+            });
+            
+            // 3. Set Data
+            window.rsiSeries.setData(data.rsi_data);
+            
+            // 4. Add Levels
+            // Removing previous lines if tracked would be ideal, but for now we re-create.
+            window.rsiSeries.createPriceLine({ price: 70, color: '#ef5350', lineWidth: 1, lineStyle: 2, axisLabelVisible: false });
+            window.rsiSeries.createPriceLine({ price: 35, color: '#26a69a', lineWidth: 1, lineStyle: 2, axisLabelVisible: false });
+
         } else {
-            document.getElementById('rsi_card').style.display = 'none';
+            // Mode: SMA / No RSI (Full Chart)
+            
+            // 1. Reset Candles to Full Height
+            mainChart.priceScale('right').applyOptions({
+                scaleMargins: { top: 0.1, bottom: 0.1 }
+            });
+            
+            // 2. Hide RSI Scale
+            mainChart.priceScale('left').applyOptions({
+                visible: false
+            });
+            
+            // 3. Clear RSI Data
+            window.rsiSeries.setData([]);
         }
 
-        if (data.perf_data) {
-            strategySeries.setData(data.perf_data.map(d => ({ time: d.time, value: d.strategy })));
-            assetSeries.setData(data.perf_data.map(d => ({ time: d.time, value: d.asset })));
+        if (data.equity_data) {
+            strategySeries.setData(data.equity_data.map(d => ({ time: d.time, value: d.strategy })));
+            assetSeries.setData(data.equity_data.map(d => ({ time: d.time, value: d.asset })));
             perfChart.timeScale().fitContent();
         }
 
-        const mIS = data.metrics_is;
-        const mOOS = data.metrics_oos;
+        const mIn = data.metrics_in;
+        const mOut = data.metrics_out;
         
-        // ... (rest of function) ...
+        // Update Table Cells
+        // In-Sample
+        document.getElementById('td_total_in').innerText = mIn.total_return;
+        document.getElementById('td_cagr_in').innerText = mIn.cagr;
+        document.getElementById('td_sharpe_in').innerText = mIn.sharpe_ratio;
+        document.getElementById('td_vol_in').innerText = mIn.volatilidade_anual;
+        document.getElementById('td_dd_in').innerText = mIn.max_drawdown;
+
+        // Out-of-Sample
+        document.getElementById('td_total_out').innerText = mOut.total_return;
+        document.getElementById('td_cagr_out').innerText = mOut.cagr;
+        document.getElementById('td_sharpe_out').innerText = mOut.sharpe_ratio;
+        document.getElementById('td_vol_out').innerText = mOut.volatilidade_anual;
+        document.getElementById('td_dd_out').innerText = mOut.max_drawdown;
+        
+        // Trade Stats
+        const tsIn = data.trade_stats_in;
+        const tsOut = data.trade_stats_out;
+        
+        if (tsIn && tsOut) {
+            document.getElementById('ts_total_in').innerText = tsIn.total_trades;
+            document.getElementById('ts_win_in').innerText = (tsIn.win_rate * 100).toFixed(2) + '%';
+            document.getElementById('ts_avg_ret_in').innerText = (tsIn.avg_return * 100).toFixed(2) + '%';
+            document.getElementById('ts_dur_in').innerText = tsIn.avg_duration.toFixed(1);
+            document.getElementById('ts_pf_in').innerText = tsIn.profit_factor.toFixed(2);
+            
+            document.getElementById('ts_total_out').innerText = tsOut.total_trades;
+            document.getElementById('ts_win_out').innerText = (tsOut.win_rate * 100).toFixed(2) + '%';
+            document.getElementById('ts_avg_ret_out').innerText = (tsOut.avg_return * 100).toFixed(2) + '%';
+            document.getElementById('ts_dur_out').innerText = tsOut.avg_duration.toFixed(1);
+            document.getElementById('ts_pf_out').innerText = tsOut.profit_factor.toFixed(2);
+        }
+        
+        const aiBox = document.getElementById('ai_analysis');
+        if (aiBox) {
+            aiBox.innerHTML = data.ai_analysis;
+            aiBox.className = "p-3 " + (data.is_warning ? "bg-azure-lt" : "bg-blue-lt");
+        }
+
+        document.getElementById('results_area').style.display = 'block';
 
     } catch (err) {
         console.error(err);
@@ -300,7 +356,6 @@ async function runBacktest() {
         setTimeout(() => {
             const chartDiv = document.getElementById('chart');
             const perfDiv = document.getElementById('perf_chart');
-            const rsiDiv = document.getElementById('rsi_chart');
             
             if (chartDiv) mainChart.resize(chartDiv.clientWidth, 500);
             if (perfDiv && perfDiv.offsetParent !== null) {
@@ -308,10 +363,7 @@ async function runBacktest() {
                 perfChart.resize(perfDiv.clientWidth, 350);
                 perfChart.timeScale().fitContent();
             }
-            if (rsiDiv && rsiDiv.offsetParent !== null) {
-                rsiChart.resize(rsiDiv.clientWidth, 250);
-                rsiChart.timeScale().fitContent();
-            }
+
         }, 100);
     }
 }
@@ -332,4 +384,110 @@ document.addEventListener('DOMContentLoaded', () => {
             smaSettings.style.display = 'none';
         }
     });
+    
+    // --- BATCH Feature ---
+    initBatchFeature();
 });
+
+async function initBatchFeature() {
+    const btn = document.getElementById('btn_run_batch');
+    const select = document.getElementById('batch_category');
+    
+    // Populate Select
+    // We reuse the 'allAssets' loaded previously
+    // Wait a bit or rely on loadAssets to be fast
+    setTimeout(() => {
+        select.innerHTML = '';
+        const optAll = document.createElement('option');
+        optAll.value = "ALL";
+        optAll.innerText = "⭐ Todas as Categorias";
+        select.appendChild(optAll);
+        
+        for (const cat of Object.keys(allAssets)) {
+            const opt = document.createElement('option');
+            opt.value = cat;
+            opt.innerText = cat;
+            select.appendChild(opt);
+        }
+    }, 1500); // Simple delay to ensure assets are loaded
+    
+    btn.addEventListener('click', async () => {
+        const loading = document.getElementById('batch_loading');
+        const resultsArea = document.getElementById('batch_results_area');
+        const tableBody = document.getElementById('batch_table_body');
+        
+        loading.style.display = 'block';
+        resultsArea.style.display = 'none';
+        btn.disabled = true;
+        
+        // Params from main inputs
+        const start = document.getElementById('start_date').value;
+        const end = document.getElementById('end_date').value;
+        const strategy = document.getElementById('strategy_select').value;
+        const smaShort = document.getElementById('sma_short').value;
+        const smaLong = document.getElementById('sma_long').value;
+        const cate = select.value;
+        
+        try {
+            const res = await fetch('http://localhost:5000/batch_backtest', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    category: cate,
+                    start, end, strategy, 
+                    sma_short: smaShort, 
+                    sma_long: smaLong
+                })
+            });
+            
+            const data = await res.json();
+            
+            tableBody.innerHTML = '';
+            
+            data.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                const isPositive = item.return_out > 0;
+                const badgeClass = isPositive ? 'bg-success-lt' : 'bg-danger-lt';
+                
+                tr.innerHTML = `
+                    <td>
+                      <span class="badge ${index < 3 ? 'bg-yellow text-white' : 'bg-secondary-lt'} w-100">#${index + 1}</span>
+                    </td>
+                    <td class="fw-bold">${item.ticker}</td>
+                    <td class="text-muted text-truncate" style="max-width: 150px;">${item.name}</td>
+                    <td class="text-end fw-bold ${isPositive ? 'text-success' : 'text-danger'}">${(item.return_out * 100).toFixed(2)}%</td>
+                    <td class="text-end">${item.sharpe_out.toFixed(2)}</td>
+                    <td class="text-end text-danger">${(item.drawdown_out * 100).toFixed(2)}%</td>
+                    <td class="text-end">
+                       <button class="btn btn-sm btn-ghost-primary" onclick="loadFromBatch('${item.ticker}')">Ver</button>
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+            
+            loading.style.display = 'none';
+            resultsArea.style.display = 'block';
+            
+        } catch (err) {
+            console.error(err);
+            alert("Erro ao executar Batch");
+            loading.style.display = 'none';
+        } finally {
+            btn.disabled = false;
+        }
+    });
+}
+
+function loadFromBatch(ticker) {
+    // Close Modal
+    const modalEl = document.getElementById('modal_batch');
+    const modal = bootstrap.Modal.getInstance(modalEl);
+    modal.hide();
+    
+    // Set Ticker
+    document.getElementById('selected_ticker').value = ticker;
+    document.getElementById('trigger_label').innerText = ticker; // Ideally find name but ticker is fine
+    
+    // Run
+    runBacktest();
+}

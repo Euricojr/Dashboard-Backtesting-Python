@@ -14,6 +14,108 @@ def get_data(ticker, period="5y"):
         
     return df[['Open', 'High', 'Low', 'Close', 'Volume']]
 
+def calculate_trade_stats(df_result):
+    """
+    Calcula estatísticas de trades baseados na coluna 'Signal'.
+    """
+    trades = []
+    
+    # Identificar mudanças de sinal
+    # 1 -> Compra (Entrada Long ou Saída Short)
+    # 0 -> Venda (Saída Long ou Entrada Short) - Simplificação: Long Only
+    # Vamos assumir Long Only: 1 = Comprado, 0 = Vendido (Neutro)
+    
+    in_trade = False
+    entry_price = 0
+    entry_date = None
+    
+    # Iterar sobre o DF (pode ser lento se muito grande, mas para daily data ok)
+    # O 'Signal' indica o estado para o DIA SEGUINTE.
+    # Se Signal[i] == 1, estaremos comprados em i+1.
+    
+    # Melhor abordagem: Detectar diff do sinal
+    # Se diff == 1 (0 -> 1): Compra no Close do dia (ou Open do proximo)
+    # Vamos assumir simplificado: Compra no Close do dia que deu sinal
+    
+    df = df_result.copy()
+    # Garantir datetime index
+    if not isinstance(df.index, pd.DatetimeIndex):
+         # Tentar converter ou assumir numérico
+         pass
+
+    # Lógica Simplificada Long-Only
+    # Compra quando Signal passa de 0 para 1
+    # Venda quando Signal passa de 1 para 0
+    
+    # Shift para alinhar: Se Signal[t] = 1, então em t+1 estamos expostos.
+    # Mas o backtest já calcula Strategy_Returns baseado nisso.
+    # Vamos olhar os trades "teóricos".
+    
+    # Pegar apenas as transições
+    df['trade_signal'] = df['Signal'].diff().fillna(0)
+    
+    entries = df[df['trade_signal'] == 1]
+    exits = df[df['trade_signal'] == -1]
+    
+    # Alinhamento simples (FIFO)
+    # Se o primeiro for exit, ignorar
+    if not entries.empty and not exits.empty:
+        if exits.index[0] < entries.index[0]:
+            exits = exits.iloc[1:]
+            
+    # Parear
+    n_trades = min(len(entries), len(exits))
+    
+    stats_trades = []
+    
+    for i in range(n_trades):
+        en_date = entries.index[i]
+        ex_date = exits.index[i]
+        
+        en_price = entries.loc[en_date, 'Close']
+        ex_price = exits.loc[ex_date, 'Close']
+        
+        ret = (ex_price / en_price) - 1
+        duration = (ex_date - en_date).days
+        
+        stats_trades.append({
+            "entry_date": en_date,
+            "exit_date": ex_date,
+            "return": ret,
+            "duration": duration
+        })
+        
+    # Calcular Métricas Agregadas
+    if not stats_trades:
+        return {
+            "total_trades": 0,
+            "win_rate": 0.0,
+            "avg_return": 0.0,
+            "avg_duration": 0.0,
+            "profit_factor": 0.0
+        }
+        
+    df_trades = pd.DataFrame(stats_trades)
+    
+    wins = df_trades[df_trades['return'] > 0]
+    losses = df_trades[df_trades['return'] <= 0]
+    
+    win_rate = len(wins) / len(df_trades)
+    avg_return = df_trades['return'].mean()
+    avg_duration = df_trades['duration'].mean()
+    
+    gross_profit = wins['return'].sum()
+    gross_loss = abs(losses['return'].sum())
+    profit_factor = gross_profit / gross_loss if gross_loss != 0 else 999.0
+    
+    return {
+        "total_trades": len(df_trades),
+        "win_rate": win_rate,
+        "avg_return": avg_return,
+        "avg_duration": avg_duration,
+        "profit_factor": profit_factor
+    }
+
 def calculate_metrics(daily_returns):
     """
     Calcula métricas de performance para uma série de retornos diários.
@@ -165,8 +267,8 @@ if __name__ == "__main__":
         # 1. Coleta de Dados
         df_full = get_data(ticker)
         
-        # 2. Divisão In-Sample (70%) e Out-of-Sample (30%)
-        split_idx = int(len(df_full) * 0.7)
+        # 2. Divisão In-Sample (50%) e Out-of-Sample (50%)
+        split_idx = int(len(df_full) * 0.5)
         df_in_sample = df_full.iloc[:split_idx].copy()
         df_out_of_sample = df_full.iloc[split_idx:].copy()
         
