@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
   <head>
     <meta charset="utf-8" />
@@ -17,8 +17,9 @@
     <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
     <style>
       :root {
-        --tblr-font-sans-serif: "Inter", -apple-system, BlinkMacSystemFont,
-          San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif;
+        --tblr-font-sans-serif:
+          "Inter", -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI,
+          Roboto, Helvetica Neue, sans-serif;
       }
       body {
         font-feature-settings: "cv03", "cv04", "cv11";
@@ -244,6 +245,9 @@
                       <button id="run_btn" class="btn btn-primary w-100">
                         Executar Backtest
                       </button>
+                      <button id="open_batch_btn" class="btn btn-ghost-primary w-100 mt-2" data-bs-toggle="modal" data-bs-target="#modal_batch">
+                         Ver Ranking de Ativos
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -253,23 +257,115 @@
               <div class="col-md-9">
                 <!-- Metrics Row -->
                 <div class="row row-cards mb-3">
+<<<<<<< HEAD
+                  <!-- Comparative Table -->
+                  <div class="col-12 mb-3">
+                    <div class="card">
+                      <div class="card-header">
+                        <h3 class="card-title">
+                          Relatório de Performance: Treino vs Teste
+                        </h3>
+                      </div>
+                      <div class="table-responsive">
+                        <table class="table table-vcenter card-table">
+                          <thead>
+                            <tr>
+                              <th>Métrica</th>
+                              <th class="text-secondary text-center">Treino (In-Sample)</th>
+                              <th class="text-primary fw-bold text-center">
+                                Teste (Out-of-Sample)
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td>Retorno Total</td>
+                              <td class="text-secondary text-center" id="td_total_in">-</td>
+                              <td class="fw-bold text-center" id="td_total_out">-</td>
+                            </tr>
+                            <tr>
+                              <td>CAGR (Anual)</td>
+                              <td class="text-secondary text-center" id="td_cagr_in">-</td>
+                              <td class="fw-bold text-center" id="td_cagr_out">-</td>
+                            </tr>
+                            <tr>
+                              <td>Sharpe Ratio</td>
+                              <td class="text-secondary text-center" id="td_sharpe_in">
+                                -
+                              </td>
+                              <td class="fw-bold text-center" id="td_sharpe_out">-</td>
+                            </tr>
+                            <tr>
+                              <td>Volatilidade</td>
+                              <td class="text-secondary text-center" id="td_vol_in">-</td>
+                              <td class="fw-bold text-center" id="td_vol_out">-</td>
+                            </tr>
+                            <tr>
+                              <td>Max Drawdown</td>
+                              <td class="text-secondary text-center" id="td_dd_in">-</td>
+                              <td class="fw-bold text-center" id="td_dd_out">-</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Trade Statistics Table -->
+                <div class="col-12 mb-3">
+                  <div class="card">
+                    <div class="card-header">
+                      <h3 class="card-title">Estatísticas de Trades</h3>
+=======
                 <!-- Comparative Table -->
                 <div class="col-12 mb-3">
                   <div class="card">
                     <div class="card-header">
                       <h3 class="card-title">Relatório de Performance: Treino vs Teste</h3>
+>>>>>>> origin/main
                     </div>
                     <div class="table-responsive">
                       <table class="table table-vcenter card-table">
                         <thead>
                           <tr>
                             <th>Métrica</th>
+<<<<<<< HEAD
+                            <th class="text-secondary text-center">Treino (In-Sample)</th>
+                            <th class="text-primary fw-bold text-center">Teste (Out-of-Sample)</th>
+=======
                             <th class="text-secondary">Treino (In-Sample)</th>
                             <th class="text-primary fw-bold">Teste (Out-of-Sample)</th>
+>>>>>>> origin/main
                           </tr>
                         </thead>
                         <tbody>
                           <tr>
+<<<<<<< HEAD
+                            <td>Total de Trades</td>
+                            <td class="text-secondary text-center" id="ts_total_in">-</td>
+                            <td class="fw-bold text-center" id="ts_total_out">-</td>
+                          </tr>
+                          <tr>
+                            <td>Taxa de Acerto (Win Rate)</td>
+                            <td class="text-secondary text-center" id="ts_win_in">-</td>
+                            <td class="fw-bold text-center" id="ts_win_out">-</td>
+                          </tr>
+                          <tr>
+                            <td>Retorno Médio por Trade</td>
+                            <td class="text-secondary text-center" id="ts_avg_ret_in">-</td>
+                            <td class="fw-bold text-center" id="ts_avg_ret_out">-</td>
+                          </tr>
+                          <tr>
+                            <td>Duração Média (Dias)</td>
+                            <td class="text-secondary text-center" id="ts_dur_in">-</td>
+                            <td class="fw-bold text-center" id="ts_dur_out">-</td>
+                          </tr>
+                          <tr>
+                            <td>Fator de Lucro (Profit Factor)</td>
+                            <td class="text-secondary text-center" id="ts_pf_in">-</td>
+                            <td class="fw-bold text-center" id="ts_pf_out">-</td>
+=======
                             <td>Retorno Total</td>
                             <td class="text-secondary" id="td_total_in">-</td>
                             <td class="fw-bold" id="td_total_out">-</td>
@@ -293,6 +389,7 @@
                             <td>Max Drawdown</td>
                             <td class="text-secondary" id="td_dd_in">-</td>
                             <td class="fw-bold" id="td_dd_out">-</td>
+>>>>>>> origin/main
                           </tr>
                         </tbody>
                       </table>
@@ -324,8 +421,11 @@
                   </div>
                 </div>
 
+<<<<<<< HEAD
+=======
 
 
+>>>>>>> origin/main
                 <!-- Results Area -->
                 <div id="results_area" class="mt-3" style="display: none">
                   <div class="row row-cards">
@@ -345,13 +445,110 @@
                     <div class="col-md-12">
                       <div class="card">
                         <div class="card-body">
-                          <div id="ai_analysis"></div>
+                          <div id="ai_analysis" style="text-align: justify;"></div>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Batch Analysis Modal -->
+    <div
+      class="modal modal-blur fade"
+      id="modal_batch"
+      tabindex="-1"
+      role="dialog"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Ranking de Performance (Batch Analysis)</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label class="form-label"
+                  >Selecionar Categoria para Análise</label
+                >
+                <select id="batch_category" class="form-select">
+                  <!-- Populated by JS -->
+                </select>
+                <small class="form-hint"
+                  >Atenção: Testar muitos ativos pode levar alguns
+                  segundos.</small
+                >
+              </div>
+              <div class="col-md-6 d-flex align-items-end">
+                <button id="btn_run_batch" class="btn btn-primary w-100">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="icon icon-tabler icon-tabler-rocket"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    stroke-width="2"
+                    stroke="currentColor"
+                    fill="none"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                    <path
+                      d="M4 13a8 8 0 0 1 7 7a6 6 0 0 0 3 -5a9 9 0 0 0 6 -8a3 3 0 0 0 -3 -3a9 9 0 0 0 -8 6a6 6 0 0 0 -5 3"
+                    ></path>
+                    <path d="M7 14a6 6 0 0 0 -3 6a6 6 0 0 0 6 -3"></path>
+                    <circle cx="15" cy="9" r="1"></circle>
+                  </svg>
+                  Executar Ranking
+                </button>
+              </div>
+            </div>
+
+            <div
+              id="batch_loading"
+              style="display: none"
+              class="text-center p-4"
+            >
+              <div class="spinner-border text-primary" role="status"></div>
+              <p class="mt-2 text-secondary">
+                Processando... Isso pode demorar.
+              </p>
+            </div>
+
+            <div
+              class="table-responsive"
+              id="batch_results_area"
+              style="display: none; max-height: 500px; overflow-y: auto"
+            >
+              <table class="table table-vcenter table-mobile-md card-table">
+                <thead>
+                  <tr>
+                    <th>Ranking</th>
+                    <th>Ticker</th>
+                    <th>Nome</th>
+                    <th class="text-end">Ret. Teste (OOS)</th>
+                    <th class="text-end">Sharpe</th>
+                    <th class="text-end">Drawdown</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="batch_table_body">
+                  <!-- JS Populate -->
+                </tbody>
+              </table>
             </div>
           </div>
         </div>

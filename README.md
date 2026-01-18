@@ -22,23 +22,31 @@ Uma plataforma web profissional para backtesting de estratégias de investimento
 - **Frontend**: HTML5, JavaScript (ES6+), Tabler (CSS Framework), Lightweight Charts.
 - **Dados**: Yahoo Finance (via biblioteca `yfinance`).
 
+<<<<<<< HEAD
+## Instalação e Configuração
+=======
 ## Instalação e Execução
+>>>>>>> origin/main
 
-### Pré-requisitos
+Siga este guia prático para configurar seu ambiente de desenvolvimento.
 
-- Python 3.8 ou superior instalado.
+### 1. Ambiente Virtual (.venv)
 
-### Passo a Passo
+O ambiente virtual isola as bibliotecas do projeto.
 
-1.  **Clone o repositório** (ou baixe os arquivos):
+#### Windows (PowerShell)
 
-    ```bash
-    git clone https://github.com/Euricojr/Dashboard-Backtesting-Python.git
-    cd Dashboard-Backtesting-Python
-    ```
+```powershell
+# Criar o ambiente
+python -m venv .venv
 
-2.  **Crie e ative um ambiente virtual (Recomendado)**:
+# Ativar o ambiente
+.\.venv\Scripts\activate
 
+<<<<<<< HEAD
+
+```
+=======
     ```bash
     # Windows
     python -m venv .venv
@@ -48,14 +56,31 @@ Uma plataforma web profissional para backtesting de estratégias de investimento
     python3 -m venv .venv
     source .venv/bin/activate
     ```
+>>>>>>> origin/main
 
-3.  **Instale as dependências**:
+#### Linux / macOS
 
-    ```bash
-    pip install -r requirements.txt
-    ```
+```bash
+# Criar o ambiente
+python3 -m venv .venv
 
-4.  **Execute o Servidor Backend**:
+# Ativar o ambiente
+source .venv/bin/activate
+```
+
+> **Dica:** Sempre verifique se o nome `(.venv)` aparece no início da sua linha de comando.
+
+### 2. Instalação de Dependências
+
+Com o ambiente ativado, instale as bibliotecas necessárias:
+
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Execução
+
+1.  **Inicie o Servidor Backend**:
 
     ```bash
     python backend/api.py
@@ -63,9 +88,8 @@ Uma plataforma web profissional para backtesting de estratégias de investimento
 
     _O servidor iniciará em `http://localhost:5000`._
 
-5.  **Acesse o Dashboard**:
-    - Abra o arquivo `frontend/index.html` diretamente no seu navegador.
-    - **OU** use uma extensão como "Live Server" no VS Code para servir a pasta `frontend`.
+2.  **Acesse o Dashboard**:
+    - Abra o navegador em: `http://localhost:5000`
 
 ## Estrutura do Projeto
 
@@ -83,12 +107,16 @@ Uma plataforma web profissional para backtesting de estratégias de investimento
 
 ## Como Usar
 
-1.  Abra o Dashboard no navegador.
+1.  Acesse o Dashboard.
 2.  Use a barra lateral (ou `Ctrl+K`) para selecionar um ativo (ex: PETR4.SA, AAPL, BTC-USD).
 3.  Defina o período de **Início** e **Fim**.
 4.  Selecione a **Estratégia**:
     - **SMA**: Configure as médias Curta e Longa.
+<<<<<<< HEAD
+    - **RSI**: Parâmetros fixos (Semanal, Sobrevenda 35, Sobrecompra 70).
+=======
     - **RSI**: Utiliza parâmetros fixos (Semanal, Sobrevenda 35, Sobrecompra 70).
+>>>>>>> origin/main
 5.  Clique em **"Executar Backtest"**.
 6.  Analise os resultados nos gráficos e cards de métricas.
 

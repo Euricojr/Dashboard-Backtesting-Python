@@ -319,10 +319,35 @@ async function runBacktest() {
         document.getElementById('td_vol_out').innerText = mOut.volatilidade_anual;
         document.getElementById('td_dd_out').innerText = mOut.max_drawdown;
         
+<<<<<<< HEAD
+        // Trade Stats
+        const tsIn = data.trade_stats_in;
+        const tsOut = data.trade_stats_out;
+        
+        if (tsIn && tsOut) {
+            document.getElementById('ts_total_in').innerText = tsIn.total_trades;
+            document.getElementById('ts_win_in').innerText = (tsIn.win_rate * 100).toFixed(2) + '%';
+            document.getElementById('ts_avg_ret_in').innerText = (tsIn.avg_return * 100).toFixed(2) + '%';
+            document.getElementById('ts_dur_in').innerText = tsIn.avg_duration.toFixed(1);
+            document.getElementById('ts_pf_in').innerText = tsIn.profit_factor.toFixed(2);
+            
+            document.getElementById('ts_total_out').innerText = tsOut.total_trades;
+            document.getElementById('ts_win_out').innerText = (tsOut.win_rate * 100).toFixed(2) + '%';
+            document.getElementById('ts_avg_ret_out').innerText = (tsOut.avg_return * 100).toFixed(2) + '%';
+            document.getElementById('ts_dur_out').innerText = tsOut.avg_duration.toFixed(1);
+            document.getElementById('ts_pf_out').innerText = tsOut.profit_factor.toFixed(2);
+        }
+        
+        const aiBox = document.getElementById('ai_analysis');
+        if (aiBox) {
+            aiBox.innerHTML = data.ai_analysis;
+            aiBox.className = "p-3 " + (data.is_warning ? "bg-azure-lt" : "bg-blue-lt");
+=======
         const aiBox = document.getElementById('ai_analysis');
         if (aiBox) {
             aiBox.innerHTML = data.ai_analysis;
             aiBox.className = "p-3 " + (data.is_warning ? "bg-warning-lt" : "bg-success-lt");
+>>>>>>> origin/main
         }
 
         document.getElementById('results_area').style.display = 'block';
@@ -366,4 +391,110 @@ document.addEventListener('DOMContentLoaded', () => {
             smaSettings.style.display = 'none';
         }
     });
+    
+    // --- BATCH Feature ---
+    initBatchFeature();
 });
+
+async function initBatchFeature() {
+    const btn = document.getElementById('btn_run_batch');
+    const select = document.getElementById('batch_category');
+    
+    // Populate Select
+    // We reuse the 'allAssets' loaded previously
+    // Wait a bit or rely on loadAssets to be fast
+    setTimeout(() => {
+        select.innerHTML = '';
+        const optAll = document.createElement('option');
+        optAll.value = "ALL";
+        optAll.innerText = "⭐ Todas as Categorias";
+        select.appendChild(optAll);
+        
+        for (const cat of Object.keys(allAssets)) {
+            const opt = document.createElement('option');
+            opt.value = cat;
+            opt.innerText = cat;
+            select.appendChild(opt);
+        }
+    }, 1500); // Simple delay to ensure assets are loaded
+    
+    btn.addEventListener('click', async () => {
+        const loading = document.getElementById('batch_loading');
+        const resultsArea = document.getElementById('batch_results_area');
+        const tableBody = document.getElementById('batch_table_body');
+        
+        loading.style.display = 'block';
+        resultsArea.style.display = 'none';
+        btn.disabled = true;
+        
+        // Params from main inputs
+        const start = document.getElementById('start_date').value;
+        const end = document.getElementById('end_date').value;
+        const strategy = document.getElementById('strategy_select').value;
+        const smaShort = document.getElementById('sma_short').value;
+        const smaLong = document.getElementById('sma_long').value;
+        const cate = select.value;
+        
+        try {
+            const res = await fetch('http://localhost:5000/batch_backtest', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    category: cate,
+                    start, end, strategy, 
+                    sma_short: smaShort, 
+                    sma_long: smaLong
+                })
+            });
+            
+            const data = await res.json();
+            
+            tableBody.innerHTML = '';
+            
+            data.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                const isPositive = item.return_out > 0;
+                const badgeClass = isPositive ? 'bg-success-lt' : 'bg-danger-lt';
+                
+                tr.innerHTML = `
+                    <td>
+                      <span class="badge ${index < 3 ? 'bg-yellow text-white' : 'bg-secondary-lt'} w-100">#${index + 1}</span>
+                    </td>
+                    <td class="fw-bold">${item.ticker}</td>
+                    <td class="text-muted text-truncate" style="max-width: 150px;">${item.name}</td>
+                    <td class="text-end fw-bold ${isPositive ? 'text-success' : 'text-danger'}">${(item.return_out * 100).toFixed(2)}%</td>
+                    <td class="text-end">${item.sharpe_out.toFixed(2)}</td>
+                    <td class="text-end text-danger">${(item.drawdown_out * 100).toFixed(2)}%</td>
+                    <td class="text-end">
+                       <button class="btn btn-sm btn-ghost-primary" onclick="loadFromBatch('${item.ticker}')">Ver</button>
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+            
+            loading.style.display = 'none';
+            resultsArea.style.display = 'block';
+            
+        } catch (err) {
+            console.error(err);
+            alert("Erro ao executar Batch");
+            loading.style.display = 'none';
+        } finally {
+            btn.disabled = false;
+        }
+    });
+}
+
+function loadFromBatch(ticker) {
+    // Close Modal
+    const modalEl = document.getElementById('modal_batch');
+    const modal = bootstrap.Modal.getInstance(modalEl);
+    modal.hide();
+    
+    // Set Ticker
+    document.getElementById('selected_ticker').value = ticker;
+    document.getElementById('trigger_label').innerText = ticker; // Ideally find name but ticker is fine
+    
+    // Run
+    runBacktest();
+}

@@ -5,10 +5,15 @@ import numpy as np
 import yfinance as yf
 import traceback
 from datetime import datetime
+from groq import Groq  # Import Groq
 
 import backtest  # Agora no mesmo diretório
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='../frontend', static_url_path='')
+
+@app.route('/')
+def home():
+    return app.send_static_file('index.html')
 CORS(app)
 
 # --- BIBLIOTECAS DE ATIVOS ---
@@ -103,35 +108,86 @@ def clean_for_json(obj):
         return clean_for_json(obj.to_dict(orient='records'))
     return obj
 
-def generate_analysis_text(metrics_in, metrics_out):
-    """
-    IA Explicativa (Portada do Streamlit)
-    """
-    total_oos = metrics_out.get('Total Return', 0)
-    bh_total = metrics_out.get('BH_Total', 0)
-    sharpe_is = metrics_in.get('Sharpe Ratio', 0)
-    sharpe_oos = metrics_out.get('Sharpe Ratio', 0)
-    max_dd = abs(metrics_out.get('Max Drawdown', 0))
+# Configuração Groq
+import os
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
+groq_client = None
 
-    analysis = "<strong>Análise da IA (Simulada)</strong><br><br>"
-    
-    if total_oos > bh_total:
-        analysis += f"<b>Performance Excepcional:</b> A estratégia superou o Buy & Hold no período de teste ({total_oos:.2%} vs {bh_total:.2%}).<br><br>"
-    elif total_oos > 0:
-        analysis += f"<b>Lucratividade:</b> A estratégia foi lucrativa no teste ({total_oos:.2%}), mas não bateu o B&H ({bh_total:.2%}).<br><br>"
-    else:
-        analysis += f"<b>Prejuízo:</b> A performance foi negativa no teste ({total_oos:.2%}).<br><br>"
-    
-    if sharpe_is > 0 and (sharpe_oos < 0 or sharpe_oos < sharpe_is * 0.5):
-        analysis += "<b>Alerta de Overfitting:</b> O Sharpe caiu drasticamente no teste. Cuidado com o vício de parâmetros!<br><br>"
-    else:
-        analysis += "<b>Robustez:</b> O desempenho se manteve consistente entre treino e teste.<br><br>"
+try:
+    groq_client = Groq(api_key=GROQ_API_KEY)
+except Exception as e:
+    print(f"Erro ao inicializar Groq: {e}")
+
+def generate_analysis_text(metrics_in, metrics_out, trade_stats_in=None, trade_stats_out=None):
+    """
+    Gera análise textual usando Groq AI (Llama 3 70B).
+    """
+    try:
+        if not groq_client:
+            return "<strong>Erro:</strong> Cliente Groq não inicializado.", False
+            
+        # Preparar dados para o prompt
+        data_str = f"""
+        [DADOS DO BACKTEST]
         
-    if max_dd > 0.30:
-        analysis += f"<b>Risco Elevado:</b> O Drawdown de {max_dd:.2%} é preocupante.<br><br>"
-    
-    is_warning = "Overfitting" in analysis or "Prejuízo" in analysis or bh_total > total_oos
-    return analysis, is_warning
+        PERÍODO DE TREINO (IN-SAMPLE):
+        - Retorno Total: {metrics_in.get('Total Return', 0):.2%}
+        - Sharpe Ratio: {metrics_in.get('Sharpe Ratio', 0):.2f}
+        - Drawdown Máximo: {metrics_in.get('Max Drawdown', 0):.2%}
+        - Win Rate: {trade_stats_in.get('win_rate', 0):.2%} (Total Trades: {trade_stats_in.get('total_trades', 0)})
+        
+        PERÍODO DE TESTE (OUT-OF-SAMPLE):
+        - Retorno Total: {metrics_out.get('Total Return', 0):.2%}
+        - Sharpe Ratio: {metrics_out.get('Sharpe Ratio', 0):.2f}
+        - Drawdown Máximo: {metrics_out.get('Max Drawdown', 0):.2%}
+        - Win Rate: {trade_stats_out.get('win_rate', 0):.2%} (Total Trades: {trade_stats_out.get('total_trades', 0)})
+        
+        BENCHMARK (BUY & HOLD no Teste):
+        - Retorno: {metrics_out.get('BH_Total', 0):.2%}
+        """
+        
+        prompt = f"""
+        Você é um analista quantitativo sênior. Analise os resultados deste backtest (estratégia vs buy & hold).
+        
+        {data_str}
+        
+        Gere um relatório HTML curto (apenas tags <p>, <b>, <br>) com 3 parágrafos concisos:
+        1. **Veredito**: A estratégia superou o Buy & Hold no teste? É robusta?
+        2. **Pontos Fortes**: Analise o Sharpe e Win Rate.
+        3. **Riscos/Alertas**: Comente sobre o Drawdown e possível Overfitting (se o treino for muito melhor que o teste).
+        
+        Se houver overfitting claro ou prejuízo no teste, termine com um alerta claro.
+        Não use markdown, apenas HTML básico (<b>, <br>). Seja direto e profissional.
+        """
+        
+        chat_completion = groq_client.chat.completions.create(
+            messages=[
+                {
+                    "role": "system",
+                    "content": "Você é um especialista em trading quantitativo.",
+                },
+                {
+                    "role": "user",
+                    "content": prompt,
+                }
+            ],
+            model="llama-3.3-70b-versatile",
+            temperature=0.7,
+            max_tokens=500,
+        )
+        
+        analysis = chat_completion.choices[0].message.content
+        
+        # Detectar warning simples
+        is_warning = False
+        if metrics_out.get('Total Return', 0) < 0 or metrics_out.get('Max Drawdown', 0) < -0.30:
+            is_warning = True
+            
+        return analysis, is_warning
+
+    except Exception as e:
+        print(f"Erro na geração IA: {e}")
+        return f"<strong>Erro na análise IA:</strong> {str(e)}", False
 
 @app.route('/assets', methods=['GET'])
 def get_assets():
@@ -170,8 +226,13 @@ def run_backtest():
             # Default to SMA
             res = backtest.strategy_sma_crossover(df, short_window=sma_short, long_window=sma_long)
         
+<<<<<<< HEAD
+        # Divisão IS/OOS Data-Based (50%)
+        limit = int(len(res) * 0.5)
+=======
         # Divisão IS/OOS Data-Based (70%)
         limit = int(len(res) * 0.7)
+>>>>>>> origin/main
         if limit < 20: 
              return jsonify({"error": "Período muito curto para análise IS/OOS (mínimo 30-50 dias)."}), 400
              
@@ -239,14 +300,44 @@ def run_backtest():
         bh_metrics = backtest.calculate_metrics(res_oos['Close'].pct_change())
         m_oos_raw['BH_Total'] = bh_metrics['Total Return']
         
+<<<<<<< HEAD
+        # Trade Stats
+        trade_stats_in = backtest.calculate_trade_stats(res_is)
+        trade_stats_out = backtest.calculate_trade_stats(res_oos)
+        
+        ai_text, is_warning = generate_analysis_text(m_is_raw, m_oos_raw, trade_stats_in, trade_stats_out)
+
+        # SMA Data (if available)
+        sma_short_data = []
+        sma_long_data = []
+        if 'SMA_Short' in res.columns:
+            for i, r in res.iterrows():
+                if not pd.isna(r['SMA_Short']):
+                    sma_short_data.append({"time": i.strftime('%Y-%m-%d'), "value": float(r['SMA_Short'])})
+        
+        if 'SMA_Long' in res.columns:
+             for i, r in res.iterrows():
+                if not pd.isna(r['SMA_Long']):
+                    sma_long_data.append({"time": i.strftime('%Y-%m-%d'), "value": float(r['SMA_Long'])})
+=======
         ai_text, is_warning = generate_analysis_text(m_is_raw, m_oos_raw)
+>>>>>>> origin/main
 
         # Montagem do JSON Final
         response_data = {
             "metrics_in": metrics_in,
             "metrics_out": metrics_out,
+<<<<<<< HEAD
+            "trade_stats_in": trade_stats_in,
+            "trade_stats_out": trade_stats_out,
             "candle_data": candle_data,
             "equity_data": equity_data,
+            "sma_short_data": sma_short_data,
+            "sma_long_data": sma_long_data,
+=======
+            "candle_data": candle_data,
+            "equity_data": equity_data,
+>>>>>>> origin/main
             "split_date": split_date,
             "markers": markers,
             "ai_analysis": ai_text,
@@ -258,6 +349,79 @@ def run_backtest():
         
     except Exception as e:
         print("ERRO NO BACKEND:")
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/batch_backtest', methods=['POST'])
+def run_batch_backtest():
+    try:
+        data_req = request.json
+        category_key = data_req.get('category', 'BR_STOCKS') # Key from CATEGORIES
+        start_date = data_req.get('start', '2023-01-01')
+        end_date = data_req.get('end', '2024-01-01')
+        sma_short = int(data_req.get('sma_short', 20))
+        sma_long = int(data_req.get('sma_long', 50))
+        strategy_name = data_req.get('strategy', 'SMA')
+        
+        tickers_map = {}
+        if category_key == 'ALL':
+             for cat in CATEGORIES.values():
+                 tickers_map.update(cat)
+        else:
+            # Encontra a categoria pelo nome (ex: "🇧🇷 Ações Brasil") ou chave direta se fosse o caso
+            # O frontend vai mandar o label da chave provavelmente.
+            # Vamos simplificar: O frontend manda a Key do dicionário CATEGORIES? 
+            # O dicionário CATEGORIES tem chaves com emojis. O frontend manda isso?
+            # Vamos assumir que o frontend manda a chave exata de CATEGORIES
+             tickers_map = CATEGORIES.get(category_key, {})
+
+        results = []
+        
+        print(f"Iniciando Batch para {len(tickers_map)} ativos. Categoria: {category_key}")
+        
+        for ticker, name in tickers_map.items():
+            try:
+                # 1. Download (Otimizado: apenas colunas essenciais)
+                df = yf.download(ticker, start=start_date, end=end_date, progress=False)
+                
+                if df.empty: continue
+                if isinstance(df.columns, pd.MultiIndex):
+                    df.columns = df.columns.get_level_values(0)
+                
+                # Check min length
+                if len(df) < 50: continue
+
+                # 2. Strategy
+                if strategy_name == "RSI":
+                    res = backtest.strategy_rsi_weekly(df, lower=35, upper=70)
+                else:
+                    res = backtest.strategy_sma_crossover(df, short_window=sma_short, long_window=sma_long)
+                
+                # 3. Split (50/50)
+                limit = int(len(res) * 0.5)
+                res_oos = res.iloc[limit:].copy()
+                
+                # 4. Metrics OOS
+                m_oos = backtest.calculate_metrics(res_oos['Strategy_Returns'])
+                
+                results.append({
+                    "ticker": ticker,
+                    "name": name,
+                    "return_out": m_oos.get('Total Return', 0),
+                    "sharpe_out": m_oos.get('Sharpe Ratio', 0),
+                    "drawdown_out": m_oos.get('Max Drawdown', 0)
+                })
+                
+            except Exception as e:
+                print(f"Erro ao processar {ticker}: {e}")
+                continue
+        
+        # Sort by Return OOS Descending
+        results.sort(key=lambda x: x['return_out'], reverse=True)
+        
+        return jsonify(clean_for_json(results))
+
+    except Exception as e:
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
