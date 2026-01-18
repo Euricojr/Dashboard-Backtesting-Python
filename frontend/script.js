@@ -319,7 +319,6 @@ async function runBacktest() {
         document.getElementById('td_vol_out').innerText = mOut.volatilidade_anual;
         document.getElementById('td_dd_out').innerText = mOut.max_drawdown;
         
-<<<<<<< HEAD
         // Trade Stats
         const tsIn = data.trade_stats_in;
         const tsOut = data.trade_stats_out;
@@ -342,12 +341,6 @@ async function runBacktest() {
         if (aiBox) {
             aiBox.innerHTML = data.ai_analysis;
             aiBox.className = "p-3 " + (data.is_warning ? "bg-azure-lt" : "bg-blue-lt");
-=======
-        const aiBox = document.getElementById('ai_analysis');
-        if (aiBox) {
-            aiBox.innerHTML = data.ai_analysis;
-            aiBox.className = "p-3 " + (data.is_warning ? "bg-warning-lt" : "bg-success-lt");
->>>>>>> origin/main
         }
 
         document.getElementById('results_area').style.display = 'block';
