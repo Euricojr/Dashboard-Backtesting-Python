@@ -22,17 +22,13 @@ Uma plataforma web profissional para backtesting de estratégias de investimento
 - **Frontend**: HTML5, JavaScript (ES6+), Tabler (CSS Framework), Lightweight Charts.
 - **Dados**: Yahoo Finance (via biblioteca `yfinance`).
 
-<<<<<<< HEAD
 ## Instalação e Configuração
-=======
-## Instalação e Execução
->>>>>>> origin/main
 
 Siga este guia prático para configurar seu ambiente de desenvolvimento.
 
 ### 1. Ambiente Virtual (.venv)
 
-O ambiente virtual isola as bibliotecas do projeto.
+O ambiente virtual isola as bibliotecas do projeto, evitando conflitos com outras instalações de Python no seu sistema.
 
 #### Windows (PowerShell)
 
@@ -42,21 +38,7 @@ python -m venv .venv
 
 # Ativar o ambiente
 .\.venv\Scripts\activate
-
-<<<<<<< HEAD
-
 ```
-=======
-    ```bash
-    # Windows
-    python -m venv .venv
-    .\.venv\Scripts\Activate.ps1
-
-    # Linux/Mac
-    python3 -m venv .venv
-    source .venv/bin/activate
-    ```
->>>>>>> origin/main
 
 #### Linux / macOS
 
@@ -68,7 +50,7 @@ python3 -m venv .venv
 source .venv/bin/activate
 ```
 
-> **Dica:** Sempre verifique se o nome `(.venv)` aparece no início da sua linha de comando.
+> **Dica de Sênior:** Sempre verifique se o nome `(.venv)` aparece no início da sua linha de comando antes de rodar comandos. Isso garante que você está no ambiente correto!
 
 ### 2. Instalação de Dependências
 
@@ -112,13 +94,30 @@ pip install -r requirements.txt
 3.  Defina o período de **Início** e **Fim**.
 4.  Selecione a **Estratégia**:
     - **SMA**: Configure as médias Curta e Longa.
-<<<<<<< HEAD
     - **RSI**: Parâmetros fixos (Semanal, Sobrevenda 35, Sobrecompra 70).
-=======
-    - **RSI**: Utiliza parâmetros fixos (Semanal, Sobrevenda 35, Sobrecompra 70).
->>>>>>> origin/main
 5.  Clique em **"Executar Backtest"**.
 6.  Analise os resultados nos gráficos e cards de métricas.
+
+---
+
+### Guia Rápido de Git (Referência)
+
+Comandos úteis para manutenção do projeto:
+
+```bash
+# Verificar status
+git status
+
+# Adicionar arquivos e commitar
+git add .
+git commit -m "Descrição das alterações"
+
+# Atualizar com o remoto
+git pull origin main
+
+# Enviar alterações
+git push origin main
+```
 
 ---
 

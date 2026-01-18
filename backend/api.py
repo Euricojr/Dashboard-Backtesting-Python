@@ -226,13 +226,8 @@ def run_backtest():
             # Default to SMA
             res = backtest.strategy_sma_crossover(df, short_window=sma_short, long_window=sma_long)
         
-<<<<<<< HEAD
         # Divisão IS/OOS Data-Based (50%)
         limit = int(len(res) * 0.5)
-=======
-        # Divisão IS/OOS Data-Based (70%)
-        limit = int(len(res) * 0.7)
->>>>>>> origin/main
         if limit < 20: 
              return jsonify({"error": "Período muito curto para análise IS/OOS (mínimo 30-50 dias)."}), 400
              
@@ -300,7 +295,6 @@ def run_backtest():
         bh_metrics = backtest.calculate_metrics(res_oos['Close'].pct_change())
         m_oos_raw['BH_Total'] = bh_metrics['Total Return']
         
-<<<<<<< HEAD
         # Trade Stats
         trade_stats_in = backtest.calculate_trade_stats(res_is)
         trade_stats_out = backtest.calculate_trade_stats(res_oos)
@@ -319,25 +313,17 @@ def run_backtest():
              for i, r in res.iterrows():
                 if not pd.isna(r['SMA_Long']):
                     sma_long_data.append({"time": i.strftime('%Y-%m-%d'), "value": float(r['SMA_Long'])})
-=======
-        ai_text, is_warning = generate_analysis_text(m_is_raw, m_oos_raw)
->>>>>>> origin/main
 
         # Montagem do JSON Final
         response_data = {
             "metrics_in": metrics_in,
             "metrics_out": metrics_out,
-<<<<<<< HEAD
             "trade_stats_in": trade_stats_in,
             "trade_stats_out": trade_stats_out,
             "candle_data": candle_data,
             "equity_data": equity_data,
             "sma_short_data": sma_short_data,
             "sma_long_data": sma_long_data,
-=======
-            "candle_data": candle_data,
-            "equity_data": equity_data,
->>>>>>> origin/main
             "split_date": split_date,
             "markers": markers,
             "ai_analysis": ai_text,
