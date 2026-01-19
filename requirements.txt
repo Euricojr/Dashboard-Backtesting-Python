@@ -3,3 +3,5 @@ numpy
 yfinance
 flask
 flask-cors
+python-dotenv
+groq
