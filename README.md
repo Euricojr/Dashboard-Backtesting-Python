@@ -1,123 +1,104 @@
-# Dashboard Quantitativo
+# Portfolio de Estratégias & Trading System
 
-Uma plataforma web profissional para backtesting de estratégias de investimento quantitativo. Desenvolvida com **Python (Flask)** no backend e **Tabler UI** no frontend, oferecendo uma interface premium e responsiva.
+Bem-vindo ao repositório centralizado de estratégias quantitativas e trading bots. Este repositório foi reestruturado para hospedar dois projetos distintos, facilitando a organização entre desenvolvimento de estratégias (Backtest) e execução/monitoramento em tempo real (Live).
 
-## Funcionalidades
+## 📂 Estrutura do Repositório
 
-- **Backtesting de Estratégias**:
-  - **Médias Móveis (SMA)**: Estratégia clássica de cruzamento de médias (curta vs longa).
-  - **RSI Semanal (IFR)**: Estratégia de reversão à média utilizando o Índice de Força Relativa em timeframe semanal (Compra < 35, Venda > 70).
-- **Dashboard Premium**: Interface moderna e escura (Dark Mode) construída com o framework Tabler.
-- **Gráficos Interativos**: Visualização avançada de preços e performance usando _Lightweight Charts_ (TradingView).
-  - Candles, Linhas de SMA/RSI, Marcadores de Compra/Venda.
-  - Curva de Patrimônio vs Buy & Hold.
-- **Métricas Financeiras**: Cálculo automático de Retorno Total, CAGR, Sharpe Ratio e Drawdown.
-- **Análise com IA**: Geração de insights simulados sobre a performance da estratégia e alertas de risco (Overfitting).
-- **Command Palette**: Busca rápida de ativos via teclado (`Ctrl+K`).
-- **Multimercado**: Suporte a Ações BR, Stocks EUA, Criptomoedas e Índices Globais.
+O projeto está dividido em duas pastas principais:
 
-## Tecnologias
-
-- **Backend**: Python 3, Flask, Pandas, NumPy, YFinance.
-- **Frontend**: HTML5, JavaScript (ES6+), Tabler (CSS Framework), Lightweight Charts.
-- **Dados**: Yahoo Finance (via biblioteca `yfinance`).
-
-## Instalação e Configuração
-
-Siga este guia prático para configurar seu ambiente de desenvolvimento.
-
-### 1. Ambiente Virtual (.venv)
-
-O ambiente virtual isola as bibliotecas do projeto, evitando conflitos com outras instalações de Python no seu sistema.
-
-#### Windows (PowerShell)
-
-```powershell
-# Criar o ambiente
-python -m venv .venv
-
-# Ativar o ambiente
-.\.venv\Scripts\activate
-```
-
-#### Linux / macOS
-
-```bash
-# Criar o ambiente
-python3 -m venv .venv
-
-# Ativar o ambiente
-source .venv/bin/activate
-```
-
-> **Dica de Sênior:** Sempre verifique se o nome `(.venv)` aparece no início da sua linha de comando antes de rodar comandos. Isso garante que você está no ambiente correto!
-
-### 2. Instalação de Dependências
-
-Com o ambiente ativado, instale as bibliotecas necessárias:
-
-```bash
-pip install -r requirements.txt
-```
-
-### 3. Execução
-
-1.  **Inicie o Servidor Backend**:
-
-    ```bash
-    python backend/api.py
-    ```
-
-    _O servidor iniciará em `http://localhost:5000`._
-
-2.  **Acesse o Dashboard**:
-    - Abra o navegador em: `http://localhost:5000`
-
-## Estrutura do Projeto
-
-```
-/
-├── backend/
-│   └── api.py          # API Flask (Servidor)
-├── frontend/
-│   ├── index.html      # Interface do Usuário (Tabler UI)
-│   └── script.js       # Lógica do Frontend (Gráficos, Fetch)
-├── backtest.py         # Lógica Core do Backtest e Indicadores
-├── requirements.txt    # Dependências do Python
-└── README.md           # Documentação
-```
-
-## Como Usar
-
-1.  Acesse o Dashboard.
-2.  Use a barra lateral (ou `Ctrl+K`) para selecionar um ativo (ex: PETR4.SA, AAPL, BTC-USD).
-3.  Defina o período de **Início** e **Fim**.
-4.  Selecione a **Estratégia**:
-    - **SMA**: Configure as médias Curta e Longa.
-    - **RSI**: Parâmetros fixos (Semanal, Sobrevenda 35, Sobrecompra 70).
-5.  Clique em **"Executar Backtest"**.
-6.  Analise os resultados nos gráficos e cards de métricas.
+1.  **`Backtest_Project`**: Dashboard de Análise e Backtest de Dados Históricos.
+2.  **`Live_Bot_MT5`**: Sistema de Trading em Tempo Real conectado ao MetaTrader 5.
 
 ---
 
-### Guia Rápido de Git (Referência)
+## 🚀 1. Backtest Project (Análise Histórica)
 
-Comandos úteis para manutenção do projeto:
+Uma plataforma web robusta para testar ideias de trading usando dados históricos do Yahoo Finance.
 
-```bash
-# Verificar status
-git status
+### Funcionalidades
 
-# Adicionar arquivos e commitar
-git add .
-git commit -m "Descrição das alterações"
+- **Estratégias**: Cruzamento de Médias (SMA) e RSI Semanal.
+- **Visualização**: Gráficos interativos com TradingView Lightweight Charts.
+- **Métricas**: Sharpe Ratio, Drawdown, CAGR, Win Rate.
+- **IA Analysis**: Insights gerados por IA sobre a qualidade do backtest.
+- **Multi-Ativos**: Ações BR, Stocks EUA, Cripto e Índices.
 
-# Atualizar com o remoto
-git pull origin main
+### Como Rodar
 
-# Enviar alterações
-git push origin main
+```powershell
+# 1. Entre na pasta
+cd Backtest_Project/backend
+
+# 2. Ative o ambiente virtual (se ainda não estiver ativo)
+# ..\..\.venv\Scripts\activate
+
+# 3. Execute o servidor
+python api.py
 ```
+
+> Acesse: `http://localhost:5000`
+
+---
+
+## 📈 2. Live Bot MT5 (Tempo Real)
+
+Uma aplicação conectada diretamente ao terminal MetaTrader 5 (MT5) para monitoramento de mercado e execução de ordens em tempo real.
+
+### Funcionalidades
+
+- **Conexão Direta**: Integração via API Python nativa do MetaTrader5.
+- **Gráficos Live**: Plota candles recebidos diretamente do terminal.
+- **Seletores Dinâmicos**: Escolha de Timeframe (M1, M5, H1...) e Qtde de Velas.
+- **Scanner de Ativos**: Scripts para mapear todos os ativos disponíveis na corretora (Ações e Futuros).
+- **Foco**: Otimizado para Mini Índice (WIN) e Mini Dólar (WDO), mas compatível com toda a B3.
+
+### Pré-requisitos
+
+- **MetaTrader 5**: O terminal precisa estar instalado e rodando em sua máquina Windows.
+- **Conta**: Logada (Demo ou Real) e com "Algo Trading" habilitado nas configurações.
+
+### Como Rodar
+
+```powershell
+# 1. Entre na pasta
+cd Live_Bot_MT5
+
+# 2. Execute o app
+python app.py
+```
+
+> Acesse: `http://localhost:5002`
+
+---
+
+## 🛠️ Ferramentas Úteis
+
+### Listar Ativos do MT5
+
+Dentro de `Live_Bot_MT5/scripts`, existe um utilitário para mapear sua corretora.
+
+```powershell
+python Live_Bot_MT5/scripts/listar_ativos.py
+```
+
+Isso gera um CSV em `Live_Bot_MT5/data/` com todos os símbolos disponíveis.
+
+---
+
+## 📦 Instalação Geral
+
+Se esta é a primeira vez rodando o projeto:
+
+1. **Crie o ambiente virtual**:
+   ```powershell
+   python -m venv .venv
+   .\.venv\Scripts\activate
+   ```
+2. **Instale as dependências**:
+   ```powershell
+   pip install -r requirements.txt
+   ```
+   _(Certifique-se de que o `MetaTrader5` está no requirements.txt)_
 
 ---
 
