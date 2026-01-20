@@ -1,0 +1,23 @@
+--- O QUE TEM DENTRO DO SEU MT5 ---
+Path
+BVMF-Equities       31099
+BVMF-Derivatives    18163
+GTW_BMF                 6
+
+--- EXEMPLOS DE AÇÕES (Top 5) ---
+     Symbol             Description
+416  CASH3F  MELIUZ      ON      NM
+417   CASH3  MELIUZ      ON      NM
+418  CASH3T  MELIUZ      ON      NM
+421  CASH3M  MELIUZ      ON      NM
+422  CASH3R  MELIUZ      ON      NM
+
+--- EXEMPLOS DE FUTUROS (Top 5) ---
+   Symbol    Description
+3  WINZ22  IBOVESPA MINI
+4  WING23  IBOVESPA MINI
+5  WDOF23     DOLAR MINI
+6  WDOZ22     DOLAR MINI
+7  WDOG23     DOLAR MINI
+
+⚠️ openpyxl não instalado. Salvo em CSV: 'C:\Users\ddom1\Strategy\backend\lista_completa_ativos_btg.csv'
