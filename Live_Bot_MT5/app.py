@@ -104,7 +104,7 @@ def get_timeframes():
     return jsonify(list(TIMEFRAMES.keys()))
 
 # --- BACKTESTING ROUTES ---
-from backtester import strategy_sma_crossover, calculate_metrics, calculate_trade_stats
+from backtester import strategy_sma_crossover, calculate_metrics_advanced, calculate_trade_stats
 
 @app.route('/api/backtest')
 def run_backtest():
@@ -132,11 +132,20 @@ def run_backtest():
     # strategy_sma_crossover espera colunas 'close' que já existem no df do MT5 (lowercase)
     df_res = strategy_sma_crossover(df, short_window, long_window)
     
-    # 3. Calculate Metrics (Total)
-    metrics = calculate_metrics(df_res['Strategy_Returns'])
-    trade_stats = calculate_trade_stats(df_res)
     
-    # 4. Prepare Chart Data
+    # 3. SPLIT TRAIN/TEST (70% Train, 30% Test)
+    split_idx = int(len(df_res) * 0.7)
+    df_in = df_res.iloc[:split_idx]
+    df_out = df_res.iloc[split_idx:]
+    
+    # 4. Calculate Advanced Metrics for Both
+    metrics_in = calculate_metrics_advanced(df_in['Strategy_Returns'])
+    metrics_out = calculate_metrics_advanced(df_out['Strategy_Returns'])
+    
+    trade_stats_in = calculate_trade_stats(df_in)
+    trade_stats_out = calculate_trade_stats(df_out)
+    
+    # 5. Prepare Chart Data
     
     # SMA Lines
     sma_short_data = []
@@ -158,10 +167,6 @@ def run_backtest():
     # Identify Buy/Sell rows
     buys = df_res[trade_signal == 1]
     sells = df_res[trade_signal == -1]
-    
-    # Use the original integer timestamp if possible, or convert carefully
-    # Assuming df index is default RangeIndex and 'time' is datetime.
-    # To be safe, we recalculate timestamp as int.
     
     for idx, row in buys.iterrows():
         ts = int(row['time'].timestamp())
@@ -187,8 +192,14 @@ def run_backtest():
     markers.sort(key=lambda x: x['time'])
         
     return jsonify({
-        "metrics": metrics,
-        "trade_stats": trade_stats,
+        "metrics": {
+            "in": metrics_in,
+            "out": metrics_out
+        },
+        "trade_stats": {
+            "in": trade_stats_in,
+            "out": trade_stats_out
+        },
         "sma_short": sma_short_data,
         "sma_long": sma_long_data,
         "markers": markers

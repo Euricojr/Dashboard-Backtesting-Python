@@ -179,38 +179,55 @@
                     </div>
                 </div>
 
-                <!-- Metrics & Stats -->
-                <div class="row g-3">
-                    <div class="col-md-5">
-                        <div class="card h-100">
-                             <div class="card-header"><h3 class="card-title">Métricas de Backtest</h3></div>
-                             <div class="card-body">
-                                 <div id="metrics_list" class="d-flex flex-column gap-2">
-                                     <div class="text-secondary text-center py-4">Execute o backtest para ver métricas.</div>
-                                 </div>
-                             </div>
-                        </div>
+                <!-- Detailed Analysis Tables -->
+                <div class="row row-cards mt-3">
+                  
+                  <!-- Tabela 1: Relatório de Performance -->
+                  <div class="col-12">
+                    <div class="card mb-3">
+                      <div class="card-header">
+                        <h3 class="card-title">Relatório de Performance: Treino vs Teste</h3>
+                      </div>
+                      <div class="table-responsive">
+                        <table class="table table-vcenter card-table">
+                          <thead>
+                            <tr>
+                              <th>Métrica</th>
+                              <th class="text-secondary text-center">Treino (In-Sample)</th>
+                              <th class="text-primary fw-bold text-center">Teste (Out-of-Sample)</th>
+                            </tr>
+                          </thead>
+                          <tbody id="tbody_perf">
+                             <tr><td colspan="3" class="text-center text-muted py-3">Execute o backtest para ver os dados</td></tr>
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
-                    <div class="col-md-7">
-                        <!-- Placeholder para Trades List ou Info Extra -->
-                         <div class="card h-100">
-                             <div class="card-header"><h3 class="card-title">Status e Infos</h3></div>
-                             <div class="card-body">
-                                 <div class="d-flex justify-content-between mb-2">
-                                     <span>Ativo Selecionado:</span>
-                                     <strong id="display_symbol" class="text-white">WING26</strong>
-                                 </div>
-                                 <div class="d-flex justify-content-between mb-2">
-                                     <span>Intervalo:</span>
-                                     <strong id="display_timeframe" class="text-white">--</strong>
-                                 </div>
-                                 <div class="hr-text">Log de Status</div>
-                                 <div id="status_log" class="text-secondary small font-monospace">
-                                     Iniciando sistema...
-                                 </div>
-                             </div>
+                  </div>
+
+                  <!-- Tabela 2: Estatisticas de Trades -->
+                  <div class="col-12">
+                     <div class="card">
+                        <div class="card-header">
+                           <h3 class="card-title">Estatísticas de Trades</h3>
                         </div>
-                    </div>
+                        <div class="table-responsive">
+                           <table class="table table-vcenter card-table">
+                              <thead>
+                                 <tr>
+                                    <th>Métrica</th>
+                                    <th class="text-secondary text-center">Treino (In-Sample)</th>
+                                    <th class="text-primary fw-bold text-center">Teste (Out-of-Sample)</th>
+                                 </tr>
+                              </thead>
+                              <tbody id="tbody_stats">
+                                 <tr><td colspan="3" class="text-center text-muted py-3">Execute o backtest para ver os dados</td></tr>
+                              </tbody>
+                           </table>
+                        </div>
+                     </div>
+                  </div>
+
                 </div>
 
               </div>
@@ -280,30 +297,40 @@
       let updateInterval = null;
 
       function logStatus(msg, type='neutral') {
-          const el = document.getElementById("status_log");
-          let color = '#aaa';
-          if(type === 'error') color = '#ff5252';
-          if(type === 'success') color = '#69f0ae';
+          console.log(`[${type}] ${msg}`);
           
-          el.innerHTML = `<span style="color:${color}">> ${msg}</span>`;
-          
-          // Badge status
+          // Show critical errors to user
+          if (type === 'error') {
+              let errorBox = document.getElementById("error-alert");
+              if (!errorBox) {
+                  errorBox = document.createElement("div");
+                  errorBox.id = "error-alert";
+                  errorBox.style.cssText = "position: fixed; top: 10px; right: 10px; z-index: 9999; background: #ff5252; color: white; padding: 15px; border-radius: 5px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); max-width: 300px;";
+                  document.body.appendChild(errorBox);
+              }
+              errorBox.innerText = "ERRO: " + msg;
+              setTimeout(() => { errorBox.remove(); }, 10000);
+          }
+
+          // Badge status logic
           const badge = document.getElementById("connection_status");
-          if(msg.includes("Erro") || msg.includes("Offline")) {
-              badge.className = "badge bg-red-lt";
-              badge.innerText = "Offline/Erro";
-          } else {
-              badge.className = "badge bg-green-lt";
-              badge.innerText = "Conectado";
+          if(badge) {
+              if(msg.includes("Erro") || msg.includes("Offline") || type === 'error') {
+                  badge.className = "badge bg-red-lt";
+                  badge.innerText = "Erro/Offline";
+              } else if (msg.includes("Conectado") || msg.includes("Sincronizando")) {
+                  badge.className = "badge bg-green-lt";
+                  badge.innerText = "Conectado";
+              }
           }
       }
 
       function changeSymbol() {
         SYMBOL = document.getElementById("symbolSelect").value;
-        document.getElementById("display_symbol").innerText = SYMBOL;
+        // Removed display_symbol update since element removed
         loadHistory();
       }
-
+      
       async function init() {
         try {
           const res = await fetch("/api/timeframes");
@@ -334,13 +361,15 @@
         const count = document.getElementById("candleCountSelect").value;
         
         SYMBOL = document.getElementById("symbolSelect").value;
-        document.getElementById("display_timeframe").innerText = tf + " (" + count + " candles)";
-
+        
         // Reset
         candleSeries.setMarkers([]);
         smaShortSeries.setData([]);
         smaLongSeries.setData([]);
-        document.getElementById("metrics_list").innerHTML = '<div class="text-secondary text-center py-4">Carregando dados...</div>';
+        
+        // Clear Tables
+        document.getElementById("tbody_perf").innerHTML = '<tr><td colspan="3" class="text-center text-muted">Carregando...</td></tr>';
+        document.getElementById("tbody_stats").innerHTML = '<tr><td colspan="3" class="text-center text-muted">Carregando...</td></tr>';
 
         logStatus(`Baixando ${count} velas de ${SYMBOL}...`);
 
@@ -355,7 +384,6 @@
 
           candleSeries.setData(data);
           // chart.timeScale().fitContent(); // Desativado para manter zoom manual e foco no recente
-
 
           logStatus("Dados carregados. Sincronizando...", 'success');
 
@@ -390,7 +418,7 @@
           smaShortSeries.setData(data.sma_short);
           smaLongSeries.setData(data.sma_long);
 
-          renderMetrics(data.metrics, data.trade_stats);
+          renderMetrics(data); // Pass full data object
           logStatus("Backtest Concluído com Sucesso!", 'success');
           
         } catch (e) {
@@ -399,33 +427,40 @@
         }
       }
 
-      function renderMetrics(m, t) {
-          const formatPct = (val) => (val * 100).toFixed(2) + '%';
-          const colorPct = (val) => val >= 0 ? 'text-green' : 'text-red';
+      function renderMetrics(data) {
+          const mIn = data.metrics.in;
+          const mOut = data.metrics.out;
+          const tIn = data.trade_stats.in;
+          const tOut = data.trade_stats.out;
           
-          const html = `
-            <div class="d-flex justify-content-between align-items-center border-bottom pb-2">
-                <span>Retorno Total:</span>
-                <strong class="${colorPct(m["Total Return"])}">${formatPct(m["Total Return"])}</strong>
-            </div>
-            <div class="d-flex justify-content-between align-items-center border-bottom pb-2 pt-2">
-                <span>Trades Totais:</span>
-                <strong>${t.total_trades}</strong>
-            </div>
-            <div class="d-flex justify-content-between align-items-center border-bottom pb-2 pt-2">
-                <span>Win Rate:</span>
-                <strong class="text-blue">${formatPct(t.win_rate)}</strong>
-            </div>
-            <div class="d-flex justify-content-between align-items-center border-bottom pb-2 pt-2">
-                <span>Profit Factor:</span>
-                <strong>${t.profit_factor.toFixed(2)}</strong>
-            </div>
-            <div class="d-flex justify-content-between align-items-center pt-2">
-                <span>Sharpe Ratio:</span>
-                <strong>${m["Sharpe Ratio (per bar)"].toFixed(2)}</strong>
-            </div>
+          const fmtPct = (v) => (v * 100).toFixed(2) + '%';
+          const fmtNum = (v) => v.toFixed(2);
+          
+          // Helper for colored percentage
+          const tdPct = (v) => `<td class="text-center ${v >= 0 ? 'text-green' : 'text-red'}">${fmtPct(v)}</td>`;
+          const td = (v) => `<td class="text-center">${v}</td>`;
+          const tdBold = (v) => `<td class="text-center fw-bold text-white">${v}</td>`;
+          const tdPctBold = (v) => `<td class="text-center fw-bold ${v >= 0 ? 'text-green' : 'text-red'}">${fmtPct(v)}</td>`;
+
+          // Tabela 1: Performance
+          const perfHtml = `
+             <tr><td>Retorno Total</td>${td(fmtPct(mIn.total_return))}${tdPctBold(mOut.total_return)}</tr>
+             <tr><td>CAGR (Est.)</td>${td(fmtPct(mIn.cagr))}${tdPctBold(mOut.cagr)}</tr>
+             <tr><td>Sharpe Ratio</td>${td(fmtNum(mIn.sharpe))}${tdBold(fmtNum(mOut.sharpe))}</tr>
+             <tr><td>Volatilidade</td>${td(fmtPct(mIn.volatility))}${tdBold(fmtPct(mOut.volatility))}</tr>
+             <tr><td>Max Drawdown</td>${td(fmtPct(mIn.max_drawdown))}${tdBold(fmtPct(mOut.max_drawdown))}</tr>
           `;
-          document.getElementById("metrics_list").innerHTML = html;
+          document.getElementById("tbody_perf").innerHTML = perfHtml;
+          
+          // Tabela 2: Stats
+          const statsHtml = `
+             <tr><td>Total de Trades</td>${td(tIn.total_trades)}${tdBold(tOut.total_trades)}</tr>
+             <tr><td>Win Rate</td>${td(fmtPct(tIn.win_rate))}${tdBold(fmtPct(tOut.win_rate))}</tr>
+             <tr><td>Retorno Médio</td>${td(fmtPct(tIn.avg_return))}${tdPctBold(tOut.avg_return)}</tr>
+             <tr><td>Duração Média (Dias)</td>${td(fmtNum(tIn.avg_duration))}${tdBold(fmtNum(tOut.avg_duration))}</tr>
+             <tr><td>Profit Factor</td>${td(fmtNum(tIn.profit_factor))}${tdBold(fmtNum(tOut.profit_factor))}</tr>
+          `;
+          document.getElementById("tbody_stats").innerHTML = statsHtml;
       }
 
       async function updateLive() {
