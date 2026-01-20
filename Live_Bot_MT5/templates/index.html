@@ -60,7 +60,21 @@
   </head>
   <body>
     <div class="header">
-      <div class="symbol-display" id="symbolDisplay">WING26 (Mini Índice)</div>
+      <!-- Droplist de Ativos -->
+      <div class="controls" style="flex-direction: column; align-items: center;">
+          <label style="font-size: 1.5rem; font-weight: bold; color: #ff9800;">
+            <input list="assetsList" id="symbolSelect" onchange="changeSymbol()" value="WING26" 
+                   style="font-size: 1.5rem; font-weight: bold; color: #ff9800; background: #222; border: 1px solid #444; padding: 5px; border-radius: 4px; width: 250px; text-align: center;">
+            <datalist id="assetsList">
+              {% for asset in assets %}
+                <option value="{{ asset }}">
+              {% endfor %}
+            </datalist>
+          </label>
+          <div style="font-size: 0.8rem; color: #666; margin-top: 2px;">
+            Total: {{ assets|length }} ativos
+          </div>
+      </div>
 
       <div class="controls">
         <label
@@ -186,8 +200,13 @@
         title: 'SMA Long',
       });
 
-      const SYMBOL = "WING26";
+      let SYMBOL = document.getElementById("symbolSelect").value;
       let updateInterval = null;
+
+      function changeSymbol() {
+        SYMBOL = document.getElementById("symbolSelect").value;
+        loadHistory();
+      }
 
       async function init() {
         // Carrega timeframes disponiveis
@@ -223,6 +242,9 @@
         const tf = document.getElementById("timeframeSelect").value;
         const count = document.getElementById("candleCountSelect").value;
         const statusEl = document.getElementById("status");
+        
+        // Atualiza SYMBOL caso tenha mudado
+        SYMBOL = document.getElementById("symbolSelect").value;
 
         // Limpa backtest things
         removeMarkers();
@@ -231,8 +253,7 @@
         document.getElementById("metrics").innerHTML = "";
 
         statusEl.innerText = `Baixando histórico (${count} velas de ${tf})...`;
-        document.getElementById("symbolDisplay").innerText =
-          `${SYMBOL} (${tf})`;
+        // Removed symbolDisplay update since it was replaced by dropdown
 
         try {
           const res = await fetch(

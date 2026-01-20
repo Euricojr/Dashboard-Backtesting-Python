@@ -11,9 +11,12 @@ if not mt5.initialize():
 else:
     print("✅ MT5 Conectado com sucesso")
 
+from utils.asset_filter import load_clean_assets
+
 @app.route('/')
 def index():
-    return render_template('index.html')
+    assets = load_clean_assets()
+    return render_template('index.html', assets=assets)
 
 def format_rates(rates):
     data = []
@@ -152,8 +155,13 @@ def run_backtest():
     markers = []
     trade_signal = df_res['Signal'].diff().fillna(0)
     
+    # Identify Buy/Sell rows
     buys = df_res[trade_signal == 1]
-    sells = df_res[trade_signal == -1] # Ou 1->0
+    sells = df_res[trade_signal == -1]
+    
+    # Use the original integer timestamp if possible, or convert carefully
+    # Assuming df index is default RangeIndex and 'time' is datetime.
+    # To be safe, we recalculate timestamp as int.
     
     for idx, row in buys.iterrows():
         ts = int(row['time'].timestamp())
@@ -174,6 +182,9 @@ def run_backtest():
             "shape": "arrowDown",
             "text": "Sell"
         })
+    
+    # CRITICAL: Sort markers by time. Lightweight Charts requires sorted markers.
+    markers.sort(key=lambda x: x['time'])
         
     return jsonify({
         "metrics": metrics,
