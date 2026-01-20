@@ -1,215 +1,301 @@
 <!doctype html>
 <html lang="pt-BR">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PoC Live WING26</title>
-    <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
-
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>LiveBot MT5 Dashboard</title>
+    <!-- Tabler Core -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/css/tabler.min.css" />
+    <!-- Fonts -->
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
     <style>
+      :root {
+        --tblr-font-sans-serif: "Inter", -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif;
+      }
       body {
-        font-family: sans-serif;
-        background-color: #1e1e1e;
-        color: #fff;
-        text-align: center;
-        margin: 0;
-        padding: 20px;
+        font-feature-settings: "cv03", "cv04", "cv11";
+        background-color: #050505;
       }
-      #chart {
-        width: 100%;
-        height: 600px;
-        margin-top: 20px;
-        border: 1px solid #333;
+      
+      /* Dark Theme overrides specific for this dashboard look */
+      .card {
+          background-color: #1a1a2e; /* Slightly lighter/blueish dark */
+          border: 1px solid rgba(255,255,255,0.05);
       }
-      .header {
-        margin-bottom: 20px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 10px;
+      .card-header {
+          background-color: rgba(255,255,255,0.02);
+          border-bottom: 1px solid rgba(255,255,255,0.05);
       }
-      .controls {
-        display: flex;
-        gap: 10px;
-        margin-top: 10px;
+      .form-control, .form-select {
+          background-color: #0f111a;
+          border-color: rgba(255,255,255,0.1);
+          color: #fff;
       }
-      select {
-        background: #333;
-        color: #fff;
-        border: 1px solid #555;
-        padding: 5px;
-        border-radius: 4px;
-        font-size: 1rem;
+      .form-control:focus, .form-select:focus {
+          background-color: #151824;
+          color: #fff;
+          border-color: #2962FF;
       }
-      .price-display {
-        font-size: 2.5rem;
-        margin: 5px;
-        color: #00e676;
-        font-weight: bold;
+      
+      /* Price Display */
+      .price-hero {
+          font-size: 3rem;
+          font-weight: 800;
+          color: #00e676;
+          line-height: 1;
+          letter-spacing: -1px;
+          text-shadow: 0 0 20px rgba(0, 230, 118, 0.2);
+          transition: color 0.3s;
       }
-      .symbol-display {
-        font-size: 1.5rem;
-        color: #ff9800;
-        font-weight: bold;
+      .price-hero.down { color: #ff1744; text-shadow: 0 0 20px rgba(255, 23, 68, 0.2); }
+      
+      /* Asset Input Custom */
+      .asset-input {
+          font-size: 1.2rem;
+          font-weight: bold;
+          text-transform: uppercase;
+          text-align: center;
+          letter-spacing: 1px;
       }
-      .status {
-        color: #888;
-        font-size: 0.9rem;
+
+      .big-chart-container {
+          height: 600px;
+          width: 100%;
+          border-radius: 4px;
+          overflow: hidden;
       }
     </style>
+    <!-- Lightweight Charts -->
+    <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
   </head>
-  <body>
-    <div class="header">
-      <!-- Droplist de Ativos -->
-      <div class="controls" style="flex-direction: column; align-items: center;">
-          <label style="font-size: 1.5rem; font-weight: bold; color: #ff9800;">
-            <input list="assetsList" id="symbolSelect" onchange="changeSymbol()" value="WING26" 
-                   style="font-size: 1.5rem; font-weight: bold; color: #ff9800; background: #222; border: 1px solid #444; padding: 5px; border-radius: 4px; width: 250px; text-align: center;">
-            <datalist id="assetsList">
-              {% for asset in assets %}
-                <option value="{{ asset }}">
-              {% endfor %}
-            </datalist>
-          </label>
-          <div style="font-size: 0.8rem; color: #666; margin-top: 2px;">
-            Total: {{ assets|length }} ativos
+  <body class="layout-fluid theme-dark" data-bs-theme="dark">
+    <div class="page">
+      
+      <!-- Navbar Simplificada -->
+      <header class="navbar navbar-expand-md d-print-none" style="background: transparent; border-bottom: 1px solid rgba(255,255,255,0.05);">
+        <div class="container-xl">
+          <h1 class="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3">
+            <a href="." class="text-reset">
+               <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-activity" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M3 12h4l3 8l4 -16l3 8h4"></path></svg>
+               LiveBot MT5
+            </a>
+          </h1>
+          <div class="navbar-nav flex-row order-md-last">
+            <div class="nav-item">
+                <span class="badge bg-green-lt" id="connection_status">Conectado</span>
+            </div>
           </div>
-      </div>
+        </div>
+      </header>
 
-      <div class="controls">
-        <label
-          >Timeframe:
-          <select id="timeframeSelect">
-            <!-- Populated via JS -->
-          </select>
-        </label>
-        <label
-          >Velas:
-          <select id="candleCountSelect">
-            <option value="100">100</option>
-            <option value="500">500</option>
-            <option value="1000" selected>1000</option>
-            <option value="2000">2000</option>
-            <option value="5000">5000</option>
-            <option value="10000">10000</option>
-          </select>
-        </label>
-      </div>
+      <div class="page-wrapper">
+        <div class="page-body">
+          <div class="container-xl">
+            <div class="row g-3">
+              
+              <!-- Sidebar / Controls -->
+              <div class="col-md-3">
+                
+                <!-- Ativo & Preço (Mini destaque) -->
+                <div class="card mb-3">
+                    <div class="card-body text-center">
+                        <div class="text-secondary text-uppercase mb-2">Ativo Atual</div>
+                        <!-- Input Pesquisável -->
+                        <div class="mb-3">
+                            <input list="assetsList" id="symbolSelect" class="form-control asset-input" onchange="changeSymbol()" value="WING26" placeholder="Buscar..." autocomplete="off">
+                            <datalist id="assetsList">
+                              {% for asset in assets %}
+                                <option value="{{ asset }}">
+                              {% endfor %}
+                            </datalist>
+                        </div>
+                        <div class="text-secondary text-uppercase small mb-3">{{ assets|length }} Ativos Disponíveis</div>
+                        
+                        <div class="hr-text my-3">Preço Atual</div>
+                        <div class="price-hero" id="price" style="font-size: 2.5rem;">--.--</div>
+                    </div>
+                </div>
 
-      <div
-        class="controls"
-        style="border-top: 1px solid #444; padding-top: 10px; margin-top: 10px"
-      >
-        <span style="font-weight: bold; color: #ddd">Backtest (SMA)</span>
-        <label
-          >Short:
-          <input
-            type="number"
-            id="smaShort"
-            value="20"
-            style="
-              width: 50px;
-              background: #333;
-              color: white;
-              border: 1px solid #555;
-            "
-        /></label>
-        <label
-          >Long:
-          <input
-            type="number"
-            id="smaLong"
-            value="50"
-            style="
-              width: 50px;
-              background: #333;
-              color: white;
-              border: 1px solid #555;
-            "
-        /></label>
-        <button
-          onclick="runBacktest()"
-          style="
-            background: #2196f3;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            cursor: pointer;
-            border-radius: 4px;
-          "
-        >
-          Run Backtest
-        </button>
-      </div>
+                <!-- Configurações do Gráfico -->
+                <div class="card mb-3">
+                  <div class="card-header">
+                    <h3 class="card-title">Configurações</h3>
+                  </div>
+                  <div class="card-body">
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label">Timeframe</label>
+                            <select id="timeframeSelect" class="form-select">
+                                <!-- Populated JS -->
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Velas</label>
+                            <select id="candleCountSelect" class="form-select">
+                                <option value="100">100</option>
+                                <option value="500">500</option>
+                                <option value="1000" selected>1000</option>
+                                <option value="2000">2000</option>
+                                <option value="5000">MAX</option>
+                            </select>
+                        </div>
+                    </div>
+                  </div>
+                </div>
 
-      <div class="price-display" id="price">--.--</div>
-      <div class="status" id="status">Conectando...</div>
+                <!-- Backtest Strategy -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Backtest (SMA)</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <label class="form-label">Media Curta</label>
+                                <input type="number" id="smaShort" class="form-control" value="20">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">Media Longa</label>
+                                <input type="number" id="smaLong" class="form-control" value="50">
+                            </div>
+                        </div>
+                        <button class="btn btn-primary w-100" onclick="runBacktest()">
+                           <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-player-play" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M7 4v16l13 -8z"></path></svg>
+                           Executar Backtest
+                        </button>
+                    </div>
+                </div>
 
-      <div
-        id="metrics"
-        style="
-          display: flex;
-          gap: 20px;
-          justify-content: center;
-          margin-top: 10px;
-          font-size: 0.9rem;
-          color: #aaa;
-        "
-      >
-        <!-- Metrics will appear here -->
+              </div>
+
+              <!-- Content Area -->
+              <div class="col-md-9">
+                
+                <!-- Main Chart Card -->
+                <div class="card mb-3">
+                    <div class="card-body p-0 position-relative">
+                         <div id="chart" class="big-chart-container"></div>
+                    </div>
+                </div>
+
+                <!-- Metrics & Stats -->
+                <div class="row g-3">
+                    <div class="col-md-5">
+                        <div class="card h-100">
+                             <div class="card-header"><h3 class="card-title">Métricas de Backtest</h3></div>
+                             <div class="card-body">
+                                 <div id="metrics_list" class="d-flex flex-column gap-2">
+                                     <div class="text-secondary text-center py-4">Execute o backtest para ver métricas.</div>
+                                 </div>
+                             </div>
+                        </div>
+                    </div>
+                    <div class="col-md-7">
+                        <!-- Placeholder para Trades List ou Info Extra -->
+                         <div class="card h-100">
+                             <div class="card-header"><h3 class="card-title">Status e Infos</h3></div>
+                             <div class="card-body">
+                                 <div class="d-flex justify-content-between mb-2">
+                                     <span>Ativo Selecionado:</span>
+                                     <strong id="display_symbol" class="text-white">WING26</strong>
+                                 </div>
+                                 <div class="d-flex justify-content-between mb-2">
+                                     <span>Intervalo:</span>
+                                     <strong id="display_timeframe" class="text-white">--</strong>
+                                 </div>
+                                 <div class="hr-text">Log de Status</div>
+                                 <div id="status_log" class="text-secondary small font-monospace">
+                                     Iniciando sistema...
+                                 </div>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div id="chart"></div>
-
+    <!-- Scripts Tabler -->
+    <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/js/tabler.min.js"></script>
+    
+    <!-- App Logic -->
     <script>
-      // Inicializa o Gráfico
-      const chart = LightweightCharts.createChart(
-        document.getElementById("chart"),
-        {
-          layout: { background: { color: "#1e1e1e" }, textColor: "#DDD" },
+      // ============ SETUP CHART ============
+      const chartContainer = document.getElementById("chart");
+      const chart = LightweightCharts.createChart(chartContainer, {
+          layout: { background: { color: "#1a1a2e" }, textColor: "#a0a0a0" },
           grid: {
-            vertLines: { color: "#2b2b43" },
-            horzLines: { color: "#2b2b43" },
+            vertLines: { color: "#24243e" },
+            horzLines: { color: "#24243e" },
           },
-          timeScale: { timeVisible: true, secondsVisible: false },
-          rightPriceScale: { visible: true },
-          leftPriceScale: { visible: true, borderColor: "#555" },
-        },
-      );
+          timeScale: { 
+              timeVisible: true, 
+              secondsVisible: false,
+              borderColor: "#333",
+          },
+          rightPriceScale: { 
+              borderColor: "#333",
+              scaleMargins: {
+                  top: 0.1,
+                  bottom: 0.1,
+              },
+          },
+      });
 
       const candleSeries = chart.addCandlestickSeries({
-        upColor: "#26a69a",
-        downColor: "#ef5350",
+        upColor: "#00e676",
+        downColor: "#ff1744",
         borderVisible: false,
-        wickUpColor: "#26a69a",
-        wickDownColor: "#ef5350",
+        wickUpColor: "#00e676",
+        wickDownColor: "#ff1744",
       });
 
-      // Series para SMA Short
-      const smaShortSeries = chart.addLineSeries({
-        color: '#2962FF',
-        lineWidth: 2,
-        title: 'SMA Short',
-      });
-      
-      // Series para SMA Long
-      const smaLongSeries = chart.addLineSeries({
-        color: '#FF6D00',
-        lineWidth: 2,
-        title: 'SMA Long',
-      });
+      const smaShortSeries = chart.addLineSeries({ color: '#2962FF', lineWidth: 2, title: 'SMA Short' });
+      const smaLongSeries = chart.addLineSeries({ color: '#FF6D00', lineWidth: 2, title: 'SMA Long' });
 
+      // Resize
+      new ResizeObserver(entries => {
+          if (entries.length === 0 || entries[0].target !== chartContainer) { return; }
+          const newRect = entries[0].contentRect;
+          chart.applyOptions({ height: newRect.height, width: newRect.width });
+      }).observe(chartContainer);
+
+
+      // ============ LOGIC ============
       let SYMBOL = document.getElementById("symbolSelect").value;
       let updateInterval = null;
 
+      function logStatus(msg, type='neutral') {
+          const el = document.getElementById("status_log");
+          let color = '#aaa';
+          if(type === 'error') color = '#ff5252';
+          if(type === 'success') color = '#69f0ae';
+          
+          el.innerHTML = `<span style="color:${color}">> ${msg}</span>`;
+          
+          // Badge status
+          const badge = document.getElementById("connection_status");
+          if(msg.includes("Erro") || msg.includes("Offline")) {
+              badge.className = "badge bg-red-lt";
+              badge.innerText = "Offline/Erro";
+          } else {
+              badge.className = "badge bg-green-lt";
+              badge.innerText = "Conectado";
+          }
+      }
+
       function changeSymbol() {
         SYMBOL = document.getElementById("symbolSelect").value;
+        document.getElementById("display_symbol").innerText = SYMBOL;
         loadHistory();
       }
 
       async function init() {
-        // Carrega timeframes disponiveis
         try {
           const res = await fetch("/api/timeframes");
           const timeframes = await res.json();
@@ -223,16 +309,12 @@
             select.appendChild(opt);
           });
 
-          // Event Listeners
           select.addEventListener("change", loadHistory);
-          document
-            .getElementById("candleCountSelect")
-            .addEventListener("change", loadHistory);
+          document.getElementById("candleCountSelect").addEventListener("change", loadHistory);
 
-          // Carrega primeira vez
           loadHistory();
         } catch (e) {
-          console.error("Erro ao carregar timeframes", e);
+          logStatus("Erro init: " + e, 'error');
         }
       }
 
@@ -241,46 +323,40 @@
 
         const tf = document.getElementById("timeframeSelect").value;
         const count = document.getElementById("candleCountSelect").value;
-        const statusEl = document.getElementById("status");
         
-        // Atualiza SYMBOL caso tenha mudado
         SYMBOL = document.getElementById("symbolSelect").value;
+        document.getElementById("display_timeframe").innerText = tf + " (" + count + " candles)";
 
-        // Limpa backtest things
-        removeMarkers();
+        // Reset
+        candleSeries.setMarkers([]);
         smaShortSeries.setData([]);
         smaLongSeries.setData([]);
-        document.getElementById("metrics").innerHTML = "";
+        document.getElementById("metrics_list").innerHTML = '<div class="text-secondary text-center py-4">Carregando dados...</div>';
 
-        statusEl.innerText = `Baixando histórico (${count} velas de ${tf})...`;
-        // Removed symbolDisplay update since it was replaced by dropdown
+        logStatus(`Baixando ${count} velas de ${SYMBOL}...`);
 
         try {
-          const res = await fetch(
-            `/api/history?symbol=${SYMBOL}&timeframe=${tf}&count=${count}`,
-          );
+          const res = await fetch(`/api/history?symbol=${SYMBOL}&timeframe=${tf}&count=${count}`);
           const data = await res.json();
 
           if (data.error) {
-            statusEl.innerText = "Erro: " + data.error;
+            logStatus("Erro API: " + data.error, 'error');
             return;
           }
 
           candleSeries.setData(data);
-          chart.timeScale().fitContent();
+          // chart.timeScale().fitContent(); // Desativado para manter zoom manual e foco no recente
 
-          statusEl.innerText =
-            "Histórico carregado. Iniciando sincronização tempo real...";
+
+          logStatus("Dados carregados. Sincronizando...", 'success');
 
           if (data.length > 0) {
             updateDisplay(data[data.length - 1]);
           }
 
-          // Começa loop de update
           updateInterval = setInterval(updateLive, 1000);
         } catch (err) {
-          console.error(err);
-          statusEl.innerText = "Erro ao carregar histórico.";
+          logStatus("Erro conexão: " + err, 'error');
         }
       }
 
@@ -289,79 +365,86 @@
         const count = document.getElementById("candleCountSelect").value;
         const short = document.getElementById("smaShort").value;
         const long = document.getElementById("smaLong").value;
-        const statusEl = document.getElementById("status");
 
-        statusEl.innerText = "Rodando Backtest...";
+        logStatus("Executando Backtest...", 'neutral');
 
         try {
-          const res = await fetch(
-            `/api/backtest?symbol=${SYMBOL}&timeframe=${tf}&count=${count}&short=${short}&long=${long}`,
-          );
+          const res = await fetch(`/api/backtest?symbol=${SYMBOL}&timeframe=${tf}&count=${count}&short=${short}&long=${long}`);
           const data = await res.json();
 
           if (data.error) {
-            statusEl.innerText = "Erro Backtest: " + data.error;
+            logStatus("Erro no Backtest: " + data.error, 'error');
             return;
           }
 
-          // Plot Markers
           candleSeries.setMarkers(data.markers);
-
-          // Plot SMAs
           smaShortSeries.setData(data.sma_short);
           smaLongSeries.setData(data.sma_long);
 
-          // Show Metrics
-          const m = data.metrics;
-          const t = data.trade_stats;
-
-          const metricsHtml = `
-                <div>Retorno Total: <span style="color: ${m["Total Return"] >= 0 ? "#00e676" : "#ff1744"}">${(m["Total Return"] * 100).toFixed(2)}%</span></div>
-                <div>Trades: ${t.total_trades}</div>
-                <div>Win Rate: ${(t.win_rate * 100).toFixed(1)}%</div>
-                <div>Profit Factor: ${t.profit_factor.toFixed(2)}</div>
-                <div>Sharpe: ${m["Sharpe Ratio (per bar)"].toFixed(2)}</div>
-              `;
-          document.getElementById("metrics").innerHTML = metricsHtml;
-
-          statusEl.innerText = "Backtest Concluído.";
+          renderMetrics(data.metrics, data.trade_stats);
+          logStatus("Backtest Concluído com Sucesso!", 'success');
+          
         } catch (e) {
           console.error(e);
-          statusEl.innerText = "Erro ao rodar backtest.";
+          logStatus("Exceção no Backtest", 'error');
         }
       }
 
-      function removeMarkers() {
-        candleSeries.setMarkers([]);
+      function renderMetrics(m, t) {
+          const formatPct = (val) => (val * 100).toFixed(2) + '%';
+          const colorPct = (val) => val >= 0 ? 'text-green' : 'text-red';
+          
+          const html = `
+            <div class="d-flex justify-content-between align-items-center border-bottom pb-2">
+                <span>Retorno Total:</span>
+                <strong class="${colorPct(m["Total Return"])}">${formatPct(m["Total Return"])}</strong>
+            </div>
+            <div class="d-flex justify-content-between align-items-center border-bottom pb-2 pt-2">
+                <span>Trades Totais:</span>
+                <strong>${t.total_trades}</strong>
+            </div>
+            <div class="d-flex justify-content-between align-items-center border-bottom pb-2 pt-2">
+                <span>Win Rate:</span>
+                <strong class="text-blue">${formatPct(t.win_rate)}</strong>
+            </div>
+            <div class="d-flex justify-content-between align-items-center border-bottom pb-2 pt-2">
+                <span>Profit Factor:</span>
+                <strong>${t.profit_factor.toFixed(2)}</strong>
+            </div>
+            <div class="d-flex justify-content-between align-items-center pt-2">
+                <span>Sharpe Ratio:</span>
+                <strong>${m["Sharpe Ratio (per bar)"].toFixed(2)}</strong>
+            </div>
+          `;
+          document.getElementById("metrics_list").innerHTML = html;
       }
 
       async function updateLive() {
         const tf = document.getElementById("timeframeSelect").value;
         try {
-          const res = await fetch(
-            `/api/candle?symbol=${SYMBOL}&timeframe=${tf}`,
-          );
+          const res = await fetch(`/api/candle?symbol=${SYMBOL}&timeframe=${tf}`);
           const candle = await res.json();
-
           if (candle.error) return;
-
+          
           candleSeries.update(candle);
           updateDisplay(candle);
-
-          document.getElementById("status").innerText = "• Ao Vivo";
-        } catch (err) {
-          console.error("Erro no live update:", err);
-        }
+        } catch (err) { }
       }
 
       function updateDisplay(candle) {
         const priceEl = document.getElementById("price");
-        priceEl.innerText = `${candle.close.toFixed(0)}`;
-        priceEl.style.color =
-          candle.close >= candle.open ? "#00e676" : "#ff1744";
+        const oldPrice = parseFloat(priceEl.innerText.replace('--.--','0'));
+        
+        priceEl.innerText = `${candle.close.toFixed(2)}`;
+        
+        // Color animation based on tick
+        if(candle.close > oldPrice) {
+            priceEl.className = "price-hero"; // Green default
+        } else if (candle.close < oldPrice) {
+            priceEl.className = "price-hero down";
+        }
       }
 
-      // Iniciar
       window.onload = init;
     </script>
   </body>
