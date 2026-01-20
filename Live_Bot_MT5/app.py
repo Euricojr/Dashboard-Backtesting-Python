@@ -61,12 +61,17 @@ def get_history():
     
     timeframe = TIMEFRAMES.get(tf_str, mt5.TIMEFRAME_M5)
     
+    # Garante que o simbolo esta selecionado no Market Watch
+    if not mt5.symbol_select(symbol, True):
+        print(f"Falha ao selecionar {symbol}, tentando mesmo assim...")
+
     # Pega 'count' velas do timeframe escolhido
     rates = mt5.copy_rates_from_pos(symbol, timeframe, 0, count)
     
     if rates is None or len(rates) == 0:
-        print(f"Erro ao pegar histórico para {symbol}. Verifique se o ativo existe no Market Watch.")
-        return jsonify({"error": f"Sem dados de histórico para {symbol}"}), 404
+        err = mt5.last_error()
+        print(f"Erro ao pegar histórico para {symbol}. Code={err}")
+        return jsonify({"error": f"Sem dados de histórico para {symbol}. MT5 Error: {err}"}), 404
         
     data = format_rates(rates)
     print(f"[{datetime.now().strftime('%H:%M:%S')}] Enviando histórico {tf_str} ({len(data)} velas) de {symbol}")
@@ -94,6 +99,89 @@ def get_candle():
 @app.route('/api/timeframes')
 def get_timeframes():
     return jsonify(list(TIMEFRAMES.keys()))
+
+# --- BACKTESTING ROUTES ---
+from backtester import strategy_sma_crossover, calculate_metrics, calculate_trade_stats
+
+@app.route('/api/backtest')
+def run_backtest():
+    symbol = request.args.get('symbol', 'WING26')
+    tf_str = request.args.get('timeframe', 'M5')
+    count = int(request.args.get('count', 1000))
+    short_window = int(request.args.get('short', 20))
+    long_window = int(request.args.get('long', 50))
+    
+    timeframe = TIMEFRAMES.get(tf_str, mt5.TIMEFRAME_M5)
+    
+    # Garante que o simbolo esta selecionado
+    mt5.symbol_select(symbol, True)
+    
+    # 1. Fetch Data
+    rates = mt5.copy_rates_from_pos(symbol, timeframe, 0, count)
+    if rates is None or len(rates) == 0:
+        err = mt5.last_error()
+        return jsonify({"error": f"No data found. MT5 Error: {err}"}), 404
+        
+    df = pd.DataFrame(rates)
+    df['time'] = pd.to_datetime(df['time'], unit='s')
+    
+    # 2. Run Strategy
+    # strategy_sma_crossover espera colunas 'close' que já existem no df do MT5 (lowercase)
+    df_res = strategy_sma_crossover(df, short_window, long_window)
+    
+    # 3. Calculate Metrics (Total)
+    metrics = calculate_metrics(df_res['Strategy_Returns'])
+    trade_stats = calculate_trade_stats(df_res)
+    
+    # 4. Prepare Chart Data
+    
+    # SMA Lines
+    sma_short_data = []
+    sma_long_data = []
+    
+    for idx, row in df_res.iterrows():
+        ts = int(idx.timestamp()) if isinstance(idx, pd.Timestamp) else int(row['time'].timestamp())
+        
+        if not pd.isna(row['SMA_Short']):
+            sma_short_data.append({"time": ts, "value": float(row['SMA_Short'])})
+            
+        if not pd.isna(row['SMA_Long']):
+            sma_long_data.append({"time": ts, "value": float(row['SMA_Long'])})
+
+    # Markers (Buy/Sell)
+    markers = []
+    trade_signal = df_res['Signal'].diff().fillna(0)
+    
+    buys = df_res[trade_signal == 1]
+    sells = df_res[trade_signal == -1] # Ou 1->0
+    
+    for idx, row in buys.iterrows():
+        ts = int(row['time'].timestamp())
+        markers.append({
+            "time": ts,
+            "position": "belowBar",
+            "color": "#2196F3",
+            "shape": "arrowUp",
+            "text": "Buy"
+        })
+        
+    for idx, row in sells.iterrows():
+        ts = int(row['time'].timestamp())
+        markers.append({
+            "time": ts,
+            "position": "aboveBar",
+            "color": "#e91e63",
+            "shape": "arrowDown",
+            "text": "Sell"
+        })
+        
+    return jsonify({
+        "metrics": metrics,
+        "trade_stats": trade_stats,
+        "sma_short": sma_short_data,
+        "sma_long": sma_long_data,
+        "markers": markers
+    })
 
 if __name__ == '__main__':
     print("🚀 Servidor PoC WING26 rodando em http://localhost:5002")

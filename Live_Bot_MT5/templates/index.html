@@ -82,8 +82,68 @@
         </label>
       </div>
 
+      <div
+        class="controls"
+        style="border-top: 1px solid #444; padding-top: 10px; margin-top: 10px"
+      >
+        <span style="font-weight: bold; color: #ddd">Backtest (SMA)</span>
+        <label
+          >Short:
+          <input
+            type="number"
+            id="smaShort"
+            value="20"
+            style="
+              width: 50px;
+              background: #333;
+              color: white;
+              border: 1px solid #555;
+            "
+        /></label>
+        <label
+          >Long:
+          <input
+            type="number"
+            id="smaLong"
+            value="50"
+            style="
+              width: 50px;
+              background: #333;
+              color: white;
+              border: 1px solid #555;
+            "
+        /></label>
+        <button
+          onclick="runBacktest()"
+          style="
+            background: #2196f3;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 4px;
+          "
+        >
+          Run Backtest
+        </button>
+      </div>
+
       <div class="price-display" id="price">--.--</div>
       <div class="status" id="status">Conectando...</div>
+
+      <div
+        id="metrics"
+        style="
+          display: flex;
+          gap: 20px;
+          justify-content: center;
+          margin-top: 10px;
+          font-size: 0.9rem;
+          color: #aaa;
+        "
+      >
+        <!-- Metrics will appear here -->
+      </div>
     </div>
 
     <div id="chart"></div>
@@ -99,6 +159,8 @@
             horzLines: { color: "#2b2b43" },
           },
           timeScale: { timeVisible: true, secondsVisible: false },
+          rightPriceScale: { visible: true },
+          leftPriceScale: { visible: true, borderColor: "#555" },
         },
       );
 
@@ -108,6 +170,20 @@
         borderVisible: false,
         wickUpColor: "#26a69a",
         wickDownColor: "#ef5350",
+      });
+
+      // Series para SMA Short
+      const smaShortSeries = chart.addLineSeries({
+        color: '#2962FF',
+        lineWidth: 2,
+        title: 'SMA Short',
+      });
+      
+      // Series para SMA Long
+      const smaLongSeries = chart.addLineSeries({
+        color: '#FF6D00',
+        lineWidth: 2,
+        title: 'SMA Long',
       });
 
       const SYMBOL = "WING26";
@@ -148,6 +224,12 @@
         const count = document.getElementById("candleCountSelect").value;
         const statusEl = document.getElementById("status");
 
+        // Limpa backtest things
+        removeMarkers();
+        smaShortSeries.setData([]);
+        smaLongSeries.setData([]);
+        document.getElementById("metrics").innerHTML = "";
+
         statusEl.innerText = `Baixando histórico (${count} velas de ${tf})...`;
         document.getElementById("symbolDisplay").innerText =
           `${SYMBOL} (${tf})`;
@@ -179,6 +261,57 @@
           console.error(err);
           statusEl.innerText = "Erro ao carregar histórico.";
         }
+      }
+
+      async function runBacktest() {
+        const tf = document.getElementById("timeframeSelect").value;
+        const count = document.getElementById("candleCountSelect").value;
+        const short = document.getElementById("smaShort").value;
+        const long = document.getElementById("smaLong").value;
+        const statusEl = document.getElementById("status");
+
+        statusEl.innerText = "Rodando Backtest...";
+
+        try {
+          const res = await fetch(
+            `/api/backtest?symbol=${SYMBOL}&timeframe=${tf}&count=${count}&short=${short}&long=${long}`,
+          );
+          const data = await res.json();
+
+          if (data.error) {
+            statusEl.innerText = "Erro Backtest: " + data.error;
+            return;
+          }
+
+          // Plot Markers
+          candleSeries.setMarkers(data.markers);
+
+          // Plot SMAs
+          smaShortSeries.setData(data.sma_short);
+          smaLongSeries.setData(data.sma_long);
+
+          // Show Metrics
+          const m = data.metrics;
+          const t = data.trade_stats;
+
+          const metricsHtml = `
+                <div>Retorno Total: <span style="color: ${m["Total Return"] >= 0 ? "#00e676" : "#ff1744"}">${(m["Total Return"] * 100).toFixed(2)}%</span></div>
+                <div>Trades: ${t.total_trades}</div>
+                <div>Win Rate: ${(t.win_rate * 100).toFixed(1)}%</div>
+                <div>Profit Factor: ${t.profit_factor.toFixed(2)}</div>
+                <div>Sharpe: ${m["Sharpe Ratio (per bar)"].toFixed(2)}</div>
+              `;
+          document.getElementById("metrics").innerHTML = metricsHtml;
+
+          statusEl.innerText = "Backtest Concluído.";
+        } catch (e) {
+          console.error(e);
+          statusEl.innerText = "Erro ao rodar backtest.";
+        }
+      }
+
+      function removeMarkers() {
+        candleSeries.setMarkers([]);
       }
 
       async function updateLive() {
