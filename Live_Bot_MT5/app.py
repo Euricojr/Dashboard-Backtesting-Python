@@ -13,7 +13,7 @@ else:
 
 @app.route('/')
 def index():
-    return render_template('teste_live.html')
+    return render_template('index.html')
 
 def format_rates(rates):
     data = []
