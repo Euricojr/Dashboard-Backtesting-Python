@@ -168,7 +168,7 @@ def run_backtest():
         markers.append({
             "time": ts,
             "position": "belowBar",
-            "color": "#2196F3",
+            "color": "#00E5FF", # Neon Cyan
             "shape": "arrowUp",
             "text": "Buy"
         })
@@ -178,7 +178,7 @@ def run_backtest():
         markers.append({
             "time": ts,
             "position": "aboveBar",
-            "color": "#e91e63",
+            "color": "#FF9100", # Neon Orange
             "shape": "arrowDown",
             "text": "Sell"
         })

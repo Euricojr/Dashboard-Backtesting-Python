@@ -255,8 +255,17 @@
         wickDownColor: "#ff1744",
       });
 
-      const smaShortSeries = chart.addLineSeries({ color: '#2962FF', lineWidth: 2, title: 'SMA Short' });
-      const smaLongSeries = chart.addLineSeries({ color: '#FF6D00', lineWidth: 2, title: 'SMA Long' });
+      const smaShortSeries = chart.addLineSeries({ 
+          color: '#FFFF00', // Bright Yellow
+          lineWidth: 2, 
+          title: 'SMA Short' 
+      });
+      
+      const smaLongSeries = chart.addLineSeries({ 
+          color: '#D500F9', // Bright Purple/Pink
+          lineWidth: 2, 
+          title: 'SMA Long' 
+      });
 
       // Resize
       new ResizeObserver(entries => {
