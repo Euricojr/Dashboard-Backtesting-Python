@@ -1,105 +1,96 @@
-# Portfolio de Estratégias & Trading System
+# 📊 Algorithmic Trading Ecosystem
 
-Bem-vindo ao repositório centralizado de estratégias quantitativas e trading bots. Este repositório foi reestruturado para hospedar dois projetos distintos, facilitando a organização entre desenvolvimento de estratégias (Backtest) e execução/monitoramento em tempo real (Live).
+Bem-vindo ao ecossistema de trading quantitativo. Este repositório centraliza o fluxo completo de desenvolvimento de estratégias, desde a pesquisa inicial até a execução em tempo real.
 
-## 📂 Estrutura do Repositório
-
-O projeto está dividido em duas pastas principais:
-
-1.  **`Backtest_Project`**: Dashboard de Análise e Backtest de Dados Históricos.
-2.  **`Live_Bot_MT5`**: Sistema de Trading em Tempo Real conectado ao MetaTrader 5.
+O projeto é dividido em dois módulos principais, cada um com um propósito específico no ciclo de vida do trading algorítmico:
 
 ---
 
-## 🚀 1. Backtest Project (Análise Histórica)
+## 🆚 Diferenças Principais (Resumo)
 
-Uma plataforma web robusta para testar ideias de trading usando dados históricos do Yahoo Finance.
+| Característica     | 🧪 **Backtest_Project** (O Laboratório)             | ⚡ **Live_Bot_MT5** (O Executor)                     |
+| :----------------- | :-------------------------------------------------- | :--------------------------------------------------- |
+| **Objetivo**       | Pesquisa, Validação e "Stress Test" de estratégias. | Monitoramento em Tempo Real e Execução de Ordens.    |
+| **Fonte de Dados** | **Yahoo Finance** (Foco em dados Diários/Semanais). | **MetaTrader 5** (Dados Intraday, M1, M5, Tick).     |
+| **Ambiente**       | Offline / Estático (Analisa o passado).             | Online / Dinâmico (Reage ao mercado agora).          |
+| **Foco Visual**    | Gráficos estatísticos, Curvas de Equity, Heatmaps.  | Dashboard Operacional, Glassmorphism, Latência Zero. |
+| **Uso Principal**  | _"Essa ideia funciona nos últimos 10 anos?"_        | _"O mercado está dando sinal agora? Executar!"_      |
 
-### Funcionalidades
+---
 
-- **Estratégias**: Cruzamento de Médias (SMA) e RSI Semanal.
-- **Visualização**: Gráficos interativos com TradingView Lightweight Charts.
-- **Métricas**: Sharpe Ratio, Drawdown, CAGR, Win Rate.
-- **IA Analysis**: Insights gerados por IA sobre a qualidade do backtest.
-- **Multi-Ativos**: Ações BR, Stocks EUA, Cripto e Índices.
+## 📂 1. Backtest_Project (Research)
 
-### Como Rodar
+Esta é a área de **Pesquisa e Desenvolvimento (R&D)**. Aqui focamos na robustez matemática das estratégias.
+
+### ✨ Funcionalidades
+
+- **Dados Históricos Longos**: Análise de décadas de dados via `yfinance`.
+- **Métricas Avançadas**: Cálculo automático de Sharpe Ratio, Sortino, Max Drawdown, CAGR.
+- **Comparação de Benchmark**: Estratégia vs Buy & Hold.
+- **Portfólio**: Otimização e correlação de múltiplos ativos.
+- **Standalone Notebooks**: Notebooks Jupyter isolados para testes rápidos e prototipagem.
+
+### 🛠️ Como Usar
+
+Focado em **python puro** e bibliotecas de data science (`pandas`, `numpy`, `scipy`).
 
 ```powershell
-# 1. Entre na pasta
 cd Backtest_Project/backend
-
-# 2. Ative o ambiente virtual (se ainda não estiver ativo)
-# ..\..\.venv\Scripts\activate
-
-# 3. Execute o servidor
+# Certifique-se de estar com o venv ativo
 python api.py
+# Acesse http://localhost:5000
 ```
-
-> Acesse: `http://localhost:5000`
 
 ---
 
-## 📈 2. Live Bot MT5 (Tempo Real)
+## 📉 2. Live_Bot_MT5 (Production)
 
-Uma aplicação conectada diretamente ao terminal MetaTrader 5 (MT5) para monitoramento de mercado e execução de ordens em tempo real.
+Esta é a área de **Produção**. Uma aplicação moderna conectada diretamente ao terminal MetaTrader 5 para operar no mercado brasileiro (B3) e Forex.
 
-### Funcionalidades
+### ✨ Funcionalidades
 
-- **Conexão Direta**: Integração via API Python nativa do MetaTrader5.
-- **Gráficos Live**: Plota candles recebidos diretamente do terminal.
-- **Seletores Dinâmicos**: Escolha de Timeframe (M1, M5, H1...) e Qtde de Velas.
-- **Scanner de Ativos**: Scripts para mapear todos os ativos disponíveis na corretora (Ações e Futuros).
-- **Foco**: Otimizado para Mini Índice (WIN) e Mini Dólar (WDO), mas compatível com toda a B3.
+- **Conexão Nativa MT5**: Baixa latência usando a biblioteca `MetaTrader5` oficial.
+- **Design Premium**: Interface **Glassmorphism** moderna (Dark Mode) para facilitar a leitura visual durante o pregão.
+- **Backtest Intraday**: Motor de backtest adaptado para dados de alta frequência (M1/M5) para validar a micro-estrutura do mercado.
+- **Scanner de Mercado**: Monitoramento de múltiplos ativos simultaneamente.
+- **Controle Total**: Painel visual para iniciar/pausar robôs e ajustar parâmetros em tempo real.
 
-### Pré-requisitos
+### ⚠️ Requisitos Críticos
 
-- **MetaTrader 5**: O terminal precisa estar instalado e rodando em sua máquina Windows.
-- **Conta**: Logada (Demo ou Real) e com "Algo Trading" habilitado nas configurações.
+- O terminal **MetaTrader 5** deve estar aberto e logado na máquina Windows.
+- A configuração **"Algo Trading"** deve estar habilitada no terminal.
 
-### Como Rodar
+### 🛠️ Como Usar
 
 ```powershell
-# 1. Entre na pasta
 cd Live_Bot_MT5
-
-# 2. Execute o app
+# O MT5 deve estar rodando!
 python app.py
+# Acesse http://localhost:5002
 ```
-
-> Acesse: `http://localhost:5002`
 
 ---
 
-## 🛠️ Ferramentas Úteis
+## ⚙️ Configuração do Ambiente
 
-### Listar Ativos do MT5
+Para garantir que ambos os projetos funcionem, utilizamos um ambiente virtual compartilhado ou dedicado.
 
-Dentro de `Live_Bot_MT5/scripts`, existe um utilitário para mapear sua corretora.
+1. **Criar Ambiente Virtual**:
 
-```powershell
-python Live_Bot_MT5/scripts/listar_ativos.py
-```
-
-Isso gera um CSV em `Live_Bot_MT5/data/` com todos os símbolos disponíveis.
-
----
-
-## 📦 Instalação Geral
-
-Se esta é a primeira vez rodando o projeto:
-
-1. **Crie o ambiente virtual**:
    ```powershell
    python -m venv .venv
    .\.venv\Scripts\activate
    ```
-2. **Instale as dependências**:
+
+2. **Instalar Dependências**:
    ```powershell
+   # Instala pacotes para ambos os projetos (Pandas, Flask, MetaTrader5, Yfinance)
    pip install -r requirements.txt
    ```
-   _(Certifique-se de que o `MetaTrader5` está no requirements.txt)_
 
 ---
 
+### 👨‍💻 Desenvolvedor
+
 Desenvolvido por **Eurico Júnior**.
+_Focado na convergência entre Data Science e Trading Executivo._
