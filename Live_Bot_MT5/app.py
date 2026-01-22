@@ -213,6 +213,94 @@ def run_backtest():
         "markers": markers
     })
 
+@app.route('/api/batch_backtest', methods=['POST'])
+def batch_backtest():
+    import time
+    
+    start_time = time.time()
+    req = request.get_json()
+    
+    timeframe_str = req.get('timeframe', 'M5')
+    count = int(req.get('candles', 1000))
+    short_window = int(req.get('sma_short', 20))
+    long_window = int(req.get('sma_long', 50))
+    
+    # 1. Get Assets
+    assets_data = load_clean_assets()
+    if isinstance(assets_data, dict):
+        assets = assets_data.get("Indices", []) + assets_data.get("Acoes", [])
+    else:
+        assets = assets_data
+        
+    print(f"🔍 Escaneando {len(assets)} ativos (Sequencial)...")
+    
+    results = []
+    
+    # Pre-resolve timeframe logic
+    mt5_tf = TIMEFRAMES.get(timeframe_str, mt5.TIMEFRAME_M5)
+    
+    # Sequential Execution to prevent MT5 IPC crashes
+    processed_count = 0
+    
+    for symbol in assets:
+        processed_count += 1
+        if processed_count % 10 == 0:
+            print(f"⏳ Processando {processed_count}/{len(assets)}: {symbol}...")
+            
+        try:
+            # Select symbol
+            selected = mt5.symbol_select(symbol, True)
+            if not selected:
+                continue
+
+            rates = mt5.copy_rates_from_pos(symbol, mt5_tf, 0, count)
+            if rates is None or len(rates) < long_window + 10:
+                continue
+            
+            df = pd.DataFrame(rates)
+            # Basic validation
+            if 'close' not in df.columns:
+                continue
+
+            # Run Logic
+            # We don't need 'time' conversion for strategy calc, only for charts if needed
+            # Optimization: Skip datetime conversion if not needed strictly for logic
+            # But strategy_sma_crossover might not need it? It uses rolling on close.
+            # But let's keep it safe.
+            # df['time'] = pd.to_datetime(df['time'], unit='s') 
+            
+            df_res = strategy_sma_crossover(df, short_window, long_window)
+            
+            # Metrics
+            # Only calc if we have signals?
+            trade_stats = calculate_trade_stats(df_res)
+            
+            if trade_stats['total_trades'] == 0:
+                continue
+                
+            metrics = calculate_metrics_advanced(df_res['Strategy_Returns'])
+            
+            results.append({
+                "symbol": symbol,
+                "total_return": metrics['total_return'],
+                "win_rate": trade_stats['win_rate'],
+                "total_trades": trade_stats['total_trades'],
+                "profit_factor": trade_stats['profit_factor'],
+                "sharpe": metrics['sharpe']
+            })
+            
+        except Exception as e:
+            print(f"Erro ao processar {symbol}: {e}")
+            continue
+
+    # Sort by Total Return Desc
+    results.sort(key=lambda x: x['total_return'], reverse=True)
+    
+    elapsed = time.time() - start_time
+    print(f"✅ Scan concluído em {elapsed:.2f}s. {len(results)} ativos encontrados.")
+    
+    return jsonify(results)
+
 if __name__ == '__main__':
     print("🚀 Servidor PoC WING26 rodando em http://localhost:5002")
     app.run(debug=True, port=5002)

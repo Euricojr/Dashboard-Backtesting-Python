@@ -164,7 +164,56 @@
                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-player-play" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M7 4v16l13 -8z"></path></svg>
                            Executar Backtest
                         </button>
+                        
+                        <div class="hr-text">OU</div>
+                        
+                        <button class="btn btn-outline-cyan w-100" onclick="openScanner()">
+                           <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-scan" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M4 7v-1a2 2 0 0 1 2 -2h2"></path><path d="M4 17v1a2 2 0 0 0 2 2h2"></path><path d="M16 4h2a2 2 0 0 1 2 2v1"></path><path d="M16 20h2a2 2 0 0 0 2 -2v-1"></path><path d="M5 12l14 0"></path></svg>
+                           Escanear Mercado
+                        </button>
                     </div>
+                </div>
+
+                <!-- Scanner Modal -->
+                <div class="modal modal-blur fade" id="modal-scanner" tabindex="-1" role="dialog" aria-hidden="true">
+                  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+                    <div class="modal-content" style="background-color: #1a1a2e; border: 1px solid rgba(255,255,255,0.1);">
+                      <div class="modal-header">
+                        <h5 class="modal-title">Scanner de Mercado (Ranking SMA)</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body">
+                         <div id="scanner-loading" class="text-center py-5" style="display: none;">
+                             <div class="spinner-border text-primary" role="status"></div>
+                             <div class="mt-2 text-muted">Analisando centenas de ativos... Aguarde.</div>
+                         </div>
+                         
+                         <div id="scanner-results" style="display: none;">
+                             <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                                <table class="table table-vcenter card-table table-striped">
+                                  <thead>
+                                    <tr>
+                                      <th>Rank</th>
+                                      <th>Ativo</th>
+                                      <th>Retorno %</th>
+                                      <th>Win Rate</th>
+                                      <th>Trades</th>
+                                      <th></th>
+                                    </tr>
+                                  </thead>
+                                  <tbody id="tbody_scanner">
+                                     <!-- Rows -->
+                                  </tbody>
+                                </table>
+                             </div>
+                         </div>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                        <button type="button" class="btn btn-primary" onclick="runScannerAPI()">Iniciar Scan</button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
               </div>
@@ -487,6 +536,101 @@
         } else if (candle.close < oldPrice) {
             priceEl.className = "price-hero down";
         }
+      }
+
+      // ============ SCANNER LOGIC ============
+      var scannerModalInstance = null;
+
+      function openScanner() {
+          const el = document.getElementById('modal-scanner');
+          if(!scannerModalInstance) {
+             scannerModalInstance = new bootstrap.Modal(el);
+          }
+          scannerModalInstance.show();
+      }
+
+      async function runScannerAPI() {
+          const tf = document.getElementById("timeframeSelect").value;
+          const count = document.getElementById("candleCountSelect").value;
+          const short = document.getElementById("smaShort").value;
+          const long = document.getElementById("smaLong").value;
+
+          document.getElementById("scanner-loading").style.display = "block";
+          document.getElementById("scanner-results").style.display = "none";
+          // Disable button
+          const btn = document.querySelector('#modal-scanner .btn-primary');
+          btn.disabled = true;
+          btn.innerText = "Processando...";
+          
+          try {
+              const res = await fetch('/api/batch_backtest', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                      timeframe: tf,
+                      candles: count,
+                      sma_short: short,
+                      sma_long: long
+                  })
+              });
+              
+              const results = await res.json();
+              renderScannerResults(results);
+          } catch(e) {
+              alert("Erro ao escanear: " + e);
+          } finally {
+              document.getElementById("scanner-loading").style.display = "none";
+              btn.disabled = false;
+              btn.innerText = "Iniciar Scan";
+          }
+      }
+
+      function renderScannerResults(data) {
+          const tbody = document.getElementById("tbody_scanner");
+          tbody.innerHTML = "";
+          
+          if(!data || data.length === 0) {
+              tbody.innerHTML = "<tr><td colspan='6' class='text-center'>Nenhum resultado encontrado.</td></tr>";
+              document.getElementById("scanner-results").style.display = "block";
+              return;
+          }
+
+          data.forEach((row, index) => {
+              const tr = document.createElement("tr");
+              const isWin = row.total_return > 0;
+              const colorClass = isWin ? "text-green" : "text-red";
+              
+              tr.innerHTML = `
+                  <td>${index + 1}</td>
+                  <td class="fw-bold text-white">${row.symbol}</td>
+                  <td class="${colorClass}">${(row.total_return * 100).toFixed(2)}%</td>
+                  <td>${(row.win_rate * 100).toFixed(1)}%</td>
+                  <td>${row.total_trades}</td>
+                  <td>
+                      <button class="btn btn-sm btn-ghost-primary" onclick="selectScannedAsset('${row.symbol}')">
+                        Ver
+                      </button>
+                  </td>
+              `;
+              tbody.appendChild(tr);
+          });
+          
+          document.getElementById("scanner-results").style.display = "block";
+      }
+
+      function selectScannedAsset(symbol) {
+          // Close modal
+          if(scannerModalInstance) scannerModalInstance.hide();
+          
+          // Set inputs
+          const select = document.getElementById("symbolSelect");
+          select.value = symbol;
+          
+          // Trigger change
+          changeSymbol();
+          
+          // Trigger backtest automatically for convenience
+          setTimeout(runBacktest, 500);
       }
 
       window.onload = init;
