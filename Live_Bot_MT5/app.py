@@ -15,7 +15,15 @@ from utils.asset_filter import load_clean_assets
 
 @app.route('/')
 def index():
-    assets = load_clean_assets()
+    assets_data = load_clean_assets()
+    
+    # Flatten dictionary to list for the datalist in frontend
+    # Prioritizing Indices then Stocks
+    if isinstance(assets_data, dict):
+        assets = assets_data.get("Indices", []) + assets_data.get("Acoes", [])
+    else:
+        assets = assets_data
+        
     return render_template('index.html', assets=assets)
 
 def format_rates(rates):
