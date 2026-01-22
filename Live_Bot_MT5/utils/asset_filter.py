@@ -1,78 +1,29 @@
-import pandas as pd
-import os
-import re
-
-def load_clean_assets(csv_path='data/lista_ativos.csv'):
+def load_clean_assets():
     """
-    Carrega e filtra a lista de ativos do arquivo CSV exportado do MT5.
-    Retorna um dicionário: { "Indices": [...], "Acoes": [...] }
+    Retorna lista curada dos principais ativos da B3 (Elite + Mid Caps).
+    Atualizada com Sanepar, CSN e elétricas/saneamento.
     """
-    fallback_std = {
-        "Indices": ["WING26", "WDOG26"],
-        "Acoes": ["ABEV3", "PETR4", "VALE3", "BOVA11"]
-    }
-    
-    # Resolve path
-    if not os.path.exists(csv_path):
-        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        csv_path_abs = os.path.join(base_dir, csv_path)
-        if not os.path.exists(csv_path_abs):
-            print(f"⚠️  Arquivo {csv_path} não encontrado. Usando fallback.")
-            return fallback_std
-        csv_path = csv_path_abs
-
-    try:
-        # Tenta ler CSV
-        try:
-            df = pd.read_csv(csv_path, sep=None, engine='python', encoding='utf-8')
-        except:
-            df = pd.read_csv(csv_path, sep='\t', encoding='utf-16')
-    except Exception as e:
-        print(f"⚠️  Erro ao ler CSV: {e}. Usando fallback.")
-        return fallback_std
-
-    # Normalizar colunas
-    df.columns = [c.strip() for c in df.columns]
-    if 'Symbol' not in df.columns:
-        return fallback_std
-
-    all_symbols = df['Symbol'].dropna().astype(str).unique().tolist()
-    
-    indices = []
-    acoes = []
-
-    # REGRAS REGEX
-    
-    # 1. Ações (Stocks)
-    # 4 Letras Maiúsculas + Sufixo (3, 4, 5, 6, 11)
-    # Exclui automaticamente: BDRs (32,33,34,35), Fracionários (F), Opções
-    regex_stock = re.compile(r'^[A-Z]{4}(3|4|5|6|11)$')
-    
-    # 2. Futuros (Futures)
-    # WIN/WDO/IND/DOL + Letra Mês + Ano (25, 26, 27)
-    regex_future = re.compile(r'^(WIN|WDO|IND|DOL)[A-Z](25|26|27)$')
-
-    for s in all_symbols:
-        s = s.strip()
+    whitelist = [
+        # --- FUTUROS E INDICES ---
+        "WING26", "WDOG26", "BOVA11", "SMAL11", "IVVB11",
         
-        # Check Futures
-        if regex_future.match(s):
-            indices.append(s)
-            continue # Se é futuro, não é ação
-            
-        # Check Stocks
-        if regex_stock.match(s):
-            acoes.append(s)
-
-    # Ordenação
-    indices.sort()
-    acoes.sort()
+        # --- AÇÕES (LISTA COMPLETA) ---
+        "ABEV3", "AESB3", "ALOS3", "ALUP11", "ARZZ3", "ASAI3", "AURE3", "AZUL4",
+        "B3SA3", "BBAS3", "BBDC3", "BBDC4", "BBSE3", "BEEF3", "BHIA3", "BPAC11",
+        "BRAP4", "BRAV3", "BRFS3", "BRKM5", "CAML3", "CASH3", "CCRO3", "CIEL3",
+        "CMIG4", "CMIN3", "COGN3", "CPFE3", "CPLE6", "CRFB3", "CSAN3", "CSNA3",
+        "CURY3", "CVCB3", "CXSE3", "CYRE3", "DIRR3", "DXCO3", "ECOR3", "EGIE3",
+        "ELET3", "ELET6", "EMBR3", "ENAT3", "ENEV3", "ENGI11", "EQTL3", "EZTC3",
+        "FLRY3", "GGBR4", "GGPS3", "GOAU4", "GOLL4", "HAPV3", "HYPE3", "IGTI11",
+        "INTB3", "IRBR3", "ITSA4", "ITUB4", "JBSS3", "JHSF3", "KEPL3", "KLBN11",
+        "LREN3", "LWSA3", "MATD3", "MGLU3", "MILS3", "MOVI3", "MRFG3", "MRVE3",
+        "MULT3", "MYPK3", "NEOE3", "NTCO3", "PCAR3", "PETR3", "PETR4", "PETZ3",
+        "POSI3", "PRIO3", "PSSA3", "RADL3", "RAIL3", "RAIZ4", "RANI3", "RDOR3",
+        "RECV3", "RENT3", "ROMI3", "RRRP3", "SANB11", "SAPR11", "SAPR4", "SBSP3",
+        "SLCE3", "SMTO3", "SOMA3", "STBP3", "SUZB3", "TAEE11", "TIMS3", "TOTS3",
+        "TRPL4", "UGPA3", "UNIP6", "USIM5", "VALE3", "VAMO3", "VBBR3", "VIVA3",
+        "VIVT3", "WEGE3", "YDUQ3"
+    ]
     
-    # Validação Mínima
-    if not indices and not acoes:
-        return fallback_std
-
-    return {
-        "Indices": indices,
-        "Acoes": acoes
-    }
+    # Remove duplicatas e ordena
+    return sorted(list(set(whitelist)))
