@@ -12,43 +12,71 @@
     <style>
       :root {
         --tblr-font-sans-serif: "Inter", -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif;
+        
+        /* True Dark / Carbon Theme Palette */
+        --bg-color: #09090b; 
+        --card-bg: #18181b;
+        --border-color: #27272a;
+        --text-primary: #f4f4f5; 
+        --text-secondary: #a1a1aa; 
+        
+        --accent-color: #3b82f6; 
+        --accent-hover: #2563eb;
+        
+        --profit-color: #10b981; 
+        --loss-color: #ef4444;   
       }
       body {
         font-feature-settings: "cv03", "cv04", "cv11";
-        background-color: #050505;
+        background-color: var(--bg-color);
+        color: var(--text-primary);
       }
       
-      /* Dark Theme overrides specific for this dashboard look */
+      /* Theme Overrides */
       .card {
-          background-color: #1a1a2e; /* Slightly lighter/blueish dark */
-          border: 1px solid rgba(255,255,255,0.05);
+          background-color: var(--card-bg);
+          border: 1px solid var(--border-color);
+          box-shadow: none;
       }
       .card-header {
-          background-color: rgba(255,255,255,0.02);
-          border-bottom: 1px solid rgba(255,255,255,0.05);
+          background-color: transparent;
+          border-bottom: 1px solid var(--border-color);
+      }
+      .card-title {
+          color: var(--text-primary);
       }
       .form-control, .form-select {
-          background-color: #0f111a;
-          border-color: rgba(255,255,255,0.1);
-          color: #fff;
+          background-color: #09090b; 
+          border-color: var(--border-color);
+          color: var(--text-primary);
       }
       .form-control:focus, .form-select:focus {
-          background-color: #151824;
-          color: #fff;
-          border-color: #2962FF;
+          background-color: #09090b;
+          border-color: var(--accent-color);
+          color: var(--text-primary);
+          box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
       }
       
+      /* Navbar */
+      .navbar {
+          border-bottom: 1px solid var(--border-color) !important;
+          background-color: var(--card-bg) !important;
+      }
+
       /* Price Display */
       .price-hero {
           font-size: 3rem;
           font-weight: 800;
-          color: #00e676;
+          color: var(--profit-color);
           line-height: 1;
           letter-spacing: -1px;
-          text-shadow: 0 0 20px rgba(0, 230, 118, 0.2);
+          text-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
           transition: color 0.3s;
       }
-      .price-hero.down { color: #ff1744; text-shadow: 0 0 20px rgba(255, 23, 68, 0.2); }
+      .price-hero.down { 
+          color: var(--loss-color); 
+          text-shadow: 0 0 20px rgba(239, 68, 68, 0.2); 
+      }
       
       /* Asset Input Custom */
       .asset-input {
@@ -57,6 +85,8 @@
           text-transform: uppercase;
           text-align: center;
           letter-spacing: 1px;
+          background-color: var(--bg-color);
+          border: 1px solid var(--border-color);
       }
 
       .big-chart-container {
@@ -64,6 +94,79 @@
           width: 100%;
           border-radius: 4px;
           overflow: hidden;
+      }
+
+      /* Table Styles */
+      .table thead th {
+          background-color: var(--card-bg);
+          color: var(--text-secondary);
+          border-bottom: 1px solid var(--border-color);
+      }
+      .table td {
+          color: var(--text-primary);
+          border-bottom: 1px solid var(--border-color);
+      }
+      .table-striped tbody tr:nth-of-type(odd) {
+          background-color: rgba(255,255,255,0.02);
+      }
+
+      /* --- CARBON OVERRIDES (Remove Blues) --- */
+      
+      /* 1. Buttons (Cinza Chumbo) */
+      .btn-primary {
+          background-color: #27272a !important; 
+          border-color: #3f3f46 !important;
+          color: var(--text-primary) !important;
+          box-shadow: none !important;
+      }
+      .btn-primary:hover, .btn-primary:focus, .btn-primary:active {
+          background-color: #3f3f46 !important; 
+          border-color: #52525b !important;
+      }
+      
+      /* 2. Forms (Inputs/Selects) */
+      .form-control, .form-select {
+          background-color: #18181b !important;
+          border: 1px solid #3f3f46 !important;
+          color: var(--text-primary) !important;
+      }
+      .form-control:focus, .form-select:focus {
+          background-color: #18181b !important;
+          border-color: #71717a !important; /* Cinza Claro no Focus */
+          box-shadow: 0 0 0 2px rgba(113, 113, 122, 0.25) !important;
+          color: white !important;
+      }
+
+      /* 3. Links */
+      a { color: var(--text-secondary); }
+      a:hover { color: var(--text-primary); text-decoration: none; }
+      
+      /* 4. Selection */
+      ::selection {
+          background: #3f3f46;
+          color: #ffffff;
+      }
+
+      /* 5. Scrollbar */
+      ::-webkit-scrollbar { width: 8px; height: 8px; }
+      ::-webkit-scrollbar-track { background: var(--bg-color); }
+      ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 4px; }
+      ::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+      /* --- AGGRESSIVE COMPONENT OVERRIDES --- */
+      .card, .card-header, .card-body, .card-footer {
+          background-color: #18181b !important;
+          border-color: #27272a !important;
+          color: #f4f4f5 !important;
+      }
+      
+      .page, .page-wrapper, .page-body {
+          background-color: #09090b !important;
+      }
+      
+      /* Remove any blue tint from Tabler defaults */
+      .bg-blue-lt, .bg-primary-lt {
+          background-color: #27272a !important;
+          color: #f4f4f5 !important;
       }
     </style>
     <!-- Lightweight Charts -->
@@ -73,7 +176,7 @@
     <div class="page">
       
       <!-- Navbar Simplificada -->
-      <header class="navbar navbar-expand-md d-print-none" style="background: transparent; border-bottom: 1px solid rgba(255,255,255,0.05);">
+      <header class="navbar navbar-expand-md d-print-none">
         <div class="container-xl">
           <h1 class="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3">
             <a href="." class="text-reset">
@@ -303,18 +406,18 @@
       // ============ SETUP CHART ============
       const chartContainer = document.getElementById("chart");
       const chart = LightweightCharts.createChart(chartContainer, {
-          layout: { background: { color: "#1a1a2e" }, textColor: "#a0a0a0" },
+          layout: { background: { color: "#18181b" }, textColor: "#a1a1aa" },
           grid: {
-            vertLines: { color: "#24243e" },
-            horzLines: { color: "#24243e" },
+            vertLines: { color: "#27272a" },
+            horzLines: { color: "#27272a" },
           },
           timeScale: { 
               timeVisible: true, 
               secondsVisible: false,
-              borderColor: "#333",
+              borderColor: "#27272a",
           },
           rightPriceScale: { 
-              borderColor: "#333",
+              borderColor: "#27272a",
               scaleMargins: {
                   top: 0.1,
                   bottom: 0.1,
