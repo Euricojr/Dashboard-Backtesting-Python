@@ -183,9 +183,18 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                       </div>
                       <div class="modal-body">
-                         <div id="scanner-loading" class="text-center py-5" style="display: none;">
-                             <div class="spinner-border text-primary" role="status"></div>
-                             <div class="mt-2 text-muted">Analisando centenas de ativos... Aguarde.</div>
+                         <!-- Loading State with Progress Bar -->
+                         <div id="scanner-loading" class="flex-column align-items-center justify-content-center py-4" style="display: none;">
+                             <h2 class="text-white mb-3" id="scan-status-text">0%</h2>
+                             
+                             <div class="progress progress-lg w-75 mb-3 active">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary" 
+                                     id="scan-progress-bar" role="progressbar" style="width: 0%"></div>
+                             </div>
+                             
+                             <div class="text-muted small text-uppercase tracking-wide" id="scan-status-detail">
+                                 Iniciando Scanner...
+                             </div>
                          </div>
                          
                          <div id="scanner-results" style="display: none;">
@@ -555,15 +564,19 @@
           const short = document.getElementById("smaShort").value;
           const long = document.getElementById("smaLong").value;
 
-          document.getElementById("scanner-loading").style.display = "block";
+          document.getElementById("scanner-loading").style.display = "flex";
           document.getElementById("scanner-results").style.display = "none";
-          // Disable button
+          
+          // Reset UI
+          document.getElementById("scan-progress-bar").style.width = "0%";
+          document.getElementById("scan-status-text").innerText = "Iniciando...";
+          document.getElementById("scan-status-detail").innerText = "Aguardando servidor...";
+
           const btn = document.querySelector('#modal-scanner .btn-primary');
           btn.disabled = true;
-          btn.innerText = "Processando...";
           
           try {
-              const res = await fetch('/api/batch_backtest', {
+              const response = await fetch('/api/batch_backtest', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({
@@ -573,15 +586,44 @@
                       sma_long: long
                   })
               });
-              
-              const results = await res.json();
-              renderScannerResults(results);
+
+              const reader = response.body.getReader();
+              const decoder = new TextDecoder("utf-8");
+              let buffer = "";
+
+              while (true) {
+                  const { done, value } = await reader.read();
+                  if (done) break;
+                  
+                  buffer += decoder.decode(value, { stream: true });
+                  let parts = buffer.split("\n");
+                  
+                  // Process all complete lines
+                  buffer = parts.pop(); 
+                  
+                  for (let line of parts) {
+                      if (!line.trim()) continue;
+                      try {
+                          const msg = JSON.parse(line);
+                          if(msg.type === 'progress') {
+                              // Update UI
+                              document.getElementById("scan-progress-bar").style.width = msg.value + "%";
+                              document.getElementById("scan-status-text").innerText = `${msg.value}%`;
+                              document.getElementById("scan-status-detail").innerText = msg.text;
+                          } else if (msg.type === 'result') {
+                              renderScannerResults(msg.data);
+                          }
+                      } catch (e) {
+                           console.error("Bad JSON chunk", line);
+                      }
+                  }
+              }
+
           } catch(e) {
               alert("Erro ao escanear: " + e);
           } finally {
               document.getElementById("scanner-loading").style.display = "none";
               btn.disabled = false;
-              btn.innerText = "Iniciar Scan";
           }
       }
 
