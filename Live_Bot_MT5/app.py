@@ -14,7 +14,11 @@ else:
 from utils.asset_filter import load_clean_assets
 
 @app.route('/')
-def index():
+def landing():
+    return render_template('landing.html')
+
+@app.route('/dashboard')
+def dashboard():
     assets_data = load_clean_assets()
     
     # Flatten dictionary to list for the datalist in frontend
