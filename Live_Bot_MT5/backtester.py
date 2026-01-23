@@ -16,7 +16,10 @@ def calculate_metrics_advanced(returns, periods_per_year=252*24):
 
     # 1. Retorno Total
     cumulative = (1 + returns).cumprod()
-    total_return = cumulative.iloc[-1] - 1
+    if cumulative.empty:
+         total_return = 0
+    else:
+         total_return = cumulative.iloc[-1] - 1
     
     # 2. Volatilidade (Anualizada aprox)
     # Assumindo que o backtest enviará dados 'diarizados' ou nós apenas multiplicamos
@@ -45,6 +48,12 @@ def calculate_metrics_advanced(returns, periods_per_year=252*24):
 
 def calculate_trade_stats(df):
     df = df.copy()
+    if 'Signal' not in df.columns:
+         return {
+            "total_trades": 0, "win_rate": 0, "avg_return": 0, 
+            "avg_duration": 0, "profit_factor": 0
+        }
+
     df['trade_signal'] = df['Signal'].diff().fillna(0)
     
     entries = df[df['trade_signal'] == 1]
@@ -128,3 +137,48 @@ def strategy_sma_crossover(df, short_window=20, long_window=50):
     data['Strategy_Returns'] = data['Signal'].shift(1) * data['Returns']
     
     return data
+
+def optimize_sma(df):
+    """
+    Otimiza os parâmetros de Média Móvel (Curta e Longa) buscando o maior Profit Factor.
+    Ranges:
+      Curta: 5 a 25 (passo 2)
+      Longa: 30 a 100 (passo 5)
+    """
+    best_pf = -1
+    best_params = (20, 50) # Default
+    
+    # Ranges definidos
+    short_range = range(5, 25, 2)
+    long_range = range(30, 105, 5) # Até 100 incluso
+    
+    # Pre-calculate returns to speed up
+    # Na verdade, SMA depende de rolling, entao precisamos calcular rolling a cada iteracao
+    # Como o dataset eh pequeno (~1000-5000 rows), isso sera rapido.
+    
+    for short in short_range:
+        for long in long_range:
+            if short >= long:
+                continue
+                
+            # Executa estrategia (Versao Light - poderiamos otimizar nao copiando tudo, mas ok)
+            try:
+                # Calculate SMAs directly without full strategy function overhead if desired, 
+                # but using the function ensures consistency.
+                res = strategy_sma_crossover(df, short, long)
+                
+                # Calculate lightweight Profit Factor
+                stats = calculate_trade_stats(res)
+                pf = stats['profit_factor']
+                
+                # Tie-breaker: Total Return? Or just PF. User asked for PF or Total Return.
+                # Let's prioritize PF, if PF is equal or very close, maybe shorter periods?
+                # For now simple max PF.
+                
+                if pf > best_pf:
+                    best_pf = pf
+                    best_params = (short, long)
+            except Exception as e:
+                continue
+                
+    return best_params

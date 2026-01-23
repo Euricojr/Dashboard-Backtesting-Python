@@ -112,7 +112,7 @@ def get_timeframes():
     return jsonify(list(TIMEFRAMES.keys()))
 
 # --- BACKTESTING ROUTES ---
-from backtester import strategy_sma_crossover, calculate_metrics_advanced, calculate_trade_stats
+from backtester import strategy_sma_crossover, calculate_metrics_advanced, calculate_trade_stats, optimize_sma
 
 @app.route('/api/backtest')
 def run_backtest():
@@ -121,6 +121,7 @@ def run_backtest():
     count = int(request.args.get('count', 1000))
     short_window = int(request.args.get('short', 20))
     long_window = int(request.args.get('long', 50))
+    do_optimize = request.args.get('optimize', 'false').lower() == 'true'
     
     timeframe = TIMEFRAMES.get(tf_str, mt5.TIMEFRAME_M5)
     
@@ -136,7 +137,16 @@ def run_backtest():
     df = pd.DataFrame(rates)
     df['time'] = pd.to_datetime(df['time'], unit='s')
     
-    # 2. Run Strategy
+    
+    # 2. Optimization (Optional)
+    best_params = None
+    if do_optimize:
+        # returns (short, long)
+        opt_short, opt_long = optimize_sma(df)
+        short_window, long_window = opt_short, opt_long
+        best_params = {"short": short_window, "long": long_window}
+
+    # 3. Run Strategy
     # strategy_sma_crossover espera colunas 'close' que já existem no df do MT5 (lowercase)
     df_res = strategy_sma_crossover(df, short_window, long_window)
     
@@ -196,7 +206,8 @@ def run_backtest():
         "trade_stats": trade_stats,
         "sma_short": sma_short_data,
         "sma_long": sma_long_data,
-        "markers": markers
+        "markers": markers,
+        "best_params": best_params
     })
 
 @app.route('/api/batch_backtest', methods=['POST'])
