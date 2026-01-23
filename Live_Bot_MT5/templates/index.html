@@ -623,11 +623,12 @@
       <div class="page-wrapper">
         <div class="page-body">
           <div class="container-xl">
-            <div class="row g-3">
+            <!-- Main Content Row (Equal Height Columns) -->
+            <div class="row g-3 align-items-stretch">
               <!-- Sidebar / Controls -->
-              <div class="col-md-3">
+              <div class="col-md-3 d-flex flex-column">
                 <!-- Ativo & Preço (Mini destaque) -->
-                <div class="card mb-3">
+                <div class="card mb-3 flex-shrink-0">
                   <div class="card-body text-center">
                     <div class="text-secondary text-uppercase small mb-3">Ativo Atual</div>
                     
@@ -669,8 +670,8 @@
 
                 <!-- Sidebar Cards Restored -->
                 
-                <!-- Backtest Strategy -->
-                <div class="card mb-3">
+                <!-- Backtest Strategy (Fills remaining height) -->
+                <div class="card flex-fill d-flex flex-column mb-0">
                   <div class="card-header d-flex justify-content-between align-items-center">
                     <h3 class="card-title">Estratégia (SMA)</h3>
                     
@@ -682,7 +683,7 @@
                         </div>
                     </div>
                   </div>
-                  <div class="card-body">
+                  <div class="card-body d-flex flex-column justify-content-between">
                     <div class="row g-2 mb-3" id="sma-inputs-wrapper">
                       <div class="col-6">
                         <label class="form-label">Curta</label>
@@ -694,15 +695,17 @@
                       </div>
                     </div>
 
-                    <button class="btn btn-primary w-100 mb-3" onclick="runBacktest()">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-player-play" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M7 4v16l13 -8z"></path></svg>
-                      Executar Backtest
-                    </button>
+                    <div class="mt-auto"> <!-- Push buttons to bottom -->
+                        <button class="btn btn-primary w-100 mb-3" onclick="runBacktest()">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-player-play" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M7 4v16l13 -8z"></path></svg>
+                          Executar Backtest
+                        </button>
 
-                    <button class="btn btn-outline-secondary w-100" onclick="openScanner()">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-scan" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M4 7v-1a2 2 0 0 1 2 -2h2"/><path d="M4 17v1a2 2 0 0 0 2 2h2"/><path d="M16 4h2a2 2 0 0 1 2 2v1"/><path d="M16 20h2a2 2 0 0 0 2 -2v-1"/><path d="M5 12l14 0"></path></svg>
-                      Scanner
-                    </button>
+                        <button class="btn btn-outline-secondary w-100" onclick="openScanner()">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-scan" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M4 7v-1a2 2 0 0 1 2 -2h2"/><path d="M4 17v1a2 2 0 0 0 2 2h2"/><path d="M16 4h2a2 2 0 0 1 2 2v1"/><path d="M16 20h2a2 2 0 0 0 2 -2v-1"/><path d="M5 12l14 0"></path></svg>
+                          Scanner
+                        </button>
+                    </div>
                   </div>
                 </div>
 
@@ -774,9 +777,9 @@
               </div>
 
               <!-- Content Area -->
-              <div class="col-md-9">
+              <div class="col-md-9 d-flex flex-column">
                 <!-- Main Chart Card -->
-                <div class="card mb-3">
+                <div class="card h-100 mb-0">
                   <div class="card-body p-0 position-relative">
                     
                     <!-- New Floating Toolbar (Simplified) -->
