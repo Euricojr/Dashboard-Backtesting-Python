@@ -141,17 +141,9 @@ def run_backtest():
     df_res = strategy_sma_crossover(df, short_window, long_window)
     
     
-    # 3. SPLIT TRAIN/TEST (70% Train, 30% Test)
-    split_idx = int(len(df_res) * 0.7)
-    df_in = df_res.iloc[:split_idx]
-    df_out = df_res.iloc[split_idx:]
-    
-    # 4. Calculate Advanced Metrics for Both
-    metrics_in = calculate_metrics_advanced(df_in['Strategy_Returns'])
-    metrics_out = calculate_metrics_advanced(df_out['Strategy_Returns'])
-    
-    trade_stats_in = calculate_trade_stats(df_in)
-    trade_stats_out = calculate_trade_stats(df_out)
+    # 3. Calculate Advanced Metrics (FULL DATASET)
+    metrics = calculate_metrics_advanced(df_res['Strategy_Returns'])
+    trade_stats = calculate_trade_stats(df_res)
     
     # 5. Prepare Chart Data
     
@@ -200,14 +192,8 @@ def run_backtest():
     markers.sort(key=lambda x: x['time'])
         
     return jsonify({
-        "metrics": {
-            "in": metrics_in,
-            "out": metrics_out
-        },
-        "trade_stats": {
-            "in": trade_stats_in,
-            "out": trade_stats_out
-        },
+        "metrics": metrics,
+        "trade_stats": trade_stats,
         "sma_short": sma_short_data,
         "sma_long": sma_long_data,
         "markers": markers

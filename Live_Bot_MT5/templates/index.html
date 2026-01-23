@@ -13,6 +13,8 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/css/tabler.min.css"
     />
+    <!-- RemixIcon -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <!-- Fonts -->
     <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
     <style>
@@ -352,6 +354,144 @@
         text-transform: uppercase;
         letter-spacing: 0.5px;
       }
+      
+      /* --- Financial Data Grid (Scanner Table) --- */
+      .scanner-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      
+      .scanner-table th {
+        background-color: #1f1f23;
+        color: #a1a1aa;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 8px 12px;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        border-bottom: 1px solid #27272a;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2); /* Shadow for depth */
+      }
+      
+      .scanner-table td {
+        padding: 8px 12px;
+        font-size: 0.85rem;
+        color: #f4f4f5;
+        border-bottom: 1px solid #27272a;
+        vertical-align: middle;
+        font-variant-numeric: tabular-nums; /* Monospaced numbers */
+        cursor: pointer;
+        transition: background-color 0.15s;
+      }
+      
+      .scanner-table tbody tr:hover td {
+        background-color: #27272a;
+      }
+      
+      /* Asset Column Styles */
+      .asset-col {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 700;
+      }
+      
+      .rank-badge {
+        font-size: 0.65rem;
+        padding: 2px 5px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 4px;
+        color: #a1a1aa;
+        min-width: 20px;
+        text-align: center;
+      }
+
+      /* --- Metrics Modern Dashboard (High-End Fintech) --- */
+      .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+      
+      /* --- Metrics Modern Dashboard (High-End Fintech) --- */
+      .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        /* Removed margin-bottom to align nicely with full height card */
+      }
+      
+      @media (max-width: 1400px) {
+         .metrics-grid {
+            grid-template-columns: repeat(2, 1fr);
+         }
+      }
+
+      .metric-card {
+        background: linear-gradient(180deg, #1e1e24 0%, #18181b 100%);
+        border: 1px solid rgba(255,255,255,0.05);
+        border-radius: 8px;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        border-left: 4px solid #52525e; /* Default Accent */
+      }
+
+      .metric-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px rgba(0,0,0,0.4);
+        border-top-color: rgba(255,255,255,0.1);
+        border-right-color: rgba(255,255,255,0.1);
+        border-bottom-color: rgba(255,255,255,0.1);
+      }
+      
+      /* Accent Colors (Border) */
+      .accent-green { border-left-color: #00E396 !important; }
+      .accent-red { border-left-color: #FF4560 !important; }
+      .accent-blue { border-left-color: #008FFB !important; }
+      .accent-purple { border-left-color: #775DD0 !important; }
+      .accent-warn { border-left-color: #FEB019 !important; }
+
+      .metric-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        color: #a1a1aa;
+        margin-bottom: 8px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      
+      .metric-label i {
+          font-size: 1rem;
+          color: #71717a;
+      }
+
+      .metric-value {
+        font-family: 'SF Mono', 'Segoe UI Mono', 'Roboto Mono', monospace;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #f4f4f5;
+        line-height: 1.1;
+        font-variant-numeric: tabular-nums;
+      }
+      
+      /* Detailed Colors */
+      .val-pos { color: #00E396; text-shadow: 0 0 10px rgba(0, 227, 150, 0.2); }
+      .val-neg { color: #FF4560; text-shadow: 0 0 10px rgba(255, 69, 96, 0.2); }
+      .val-neu { color: #E0E0E0; }
+      .val-warn { color: #FEB019; }
     </style>
     <!-- Lightweight Charts -->
     <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
@@ -478,15 +618,23 @@
                   </div>
                 </div>
 
-                <!-- Scanner Results List (Sidebar Persistent) -->
-                <div class="card mb-3" id="card-scanner-results" style="display: none;">
-                  <div class="card-header">
-                    <h3 class="card-title">Resultados Scanner</h3>
-                  </div>
+                <!-- Scanner Results List (Sidebar) -->
+                <div class="card mb-3" id="card-scanner-results" style="display: none; border: none; background: transparent;">
                   <div class="card-body p-0">
-                    <div id="results-list" class="list-group list-group-flush" style="max-height: 400px; overflow-y: auto;">
-                        <!-- JS injected items -->
-                    </div>
+                     <div class="table-responsive" style="max-height: 400px; overflow-y: auto; border-radius: 4px; border: 1px solid #27272a; background: #18181b;">
+                        <table class="scanner-table">
+                            <thead style="position: sticky; top: 0; z-index: 20; background: #1f1f23;">
+                                <tr>
+                                    <th style="padding-left: 12px;">Ativo</th>
+                                    <th class="text-end">Retorno</th>
+                                    <th class="text-end" style="padding-right: 12px;">Win%</th>
+                                </tr>
+                            </thead>
+                            <tbody id="results-table-body">
+                                <tr><td colspan='3' class='text-muted text-center py-5 small'>Resultados do Scanner aparecerão aqui.</td></tr>
+                            </tbody>
+                        </table>
+                     </div>
                   </div>
                 </div>
 
@@ -586,77 +734,28 @@
                   </div>
                 </div>
 
-                <!-- Detailed Analysis Tables -->
+                <!-- Detailed Analysis Tables (Metrics Only - Full Width) -->
                 <div class="row row-cards mt-3">
-                  <!-- Tabela 1: Relatório de Performance -->
+                  
+                  <!-- Métricas Grid -->
                   <div class="col-12">
                     <div class="card mb-3">
-                      <div class="card-header">
-                        <h3 class="card-title">
-                          Relatório de Performance: Treino vs Teste
+                      <div class="card-header border-0 pb-0">
+                        <h3 class="card-title text-uppercase text-secondary small font-weight-bold">
+                          Relatório de Performance
                         </h3>
                       </div>
-                      <div class="table-responsive">
-                        <table class="table table-vcenter card-table">
-                          <thead>
-                            <tr>
-                              <th>Métrica</th>
-                              <th class="text-secondary text-center">
-                                Treino (In-Sample)
-                              </th>
-                              <th class="text-primary fw-bold text-center">
-                                Teste (Out-of-Sample)
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody id="tbody_perf">
-                            <tr>
-                              <td
-                                colspan="3"
-                                class="text-center text-muted py-3"
-                              >
-                                Execute o backtest para ver os dados
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
+                      <div class="card-body">
+                          <div id="metrics-grid" class="metrics-grid">
+                               <!-- JS Populated -->
+                               <div class="text-center text-muted p-4 w-100" style="grid-column: 1 / -1;">
+                                   Execute o Backtest para visualizar os dados.
+                               </div>
+                          </div>
                       </div>
                     </div>
                   </div>
-
-                  <!-- Tabela 2: Estatisticas de Trades -->
-                  <div class="col-12">
-                    <div class="card">
-                      <div class="card-header">
-                        <h3 class="card-title">Estatísticas de Trades</h3>
-                      </div>
-                      <div class="table-responsive">
-                        <table class="table table-vcenter card-table">
-                          <thead>
-                            <tr>
-                              <th>Métrica</th>
-                              <th class="text-secondary text-center">
-                                Treino (In-Sample)
-                              </th>
-                              <th class="text-primary fw-bold text-center">
-                                Teste (Out-of-Sample)
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody id="tbody_stats">
-                            <tr>
-                              <td
-                                colspan="3"
-                                class="text-center text-muted py-3"
-                              >
-                                Execute o backtest para ver os dados
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
+                </div>
                 </div>
               </div>
             </div>
@@ -815,11 +914,9 @@
         smaShortSeries.setData([]);
         smaLongSeries.setData([]);
 
-        // Clear Tables
-        document.getElementById("tbody_perf").innerHTML =
-          '<tr><td colspan="3" class="text-center text-muted">Carregando...</td></tr>';
-        document.getElementById("tbody_stats").innerHTML =
-          '<tr><td colspan="3" class="text-center text-muted">Carregando...</td></tr>';
+        // Clear Grid
+        document.getElementById("metrics-grid").innerHTML = 
+            '<div class="text-center text-muted col-12 py-4" style="grid-column: 1 / -1;">Carregando métricas...</div>';
 
         logStatus(`Baixando ${count} velas de ${SYMBOL}...`);
 
@@ -881,41 +978,82 @@
       }
 
       function renderMetrics(data) {
-        const mIn = data.metrics.in;
-        const mOut = data.metrics.out;
-        const tIn = data.trade_stats.in;
-        const tOut = data.trade_stats.out;
+        const m = data.metrics;
+        const t = data.trade_stats;
+        const grid = document.getElementById("metrics-grid");
 
         const fmtPct = (v) => (v * 100).toFixed(2) + "%";
-        const fmtNum = (v) => v.toFixed(2);
+        
+        // --- Tooltips Definitions ---
+        const tooltips = {
+            "Retorno Total": "Lucro ou Prejuízo acumulado sobre o capital inicial.",
+            "Win Rate": "Porcentagem de operações que fecharam no positivo.",
+            "Profit Factor": "Razão entre Lucro Bruto e Perda Bruta. > 1.0 indica lucro.",
+            "Total Trades": "Quantidade total de operações realizadas no período.",
+            "Max Drawdown": "A maior queda percentual de capital registrada (Top to Bottom).",
+            "Sharpe Ratio": "Retorno ajustado ao risco. > 1.0 é considerado bom.",
+            "Volatilidade": "Desvio padrão dos retornos (Risco da operação).",
+            "Duração (Dias)": "Tempo médio que cada operação ficou aberta."
+        };
 
-        // Helper for colored percentage
-        const tdPct = (v) =>
-          `<td class="text-center ${v >= 0 ? "text-green" : "text-red"}">${fmtPct(v)}</td>`;
-        const td = (v) => `<td class="text-center">${v}</td>`;
-        const tdBold = (v) =>
-          `<td class="text-center fw-bold text-white">${v}</td>`;
-        const tdPctBold = (v) =>
-          `<td class="text-center fw-bold ${v >= 0 ? "text-green" : "text-red"}">${fmtPct(v)}</td>`;
+        // --- Card Generator ---
+        const createCard = (label, value, icon, type='neutral') => {
+            let valClass = "val-neu";
+            let accentClass = "accent-blue"; // Default Neutral
+            let displayVal = value;
+            const tooltip = tooltips[label] || "";
+            
+            if(type === 'pct') {
+                displayVal = fmtPct(value);
+                if(value > 0) { valClass = "val-pos"; accentClass = "accent-green"; }
+                else if(value < 0) { valClass = "val-neg"; accentClass = "accent-red"; }
+            }
+            else if(type === 'diff') {
+                 displayVal = (value >= 0 ? "+" : "") + fmtPct(value);
+                 if(value > 0) { valClass = "val-pos"; accentClass = "accent-green"; }
+                 else if(value < 0) { valClass = "val-neg"; accentClass = "accent-red"; }
+            }
+            else if(type === 'pf') {
+                displayVal = value.toFixed(2);
+                if(value >= 1.5) { valClass = "val-pos"; accentClass = "accent-green"; }
+                else if(value >= 1.0) { valClass = "val-warn"; accentClass = "accent-warn"; }
+                else { valClass = "val-neg"; accentClass = "accent-red"; }
+            }
+            else if(type === 'neutral') {
+                if(typeof value === 'number') displayVal = value.toFixed(2);
+                accentClass = "accent-purple";
+            }
+            else if(type === 'int') {
+                displayVal = Math.round(value);
+                valClass = "val-neu";
+                accentClass = "accent-blue";
+            }
+            else if(type === 'drawdown') {
+                displayVal = fmtPct(value); // Values usually negative
+                valClass = "val-neg";
+                accentClass = "accent-red";
+            }
 
-        // Tabela 1: Performance (CAGR Removido)
-        const perfHtml = `
-             <tr><td>Retorno Total</td>${td(fmtPct(mIn.total_return))}${tdPctBold(mOut.total_return)}</tr>
-             <tr><td>Sharpe Ratio</td>${td(fmtNum(mIn.sharpe))}${tdBold(fmtNum(mOut.sharpe))}</tr>
-             <tr><td>Volatilidade</td>${td(fmtPct(mIn.volatility))}${tdBold(fmtPct(mOut.volatility))}</tr>
-             <tr><td>Max Drawdown</td>${td(fmtPct(mIn.max_drawdown))}${tdBold(fmtPct(mOut.max_drawdown))}</tr>
-          `;
-        document.getElementById("tbody_perf").innerHTML = perfHtml;
-
-        // Tabela 2: Stats
-        const statsHtml = `
-             <tr><td>Total de Trades</td>${td(tIn.total_trades)}${tdBold(tOut.total_trades)}</tr>
-             <tr><td>Win Rate</td>${td(fmtPct(tIn.win_rate))}${tdBold(fmtPct(tOut.win_rate))}</tr>
-             <tr><td>Retorno Médio</td>${td(fmtPct(tIn.avg_return))}${tdPctBold(tOut.avg_return)}</tr>
-             <tr><td>Duração Média (Dias)</td>${td(fmtNum(tIn.avg_duration))}${tdBold(fmtNum(tOut.avg_duration))}</tr>
-             <tr><td>Profit Factor</td>${td(fmtNum(tIn.profit_factor))}${tdBold(fmtNum(tOut.profit_factor))}</tr>
-          `;
-        document.getElementById("tbody_stats").innerHTML = statsHtml;
+            return `
+                <div class="metric-card ${accentClass}" title="${tooltip}" style="cursor: help;">
+                    <span class="metric-label"><i class="${icon}"></i>${label}</span>
+                    <span class="metric-value ${valClass}">${displayVal}</span>
+                </div>
+            `;
+        };
+        
+        // --- Build Grid ---
+        grid.innerHTML = `
+            ${createCard("Retorno Total", m.total_return, "ri-funds-box-line", "diff")}
+            ${createCard("Win Rate", t.win_rate, "ri-crosshair-2-line", "pct")}
+            ${createCard("Profit Factor", t.profit_factor, "ri-scales-3-line", "pf")}
+            ${createCard("Total Trades", t.total_trades, "ri-exchange-dollar-line", "int")}
+            
+            ${createCard("Max Drawdown", m.max_drawdown, "ri-arrow-down-circle-line", "drawdown")}
+            ${createCard("Sharpe Ratio", m.sharpe, "ri-pulse-line", "neutral")}
+            ${createCard("Volatilidade", m.volatility, "ri-activity-line", "pct")}
+            ${createCard("Duração (Dias)", t.avg_duration, "ri-time-line", "neutral")}
+        `;
       }
 
       async function updateLive() {
@@ -1071,11 +1209,15 @@
       }
 
       function renderSidebarResults(data) {
-          const list = document.getElementById("results-list");
-          list.innerHTML = "";
+          const tbody = document.getElementById("results-table-body");
+          tbody.innerHTML = "";
+          
+          // Ensure visibility (though it's always visible now in layout)
+          const card = document.getElementById("card-scanner-results");
+          if(card) card.style.display = "block";
           
           if(!data || data.length === 0) {
-              list.innerHTML = "<div class='list-group-item'>Nenhum resultado.</div>";
+              tbody.innerHTML = "<tr><td colspan='3' class='text-muted text-center py-3'>Nenhum resultado.</td></tr>";
               return;
           }
           
@@ -1084,39 +1226,34 @@
               const colorClass = isWin ? "text-green" : "text-red";
               const retPct = (row.total_return * 100).toFixed(2) + "%";
               
-              const item = document.createElement("a");
-              item.href = "#";
-              item.className = "list-group-item list-group-item-action";
-              item.id = `scan-item-${row.symbol}`;
-              item.onclick = (e) => {
-                  e.preventDefault();
-                  selectScannedAsset(row.symbol);
-              };
+              const tr = document.createElement("tr");
+              tr.onclick = () => selectScannedAsset(row.symbol);
               
               // Logo Logic
               const logoUrl = `https://raw.githubusercontent.com/thefintz/icones-b3/main/icones/${row.symbol}.png`;
               
-              item.innerHTML = `
-                  <div class="d-flex w-100 justify-content-between align-items-center">
-                    <div class="d-flex align-items-center">
-                        <span class="badge bg-secondary-lt me-2">${i+1}</span>
-                        <!-- Logo -->
-                        <img 
-                            src="${logoUrl}" 
-                            alt="${row.symbol}" 
-                            class="avatar avatar-xs me-2 rounded" 
-                            style="width: 24px; height: 24px; object-fit: contain;"
-                            onerror="this.style.display='none';"
-                        >
-                        <strong class="text-white">${row.symbol}</strong>
-                    </div>
-                    <div class="text-end">
-                        <div class="${colorClass} fw-bold">${retPct}</div>
-                        <div class="small text-muted">${(row.win_rate*100).toFixed(0)}% WR</div>
-                    </div>
-                  </div>
+              tr.innerHTML = `
+                  <td style="padding-left: 12px;">
+                      <div class="asset-col">
+                          <span class="rank-badge">${i+1}</span>
+                          <img 
+                              src="${logoUrl}" 
+                              alt="${row.symbol}" 
+                              class="rounded" 
+                              style="width: 20px; height: 20px; object-fit: contain;"
+                              onerror="this.style.display='none';"
+                          >
+                          <span class="text-white">${row.symbol}</span>
+                      </div>
+                  </td>
+                  <td class="text-end">
+                      <span class="${colorClass} fw-bold">${retPct}</span>
+                  </td>
+                  <td class="text-end" style="padding-right: 12px;">
+                      <span class="text-secondary small">${(row.win_rate*100).toFixed(0)}%</span>
+                  </td>
               `;
-              list.appendChild(item);
+              tbody.appendChild(tr);
           });
       }
 
