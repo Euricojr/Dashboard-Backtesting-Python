@@ -302,6 +302,17 @@
                     <div class="text-secondary text-uppercase mb-2">
                       Ativo Atual
                     </div>
+                    
+                    <div class="mb-3 d-flex justify-content-center">
+                        <img 
+                            id="current-asset-logo" 
+                            src="https://raw.githubusercontent.com/thefintz/icones-b3/main/icones/WING26.png" 
+                            class="avatar rounded me-2 mb-2" 
+                            style="width: 80px; height: 80px; object-fit: contain;"
+                            onerror="this.style.display='none';"
+                        >
+                    </div>
+
                     <!-- Input Pesquisável -->
                     <div class="mb-3">
                       <input
@@ -712,7 +723,14 @@
 
       function changeSymbol() {
         SYMBOL = document.getElementById("symbolSelect").value;
-        // Removed display_symbol update since element removed
+        
+        // Update Logo
+        const logoEl = document.getElementById("current-asset-logo");
+        if(logoEl) {
+            logoEl.style.display = 'block'; // Reset visibility before loading new
+            logoEl.src = `https://raw.githubusercontent.com/thefintz/icones-b3/main/icones/${SYMBOL}.png`;
+        }
+        
         loadHistory();
       }
 
@@ -1032,10 +1050,21 @@
                   selectScannedAsset(row.symbol);
               };
               
+              // Logo Logic
+              const logoUrl = `https://raw.githubusercontent.com/thefintz/icones-b3/main/icones/${row.symbol}.png`;
+              
               item.innerHTML = `
                   <div class="d-flex w-100 justify-content-between align-items-center">
-                    <div>
+                    <div class="d-flex align-items-center">
                         <span class="badge bg-secondary-lt me-2">${i+1}</span>
+                        <!-- Logo -->
+                        <img 
+                            src="${logoUrl}" 
+                            alt="${row.symbol}" 
+                            class="avatar avatar-xs me-2 rounded" 
+                            style="width: 24px; height: 24px; object-fit: contain;"
+                            onerror="this.style.display='none';"
+                        >
                         <strong class="text-white">${row.symbol}</strong>
                     </div>
                     <div class="text-end">
