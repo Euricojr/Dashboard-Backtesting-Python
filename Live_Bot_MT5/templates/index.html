@@ -837,10 +837,9 @@
         const tdPctBold = (v) =>
           `<td class="text-center fw-bold ${v >= 0 ? "text-green" : "text-red"}">${fmtPct(v)}</td>`;
 
-        // Tabela 1: Performance
+        // Tabela 1: Performance (CAGR Removido)
         const perfHtml = `
              <tr><td>Retorno Total</td>${td(fmtPct(mIn.total_return))}${tdPctBold(mOut.total_return)}</tr>
-             <tr><td>CAGR (Est.)</td>${td(fmtPct(mIn.cagr))}${tdPctBold(mOut.cagr)}</tr>
              <tr><td>Sharpe Ratio</td>${td(fmtNum(mIn.sharpe))}${tdBold(fmtNum(mOut.sharpe))}</tr>
              <tr><td>Volatilidade</td>${td(fmtPct(mIn.volatility))}${tdBold(fmtPct(mOut.volatility))}</tr>
              <tr><td>Max Drawdown</td>${td(fmtPct(mIn.max_drawdown))}${tdBold(fmtPct(mOut.max_drawdown))}</tr>

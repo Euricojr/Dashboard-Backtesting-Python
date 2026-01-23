@@ -25,11 +25,7 @@ def calculate_metrics_advanced(returns, periods_per_year=252*24):
     # Vamos usar sqrt(252) como padrão de mercado se não soubermos a freq.
     volatility = returns.std() * np.sqrt(periods_per_year) 
     
-    # 3. CAGR
-    # Precisamos de tempo. Vamos estimar: (1+TotalRet)^(1/Anos) - 1
-    # Se não temos datas, CAGR fica igual Total Return se < 1 ano
-    # Vamos retornar Total Return como proxy se short duration
-    cagr = total_return # Placeholder se não tiver duration real em anos
+    # CAGR Logic Removed as requested
     
     # 4. Sharpe
     mean_ret = returns.mean() * periods_per_year
@@ -42,7 +38,6 @@ def calculate_metrics_advanced(returns, periods_per_year=252*24):
     
     return {
         "total_return": total_return,
-        "cagr": cagr, 
         "sharpe": sharpe,
         "volatility": volatility,
         "max_drawdown": max_dd
