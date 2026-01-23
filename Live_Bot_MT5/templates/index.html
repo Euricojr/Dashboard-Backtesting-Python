@@ -2,171 +2,241 @@
 <html lang="pt-BR">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>LiveBot MT5 Dashboard</title>
     <!-- Tabler Core -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/css/tabler.min.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/css/tabler.min.css"
+    />
     <!-- Fonts -->
     <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
     <style>
       :root {
-        --tblr-font-sans-serif: "Inter", -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif;
-        
+        --tblr-font-sans-serif:
+          "Inter", -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI,
+          Roboto, Helvetica Neue, sans-serif;
+
         /* True Dark / Carbon Theme Palette */
-        --bg-color: #09090b; 
+        --bg-color: #09090b;
         --card-bg: #18181b;
         --border-color: #27272a;
-        --text-primary: #f4f4f5; 
-        --text-secondary: #a1a1aa; 
-        
-        --accent-color: #3b82f6; 
-        --accent-hover: #2563eb;
-        
-        --profit-color: #10b981; 
-        --loss-color: #ef4444;   
+        --text-primary: #f4f4f5;
+        --text-secondary: #a1a1aa;
+
+        --accent-color: #71717a;
+        --accent-hover: #52525b;
+
+        --profit-color: #10b981;
+        --loss-color: #ef4444;
       }
       body {
         font-feature-settings: "cv03", "cv04", "cv11";
         background-color: var(--bg-color);
         color: var(--text-primary);
       }
-      
+
       /* Theme Overrides */
       .card {
-          background-color: var(--card-bg);
-          border: 1px solid var(--border-color);
-          box-shadow: none;
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        box-shadow: none;
       }
       .card-header {
-          background-color: transparent;
-          border-bottom: 1px solid var(--border-color);
+        background-color: transparent;
+        border-bottom: 1px solid var(--border-color);
       }
       .card-title {
-          color: var(--text-primary);
+        color: var(--text-primary);
       }
-      .form-control, .form-select {
-          background-color: #09090b; 
-          border-color: var(--border-color);
-          color: var(--text-primary);
+      .form-control,
+      .form-select {
+        background-color: #09090b;
+        border-color: var(--border-color);
+        color: var(--text-primary);
       }
-      .form-control:focus, .form-select:focus {
-          background-color: #09090b;
-          border-color: var(--accent-color);
-          color: var(--text-primary);
-          box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+      .form-control:focus,
+      .form-select:focus {
+        background-color: #09090b !important;
+        border-color: var(--border-color) !important;
+        color: var(--text-primary) !important;
+        box-shadow: none !important;
+        outline: none !important;
       }
-      
+
       /* Navbar */
-      .navbar {
-          border-bottom: 1px solid var(--border-color) !important;
-          background-color: var(--card-bg) !important;
+      /* Navbar (Fixed: Remove Blue Line) */
+      header, .navbar, .page-header {
+          border-bottom: 1px solid #27272a !important;
+          box-shadow: none !important;
+          background-color: #18181b !important;
       }
 
       /* Price Display */
       .price-hero {
-          font-size: 3rem;
-          font-weight: 800;
-          color: var(--profit-color);
-          line-height: 1;
-          letter-spacing: -1px;
-          text-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
-          transition: color 0.3s;
+        font-size: 3rem;
+        font-weight: 800;
+        color: var(--profit-color);
+        line-height: 1;
+        letter-spacing: -1px;
+        text-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+        transition: color 0.3s;
       }
-      .price-hero.down { 
-          color: var(--loss-color); 
-          text-shadow: 0 0 20px rgba(239, 68, 68, 0.2); 
+      .price-hero.down {
+        color: var(--loss-color);
+        text-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
       }
-      
+
       /* Asset Input Custom */
       .asset-input {
-          font-size: 1.2rem;
-          font-weight: bold;
-          text-transform: uppercase;
-          text-align: center;
-          letter-spacing: 1px;
-          background-color: var(--bg-color);
-          border: 1px solid var(--border-color);
+        font-size: 1.2rem;
+        font-weight: bold;
+        text-transform: uppercase;
+        text-align: center;
+        letter-spacing: 1px;
+        background-color: var(--bg-color);
+        border: 1px solid var(--border-color);
       }
 
       .big-chart-container {
-          height: 600px;
-          width: 100%;
-          border-radius: 4px;
-          overflow: hidden;
+        height: 600px;
+        width: 100%;
+        border-radius: 4px;
+        overflow: hidden;
       }
 
       /* Table Styles */
       .table thead th {
-          background-color: var(--card-bg);
-          color: var(--text-secondary);
-          border-bottom: 1px solid var(--border-color);
+        background-color: var(--card-bg);
+        color: var(--text-secondary);
+        border-bottom: 1px solid var(--border-color);
       }
       .table td {
-          color: var(--text-primary);
-          border-bottom: 1px solid var(--border-color);
+        color: var(--text-primary);
+        border-bottom: 1px solid var(--border-color);
       }
       .table-striped tbody tr:nth-of-type(odd) {
-          background-color: rgba(255,255,255,0.02);
+        background-color: rgba(255, 255, 255, 0.02);
       }
 
       /* --- CARBON OVERRIDES (Remove Blues) --- */
-      
+
       /* 1. Buttons (Cinza Chumbo) */
       .btn-primary {
-          background-color: #27272a !important; 
-          border-color: #3f3f46 !important;
-          color: var(--text-primary) !important;
-          box-shadow: none !important;
+        background-color: #27272a !important;
+        border-color: #3f3f46 !important;
+        color: var(--text-primary) !important;
+        box-shadow: none !important;
       }
-      .btn-primary:hover, .btn-primary:focus, .btn-primary:active {
-          background-color: #3f3f46 !important; 
-          border-color: #52525b !important;
+      .btn-primary:hover,
+      .btn-primary:focus,
+      .btn-primary:active {
+        background-color: #3f3f46 !important;
+        border-color: #52525b !important;
       }
-      
+
       /* 2. Forms (Inputs/Selects) */
-      .form-control, .form-select {
-          background-color: #18181b !important;
-          border: 1px solid #3f3f46 !important;
-          color: var(--text-primary) !important;
+      .form-control,
+      .form-select {
+        background-color: #18181b !important;
+        border: 1px solid #3f3f46 !important;
+        color: var(--text-primary) !important;
       }
-      .form-control:focus, .form-select:focus {
-          background-color: #18181b !important;
-          border-color: #71717a !important; /* Cinza Claro no Focus */
-          box-shadow: 0 0 0 2px rgba(113, 113, 122, 0.25) !important;
-          color: white !important;
+      .form-control:focus,
+      .form-select:focus {
+        background-color: #18181b !important;
+        border-color: #71717a !important; /* Cinza Claro no Focus */
+        box-shadow: 0 0 0 2px rgba(113, 113, 122, 0.25) !important;
+        color: white !important;
       }
 
       /* 3. Links */
-      a { color: var(--text-secondary); }
-      a:hover { color: var(--text-primary); text-decoration: none; }
-      
-      /* 4. Selection */
-      ::selection {
-          background: #3f3f46;
-          color: #ffffff;
+      a {
+        color: var(--text-secondary);
+      }
+      a:hover {
+        color: var(--text-primary);
+        text-decoration: none;
       }
 
-      /* 5. Scrollbar */
-      ::-webkit-scrollbar { width: 8px; height: 8px; }
-      ::-webkit-scrollbar-track { background: var(--bg-color); }
-      ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 4px; }
-      ::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+      /* 4. Selection */
+      ::selection {
+        background: #3f3f46;
+        color: #ffffff;
+      }
+      
+      /* Table Hover Neutral */
+      .table-hover tbody tr:hover {
+        background-color: #27272a !important; 
+      }
+
+      /* 5. Scrollbar (Universal Fix) */
+      /* 5. Scrollbar (Universal & Firefox Support) */
+      /* Firefox Default */
+      * {
+          scrollbar-width: thin;
+          scrollbar-color: #3f3f46 #09090b;
+      }
+
+      /* Webkit (Chrome/Edge/Safari) */
+      ::-webkit-scrollbar, *::-webkit-scrollbar {
+          width: 8px;
+          height: 8px;
+      }
+      ::-webkit-scrollbar-track, *::-webkit-scrollbar-track {
+          background: #09090b;
+      }
+      ::-webkit-scrollbar-thumb, *::-webkit-scrollbar-thumb {
+          background: #3f3f46;
+          border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover, *::-webkit-scrollbar-thumb:hover {
+          background: #52525b; /* Lighter gray on hover */
+      }
+
+      /* Force neutral primary */
+      .bg-primary { background-color: #27272a !important; color: #f4f4f5 !important; }
+      .progress-bar { background-color: #27272a !important; }
       /* --- AGGRESSIVE COMPONENT OVERRIDES --- */
-      .card, .card-header, .card-body, .card-footer {
-          background-color: #18181b !important;
-          border-color: #27272a !important;
-          color: #f4f4f5 !important;
+      .card,
+      .card-header,
+      .card-body,
+      .card-footer {
+        background-color: #18181b !important;
+        border-color: #27272a !important;
+        color: #f4f4f5 !important;
       }
-      
-      .page, .page-wrapper, .page-body {
-          background-color: #09090b !important;
+
+      .page,
+      .page-wrapper,
+      .page-body {
+        background-color: #09090b !important;
       }
-      
+
       /* Remove any blue tint from Tabler defaults */
-      .bg-blue-lt, .bg-primary-lt {
-          background-color: #27272a !important;
-          color: #f4f4f5 !important;
+      .bg-blue-lt,
+      .bg-primary-lt {
+        background-color: #27272a !important;
+        color: #f4f4f5 !important;
+      }
+
+      /* Fix for blue lines in hr-text (Preco Atual) */
+      .hr-text {
+        color: var(--text-secondary) !important;
+      }
+      .hr-text::before,
+      .hr-text::after {
+        background-color: var(--border-color) !important;
+      }
+
+      /* Ensure asset input doesn't show blue on focus */
+      .asset-input:focus {
+        border-color: var(--border-color) !important;
+        box-shadow: none !important;
       }
     </style>
     <!-- Lightweight Charts -->
@@ -174,19 +244,36 @@
   </head>
   <body class="layout-fluid theme-dark" data-bs-theme="dark">
     <div class="page">
-      
       <!-- Navbar Simplificada -->
       <header class="navbar navbar-expand-md d-print-none">
         <div class="container-xl">
-          <h1 class="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3">
+          <h1
+            class="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3"
+          >
             <a href="." class="text-reset">
-               <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-activity" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M3 12h4l3 8l4 -16l3 8h4"></path></svg>
-               LiveBot MT5
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="icon icon-tabler icon-tabler-activity"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                stroke-width="2"
+                stroke="currentColor"
+                fill="none"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                <path d="M3 12h4l3 8l4 -16l3 8h4"></path>
+              </svg>
+              LiveBot MT5
             </a>
           </h1>
           <div class="navbar-nav flex-row order-md-last">
             <div class="nav-item">
-                <span class="badge bg-green-lt" id="connection_status">Conectado</span>
+              <span class="badge bg-green-lt" id="connection_status"
+                >Conectado</span
+              >
             </div>
           </div>
         </div>
@@ -196,28 +283,43 @@
         <div class="page-body">
           <div class="container-xl">
             <div class="row g-3">
-              
               <!-- Sidebar / Controls -->
               <div class="col-md-3">
-                
                 <!-- Ativo & Preço (Mini destaque) -->
                 <div class="card mb-3">
-                    <div class="card-body text-center">
-                        <div class="text-secondary text-uppercase mb-2">Ativo Atual</div>
-                        <!-- Input Pesquisável -->
-                        <div class="mb-3">
-                            <input list="assetsList" id="symbolSelect" class="form-control asset-input" onchange="changeSymbol()" value="WING26" placeholder="Buscar..." autocomplete="off">
-                            <datalist id="assetsList">
-                              {% for asset in assets %}
-                                <option value="{{ asset }}">
-                              {% endfor %}
-                            </datalist>
-                        </div>
-                        <div class="text-secondary text-uppercase small mb-3">{{ assets|length }} Ativos Disponíveis</div>
-                        
-                        <div class="hr-text my-3">Preço Atual</div>
-                        <div class="price-hero" id="price" style="font-size: 2.5rem;">--.--</div>
+                  <div class="card-body text-center">
+                    <div class="text-secondary text-uppercase mb-2">
+                      Ativo Atual
                     </div>
+                    <!-- Input Pesquisável -->
+                    <div class="mb-3">
+                      <input
+                        list="assetsList"
+                        id="symbolSelect"
+                        class="form-control asset-input"
+                        onchange="changeSymbol()"
+                        value="WING26"
+                        placeholder="Buscar..."
+                        autocomplete="off"
+                      />
+                      <datalist id="assetsList">
+                        {% for asset in assets %}
+                        <option value="{{ asset }}">{% endfor %}</option>
+                      </datalist>
+                    </div>
+                    <div class="text-secondary text-uppercase small mb-3">
+                      {{ assets|length }} Ativos Disponíveis
+                    </div>
+
+                    <div class="hr-text my-3">Preço Atual</div>
+                    <div
+                      class="price-hero"
+                      id="price"
+                      style="font-size: 2.5rem"
+                    >
+                      --.--
+                    </div>
+                  </div>
                 </div>
 
                 <!-- Configurações do Gráfico -->
@@ -227,71 +329,137 @@
                   </div>
                   <div class="card-body">
                     <div class="row g-2 mb-3">
-                        <div class="col-6">
-                            <label class="form-label">Timeframe</label>
-                            <select id="timeframeSelect" class="form-select">
-                                <!-- Populated JS -->
-                            </select>
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label">Velas</label>
-                            <select id="candleCountSelect" class="form-select">
-                                <option value="100">100</option>
-                                <option value="500">500</option>
-                                <option value="1000" selected>1000</option>
-                                <option value="2000">2000</option>
-                                <option value="5000">MAX</option>
-                            </select>
-                        </div>
+                      <div class="col-6">
+                        <label class="form-label">Timeframe</label>
+                        <select id="timeframeSelect" class="form-select">
+                          <!-- Populated JS -->
+                        </select>
+                      </div>
+                      <div class="col-6">
+                        <label class="form-label">Velas</label>
+                        <select id="candleCountSelect" class="form-select">
+                          <option value="100">100</option>
+                          <option value="500">500</option>
+                          <option value="1000" selected>1000</option>
+                          <option value="2000">2000</option>
+                          <option value="5000">MAX</option>
+                        </select>
+                      </div>
                     </div>
                   </div>
                 </div>
 
                 <!-- Backtest Strategy -->
                 <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">Backtest (SMA)</h3>
+                  <div class="card-header">
+                    <h3 class="card-title">Backtest (SMA)</h3>
+                  </div>
+                  <div class="card-body">
+                    <div class="row g-2 mb-3">
+                      <div class="col-6">
+                        <label class="form-label">Media Curta</label>
+                        <input
+                          type="number"
+                          id="smaShort"
+                          class="form-control"
+                          value="20"
+                        />
+                      </div>
+                      <div class="col-6">
+                        <label class="form-label">Media Longa</label>
+                        <input
+                          type="number"
+                          id="smaLong"
+                          class="form-control"
+                          value="50"
+                        />
+                      </div>
                     </div>
-                    <div class="card-body">
-                        <div class="row g-2 mb-3">
-                            <div class="col-6">
-                                <label class="form-label">Media Curta</label>
-                                <input type="number" id="smaShort" class="form-control" value="20">
-                            </div>
-                            <div class="col-6">
-                                <label class="form-label">Media Longa</label>
-                                <input type="number" id="smaLong" class="form-control" value="50">
-                            </div>
-                        </div>
-                        <button class="btn btn-primary w-100" onclick="runBacktest()">
-                           <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-player-play" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M7 4v16l13 -8z"></path></svg>
-                           Executar Backtest
-                        </button>
-                        
-                        <div class="hr-text">OU</div>
-                        
-                        <button class="btn btn-outline-cyan w-100" onclick="openScanner()">
-                           <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-scan" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M4 7v-1a2 2 0 0 1 2 -2h2"></path><path d="M4 17v1a2 2 0 0 0 2 2h2"></path><path d="M16 4h2a2 2 0 0 1 2 2v1"></path><path d="M16 20h2a2 2 0 0 0 2 -2v-1"></path><path d="M5 12l14 0"></path></svg>
-                           Escanear Mercado
-                        </button>
-                    </div>
+                    <button
+                      class="btn btn-primary w-100"
+                      onclick="runBacktest()"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="icon icon-tabler icon-tabler-player-play"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        stroke-width="2"
+                        stroke="currentColor"
+                        fill="none"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path
+                          stroke="none"
+                          d="M0 0h24v24H0z"
+                          fill="none"
+                        ></path>
+                        <path d="M7 4v16l13 -8z"></path>
+                      </svg>
+                      Executar Backtest
+                    </button>
+
+                    <div class="hr-text">OU</div>
+
+                    <button
+                      class="btn btn-outline-cyan w-100"
+                      onclick="openScanner()"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="icon icon-tabler icon-tabler-scan"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        stroke-width="2"
+                        stroke="currentColor"
+                        fill="none"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path
+                          stroke="none"
+                          d="M0 0h24v24H0z"
+                          fill="none"
+                        ></path>
+                        <path d="M4 7v-1a2 2 0 0 1 2 -2h2"></path>
+                        <path d="M4 17v1a2 2 0 0 0 2 2h2"></path>
+                        <path d="M16 4h2a2 2 0 0 1 2 2v1"></path>
+                        <path d="M16 20h2a2 2 0 0 0 2 -2v-1"></path>
+                        <path d="M5 12l14 0"></path>
+                      </svg>
+                      Escanear Mercado
+                    </button>
+                  </div>
                 </div>
 
                 <!-- Scanner Modal -->
-                <div class="modal modal-blur fade" id="modal-scanner" tabindex="-1" role="dialog" aria-hidden="true">
-                  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
-                    <div class="modal-content" style="background-color: #1a1a2e; border: 1px solid rgba(255,255,255,0.1);">
-                      <div class="modal-header">
-                        <h5 class="modal-title">Scanner de Mercado (Ranking SMA)</h5>
+                <div
+                  class="modal modal-blur fade"
+                  id="modal-scanner"
+                  tabindex="-1"
+                  role="dialog"
+                  aria-hidden="true"
+                >
+                  <div
+                    class="modal-dialog modal-dialog-centered"
+                    role="document"
+                  >
+                    <div class="modal-content" style="background-color: #18181b; border: 1px solid #27272a; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                      <div class="modal-header border-0 pb-0" style="background-color: #18181b !important;">
+                        <h5 class="modal-title fw-bold text-white text-uppercase tracking-wide" style="font-size: 0.9rem;">Scanner de Mercado</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                       </div>
-                      <div class="modal-body">
+                      <div class="modal-body pt-2">
+                         <div class="text-secondary mb-3 small" style="font-size: 0.75rem;">Ranking SMA Strategy</div>
                          <!-- Loading State with Progress Bar -->
-                         <div id="scanner-loading" class="flex-column align-items-center justify-content-center py-4" style="display: none;">
-                             <h2 class="text-white mb-3" id="scan-status-text">0%</h2>
+                         <div id="scanner-loading" class="flex-column align-items-center justify-content-center py-3" style="display: none;">
+                             <h2 class="text-white mb-2" id="scan-status-text" style="font-size: 1.5rem;">0%</h2>
                              
-                             <div class="progress progress-lg w-75 mb-3 active">
-                                <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary" 
+                             <div class="progress progress-lg w-100 mb-2 active" style="height: 6px; background: #27272a;">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" 
                                      id="scan-progress-bar" role="progressbar" style="width: 0%"></div>
                              </div>
                              
@@ -302,7 +470,7 @@
                          
                          <div id="scanner-results" style="display: none;">
                              <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
-                                <table class="table table-vcenter card-table table-striped">
+                                <table class="table table-vcenter card-table table-hover">
                                   <thead>
                                     <tr>
                                       <th>Rank</th>
@@ -320,46 +488,59 @@
                              </div>
                          </div>
                       </div>
-                      <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-                        <button type="button" class="btn btn-primary" onclick="runScannerAPI()">Iniciar Scan</button>
+                      <div class="modal-footer border-0 justify-content-center pt-0 pb-4">
+                        <button type="button" class="btn btn-ghost-secondary px-4 me-2" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-success px-4 fw-bold" onclick="runScannerAPI()" style="background-color: var(--profit-color); border: none;">
+                           <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-radar me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M21 12h-8a1 1 0 1 0 -1 1v8a9 9 0 0 0 8 -9"></path><path d="M16 9a5 5 0 1 0 -7 7"></path><path d="M20.486 9a9 9 0 1 0 -11.482 11.495"></path></svg>
+                           Iniciar Escaneamento
+                        </button>
                       </div>
                     </div>
                   </div>
                 </div>
-
               </div>
 
               <!-- Content Area -->
               <div class="col-md-9">
-                
                 <!-- Main Chart Card -->
                 <div class="card mb-3">
-                    <div class="card-body p-0 position-relative">
-                         <div id="chart" class="big-chart-container"></div>
-                    </div>
+                  <div class="card-body p-0 position-relative">
+                    <div id="chart" class="big-chart-container"></div>
+                  </div>
                 </div>
 
                 <!-- Detailed Analysis Tables -->
                 <div class="row row-cards mt-3">
-                  
                   <!-- Tabela 1: Relatório de Performance -->
                   <div class="col-12">
                     <div class="card mb-3">
                       <div class="card-header">
-                        <h3 class="card-title">Relatório de Performance: Treino vs Teste</h3>
+                        <h3 class="card-title">
+                          Relatório de Performance: Treino vs Teste
+                        </h3>
                       </div>
                       <div class="table-responsive">
                         <table class="table table-vcenter card-table">
                           <thead>
                             <tr>
                               <th>Métrica</th>
-                              <th class="text-secondary text-center">Treino (In-Sample)</th>
-                              <th class="text-primary fw-bold text-center">Teste (Out-of-Sample)</th>
+                              <th class="text-secondary text-center">
+                                Treino (In-Sample)
+                              </th>
+                              <th class="text-primary fw-bold text-center">
+                                Teste (Out-of-Sample)
+                              </th>
                             </tr>
                           </thead>
                           <tbody id="tbody_perf">
-                             <tr><td colspan="3" class="text-center text-muted py-3">Execute o backtest para ver os dados</td></tr>
+                            <tr>
+                              <td
+                                colspan="3"
+                                class="text-center text-muted py-3"
+                              >
+                                Execute o backtest para ver os dados
+                              </td>
+                            </tr>
                           </tbody>
                         </table>
                       </div>
@@ -368,29 +549,38 @@
 
                   <!-- Tabela 2: Estatisticas de Trades -->
                   <div class="col-12">
-                     <div class="card">
-                        <div class="card-header">
-                           <h3 class="card-title">Estatísticas de Trades</h3>
-                        </div>
-                        <div class="table-responsive">
-                           <table class="table table-vcenter card-table">
-                              <thead>
-                                 <tr>
-                                    <th>Métrica</th>
-                                    <th class="text-secondary text-center">Treino (In-Sample)</th>
-                                    <th class="text-primary fw-bold text-center">Teste (Out-of-Sample)</th>
-                                 </tr>
-                              </thead>
-                              <tbody id="tbody_stats">
-                                 <tr><td colspan="3" class="text-center text-muted py-3">Execute o backtest para ver os dados</td></tr>
-                              </tbody>
-                           </table>
-                        </div>
-                     </div>
+                    <div class="card">
+                      <div class="card-header">
+                        <h3 class="card-title">Estatísticas de Trades</h3>
+                      </div>
+                      <div class="table-responsive">
+                        <table class="table table-vcenter card-table">
+                          <thead>
+                            <tr>
+                              <th>Métrica</th>
+                              <th class="text-secondary text-center">
+                                Treino (In-Sample)
+                              </th>
+                              <th class="text-primary fw-bold text-center">
+                                Teste (Out-of-Sample)
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody id="tbody_stats">
+                            <tr>
+                              <td
+                                colspan="3"
+                                class="text-center text-muted py-3"
+                              >
+                                Execute o backtest para ver os dados
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
                   </div>
-
                 </div>
-
               </div>
             </div>
           </div>
@@ -400,29 +590,29 @@
 
     <!-- Scripts Tabler -->
     <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/js/tabler.min.js"></script>
-    
+
     <!-- App Logic -->
     <script>
       // ============ SETUP CHART ============
       const chartContainer = document.getElementById("chart");
       const chart = LightweightCharts.createChart(chartContainer, {
-          layout: { background: { color: "#18181b" }, textColor: "#a1a1aa" },
-          grid: {
-            vertLines: { color: "#27272a" },
-            horzLines: { color: "#27272a" },
+        layout: { background: { color: "#18181b" }, textColor: "#a1a1aa" },
+        grid: {
+          vertLines: { color: "#27272a" },
+          horzLines: { color: "#27272a" },
+        },
+        timeScale: {
+          timeVisible: true,
+          secondsVisible: false,
+          borderColor: "#27272a",
+        },
+        rightPriceScale: {
+          borderColor: "#27272a",
+          scaleMargins: {
+            top: 0.1,
+            bottom: 0.1,
           },
-          timeScale: { 
-              timeVisible: true, 
-              secondsVisible: false,
-              borderColor: "#27272a",
-          },
-          rightPriceScale: { 
-              borderColor: "#27272a",
-              scaleMargins: {
-                  top: 0.1,
-                  bottom: 0.1,
-              },
-          },
+        },
       });
 
       const candleSeries = chart.addCandlestickSeries({
@@ -433,57 +623,68 @@
         wickDownColor: "#ff1744",
       });
 
-      const smaShortSeries = chart.addLineSeries({ 
-          color: '#FFFF00', // Bright Yellow
-          lineWidth: 2, 
-          title: 'SMA Short' 
+      const smaShortSeries = chart.addLineSeries({
+        color: "#FFFF00", // Bright Yellow
+        lineWidth: 2,
+        title: "SMA Short",
       });
-      
-      const smaLongSeries = chart.addLineSeries({ 
-          color: '#D500F9', // Bright Purple/Pink
-          lineWidth: 2, 
-          title: 'SMA Long' 
+
+      const smaLongSeries = chart.addLineSeries({
+        color: "#D500F9", // Bright Purple/Pink
+        lineWidth: 2,
+        title: "SMA Long",
       });
 
       // Resize
-      new ResizeObserver(entries => {
-          if (entries.length === 0 || entries[0].target !== chartContainer) { return; }
-          const newRect = entries[0].contentRect;
-          chart.applyOptions({ height: newRect.height, width: newRect.width });
+      new ResizeObserver((entries) => {
+        if (entries.length === 0 || entries[0].target !== chartContainer) {
+          return;
+        }
+        const newRect = entries[0].contentRect;
+        chart.applyOptions({ height: newRect.height, width: newRect.width });
       }).observe(chartContainer);
-
 
       // ============ LOGIC ============
       let SYMBOL = document.getElementById("symbolSelect").value;
       let updateInterval = null;
 
-      function logStatus(msg, type='neutral') {
-          console.log(`[${type}] ${msg}`);
-          
-          // Show critical errors to user
-          if (type === 'error') {
-              let errorBox = document.getElementById("error-alert");
-              if (!errorBox) {
-                  errorBox = document.createElement("div");
-                  errorBox.id = "error-alert";
-                  errorBox.style.cssText = "position: fixed; top: 10px; right: 10px; z-index: 9999; background: #ff5252; color: white; padding: 15px; border-radius: 5px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); max-width: 300px;";
-                  document.body.appendChild(errorBox);
-              }
-              errorBox.innerText = "ERRO: " + msg;
-              setTimeout(() => { errorBox.remove(); }, 10000);
-          }
+      function logStatus(msg, type = "neutral") {
+        console.log(`[${type}] ${msg}`);
 
-          // Badge status logic
-          const badge = document.getElementById("connection_status");
-          if(badge) {
-              if(msg.includes("Erro") || msg.includes("Offline") || type === 'error') {
-                  badge.className = "badge bg-red-lt";
-                  badge.innerText = "Erro/Offline";
-              } else if (msg.includes("Conectado") || msg.includes("Sincronizando")) {
-                  badge.className = "badge bg-green-lt";
-                  badge.innerText = "Conectado";
-              }
+        // Show critical errors to user
+        if (type === "error") {
+          let errorBox = document.getElementById("error-alert");
+          if (!errorBox) {
+            errorBox = document.createElement("div");
+            errorBox.id = "error-alert";
+            errorBox.style.cssText =
+              "position: fixed; top: 10px; right: 10px; z-index: 9999; background: #ff5252; color: white; padding: 15px; border-radius: 5px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); max-width: 300px;";
+            document.body.appendChild(errorBox);
           }
+          errorBox.innerText = "ERRO: " + msg;
+          setTimeout(() => {
+            errorBox.remove();
+          }, 10000);
+        }
+
+        // Badge status logic
+        const badge = document.getElementById("connection_status");
+        if (badge) {
+          if (
+            msg.includes("Erro") ||
+            msg.includes("Offline") ||
+            type === "error"
+          ) {
+            badge.className = "badge bg-red-lt";
+            badge.innerText = "Erro/Offline";
+          } else if (
+            msg.includes("Conectado") ||
+            msg.includes("Sincronizando")
+          ) {
+            badge.className = "badge bg-green-lt";
+            badge.innerText = "Conectado";
+          }
+        }
       }
 
       function changeSymbol() {
@@ -491,7 +692,7 @@
         // Removed display_symbol update since element removed
         loadHistory();
       }
-      
+
       async function init() {
         try {
           const res = await fetch("/api/timeframes");
@@ -507,11 +708,13 @@
           });
 
           select.addEventListener("change", loadHistory);
-          document.getElementById("candleCountSelect").addEventListener("change", loadHistory);
+          document
+            .getElementById("candleCountSelect")
+            .addEventListener("change", loadHistory);
 
           loadHistory();
         } catch (e) {
-          logStatus("Erro init: " + e, 'error');
+          logStatus("Erro init: " + e, "error");
         }
       }
 
@@ -520,33 +723,37 @@
 
         const tf = document.getElementById("timeframeSelect").value;
         const count = document.getElementById("candleCountSelect").value;
-        
+
         SYMBOL = document.getElementById("symbolSelect").value;
-        
+
         // Reset
         candleSeries.setMarkers([]);
         smaShortSeries.setData([]);
         smaLongSeries.setData([]);
-        
+
         // Clear Tables
-        document.getElementById("tbody_perf").innerHTML = '<tr><td colspan="3" class="text-center text-muted">Carregando...</td></tr>';
-        document.getElementById("tbody_stats").innerHTML = '<tr><td colspan="3" class="text-center text-muted">Carregando...</td></tr>';
+        document.getElementById("tbody_perf").innerHTML =
+          '<tr><td colspan="3" class="text-center text-muted">Carregando...</td></tr>';
+        document.getElementById("tbody_stats").innerHTML =
+          '<tr><td colspan="3" class="text-center text-muted">Carregando...</td></tr>';
 
         logStatus(`Baixando ${count} velas de ${SYMBOL}...`);
 
         try {
-          const res = await fetch(`/api/history?symbol=${SYMBOL}&timeframe=${tf}&count=${count}`);
+          const res = await fetch(
+            `/api/history?symbol=${SYMBOL}&timeframe=${tf}&count=${count}`,
+          );
           const data = await res.json();
 
           if (data.error) {
-            logStatus("Erro API: " + data.error, 'error');
+            logStatus("Erro API: " + data.error, "error");
             return;
           }
 
           candleSeries.setData(data);
           // chart.timeScale().fitContent(); // Desativado para manter zoom manual e foco no recente
 
-          logStatus("Dados carregados. Sincronizando...", 'success');
+          logStatus("Dados carregados. Sincronizando...", "success");
 
           if (data.length > 0) {
             updateDisplay(data[data.length - 1]);
@@ -554,7 +761,7 @@
 
           updateInterval = setInterval(updateLive, 1000);
         } catch (err) {
-          logStatus("Erro conexão: " + err, 'error');
+          logStatus("Erro conexão: " + err, "error");
         }
       }
 
@@ -564,14 +771,16 @@
         const short = document.getElementById("smaShort").value;
         const long = document.getElementById("smaLong").value;
 
-        logStatus("Executando Backtest...", 'neutral');
+        logStatus("Executando Backtest...", "neutral");
 
         try {
-          const res = await fetch(`/api/backtest?symbol=${SYMBOL}&timeframe=${tf}&count=${count}&short=${short}&long=${long}`);
+          const res = await fetch(
+            `/api/backtest?symbol=${SYMBOL}&timeframe=${tf}&count=${count}&short=${short}&long=${long}`,
+          );
           const data = await res.json();
 
           if (data.error) {
-            logStatus("Erro no Backtest: " + data.error, 'error');
+            logStatus("Erro no Backtest: " + data.error, "error");
             return;
           }
 
@@ -580,202 +789,233 @@
           smaLongSeries.setData(data.sma_long);
 
           renderMetrics(data); // Pass full data object
-          logStatus("Backtest Concluído com Sucesso!", 'success');
-          
+          logStatus("Backtest Concluído com Sucesso!", "success");
         } catch (e) {
           console.error(e);
-          logStatus("Exceção no Backtest", 'error');
+          logStatus("Exceção no Backtest", "error");
         }
       }
 
       function renderMetrics(data) {
-          const mIn = data.metrics.in;
-          const mOut = data.metrics.out;
-          const tIn = data.trade_stats.in;
-          const tOut = data.trade_stats.out;
-          
-          const fmtPct = (v) => (v * 100).toFixed(2) + '%';
-          const fmtNum = (v) => v.toFixed(2);
-          
-          // Helper for colored percentage
-          const tdPct = (v) => `<td class="text-center ${v >= 0 ? 'text-green' : 'text-red'}">${fmtPct(v)}</td>`;
-          const td = (v) => `<td class="text-center">${v}</td>`;
-          const tdBold = (v) => `<td class="text-center fw-bold text-white">${v}</td>`;
-          const tdPctBold = (v) => `<td class="text-center fw-bold ${v >= 0 ? 'text-green' : 'text-red'}">${fmtPct(v)}</td>`;
+        const mIn = data.metrics.in;
+        const mOut = data.metrics.out;
+        const tIn = data.trade_stats.in;
+        const tOut = data.trade_stats.out;
 
-          // Tabela 1: Performance
-          const perfHtml = `
+        const fmtPct = (v) => (v * 100).toFixed(2) + "%";
+        const fmtNum = (v) => v.toFixed(2);
+
+        // Helper for colored percentage
+        const tdPct = (v) =>
+          `<td class="text-center ${v >= 0 ? "text-green" : "text-red"}">${fmtPct(v)}</td>`;
+        const td = (v) => `<td class="text-center">${v}</td>`;
+        const tdBold = (v) =>
+          `<td class="text-center fw-bold text-white">${v}</td>`;
+        const tdPctBold = (v) =>
+          `<td class="text-center fw-bold ${v >= 0 ? "text-green" : "text-red"}">${fmtPct(v)}</td>`;
+
+        // Tabela 1: Performance
+        const perfHtml = `
              <tr><td>Retorno Total</td>${td(fmtPct(mIn.total_return))}${tdPctBold(mOut.total_return)}</tr>
              <tr><td>CAGR (Est.)</td>${td(fmtPct(mIn.cagr))}${tdPctBold(mOut.cagr)}</tr>
              <tr><td>Sharpe Ratio</td>${td(fmtNum(mIn.sharpe))}${tdBold(fmtNum(mOut.sharpe))}</tr>
              <tr><td>Volatilidade</td>${td(fmtPct(mIn.volatility))}${tdBold(fmtPct(mOut.volatility))}</tr>
              <tr><td>Max Drawdown</td>${td(fmtPct(mIn.max_drawdown))}${tdBold(fmtPct(mOut.max_drawdown))}</tr>
           `;
-          document.getElementById("tbody_perf").innerHTML = perfHtml;
-          
-          // Tabela 2: Stats
-          const statsHtml = `
+        document.getElementById("tbody_perf").innerHTML = perfHtml;
+
+        // Tabela 2: Stats
+        const statsHtml = `
              <tr><td>Total de Trades</td>${td(tIn.total_trades)}${tdBold(tOut.total_trades)}</tr>
              <tr><td>Win Rate</td>${td(fmtPct(tIn.win_rate))}${tdBold(fmtPct(tOut.win_rate))}</tr>
              <tr><td>Retorno Médio</td>${td(fmtPct(tIn.avg_return))}${tdPctBold(tOut.avg_return)}</tr>
              <tr><td>Duração Média (Dias)</td>${td(fmtNum(tIn.avg_duration))}${tdBold(fmtNum(tOut.avg_duration))}</tr>
              <tr><td>Profit Factor</td>${td(fmtNum(tIn.profit_factor))}${tdBold(fmtNum(tOut.profit_factor))}</tr>
           `;
-          document.getElementById("tbody_stats").innerHTML = statsHtml;
+        document.getElementById("tbody_stats").innerHTML = statsHtml;
       }
 
       async function updateLive() {
         const tf = document.getElementById("timeframeSelect").value;
         try {
-          const res = await fetch(`/api/candle?symbol=${SYMBOL}&timeframe=${tf}`);
+          const res = await fetch(
+            `/api/candle?symbol=${SYMBOL}&timeframe=${tf}`,
+          );
           const candle = await res.json();
           if (candle.error) return;
-          
+
           candleSeries.update(candle);
           updateDisplay(candle);
-        } catch (err) { }
+        } catch (err) {}
       }
 
       function updateDisplay(candle) {
         const priceEl = document.getElementById("price");
-        const oldPrice = parseFloat(priceEl.innerText.replace('--.--','0'));
-        
+        const oldPrice = parseFloat(priceEl.innerText.replace("--.--", "0"));
+
         priceEl.innerText = `${candle.close.toFixed(2)}`;
-        
+
         // Color animation based on tick
-        if(candle.close > oldPrice) {
-            priceEl.className = "price-hero"; // Green default
+        if (candle.close > oldPrice) {
+          priceEl.className = "price-hero"; // Green default
         } else if (candle.close < oldPrice) {
-            priceEl.className = "price-hero down";
+          priceEl.className = "price-hero down";
         }
       }
 
       // ============ SCANNER LOGIC ============
       var scannerModalInstance = null;
 
+      // Reset UI when opening modal
       function openScanner() {
-          const el = document.getElementById('modal-scanner');
-          if(!scannerModalInstance) {
-             scannerModalInstance = new bootstrap.Modal(el);
-          }
-          scannerModalInstance.show();
+        const el = document.getElementById("modal-scanner");
+        
+        // Reset Logic
+        document.getElementById("scanner-loading").style.display = "none";
+        document.getElementById("scanner-results").style.display = "none";
+        document.getElementById("scan-status-text").innerText = "0%";
+        document.getElementById("scan-progress-bar").style.width = "0%";
+        
+        // Show Start Button again
+        const startBtn = document.querySelector("#modal-scanner .btn-success");
+        if(startBtn) startBtn.style.display = "inline-block";
+        
+        if (!scannerModalInstance) {
+          scannerModalInstance = new bootstrap.Modal(el);
+        }
+        scannerModalInstance.show();
       }
 
       async function runScannerAPI() {
-          const tf = document.getElementById("timeframeSelect").value;
-          const count = document.getElementById("candleCountSelect").value;
-          const short = document.getElementById("smaShort").value;
-          const long = document.getElementById("smaLong").value;
+        const tf = document.getElementById("timeframeSelect").value;
+        const count = document.getElementById("candleCountSelect").value;
+        const short = document.getElementById("smaShort").value;
+        const long = document.getElementById("smaLong").value;
 
-          document.getElementById("scanner-loading").style.display = "flex";
-          document.getElementById("scanner-results").style.display = "none";
+        document.getElementById("scanner-loading").style.display = "flex";
+        document.getElementById("scanner-results").style.display = "none";
+
+        // Reset UI
+        document.getElementById("scan-progress-bar").style.width = "0%";
+        document.getElementById("scan-status-text").innerText = "Iniciando...";
+        document.getElementById("scan-status-detail").innerText =
+          "Aguardando servidor...";
+
+        const btn = document.querySelector("#modal-scanner .btn-success"); // Updated class
+        if(btn) btn.disabled = true;
+
+        try {
+          const response = await fetch("/api/batch_backtest", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              timeframe: tf,
+              candles: count,
+              sma_short: short,
+              sma_long: long,
+            }),
+          });
           
-          // Reset UI
-          document.getElementById("scan-progress-bar").style.width = "0%";
-          document.getElementById("scan-status-text").innerText = "Iniciando...";
-          document.getElementById("scan-status-detail").innerText = "Aguardando servidor...";
+          if(!response.ok) throw new Error("Status " + response.status);
 
-          const btn = document.querySelector('#modal-scanner .btn-primary');
-          btn.disabled = true;
-          
-          try {
-              const response = await fetch('/api/batch_backtest', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                      timeframe: tf,
-                      candles: count,
-                      sma_short: short,
-                      sma_long: long
-                  })
-              });
+          const reader = response.body.getReader();
+          const decoder = new TextDecoder("utf-8");
+          let buffer = "";
 
-              const reader = response.body.getReader();
-              const decoder = new TextDecoder("utf-8");
-              let buffer = "";
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
 
-              while (true) {
-                  const { done, value } = await reader.read();
-                  if (done) break;
+            buffer += decoder.decode(value, { stream: true });
+            let parts = buffer.split("\n");
+
+            // Process all complete lines
+            buffer = parts.pop();
+
+            for (let line of parts) {
+              if (!line.trim()) continue;
+              try {
+                const msg = JSON.parse(line);
+                if (msg.type === "progress") {
+                  // Update UI
+                  document.getElementById("scan-progress-bar").style.width =
+                    msg.value + "%";
+                  document.getElementById("scan-status-text").innerText =
+                    `${msg.value}%`;
+                  document.getElementById("scan-status-detail").innerText =
+                    msg.text;
+                } else if (msg.type === "result") {
+                  // Hide loading immediately when results arrive
+                  document.getElementById("scanner-loading").style.display = "none";
                   
-                  buffer += decoder.decode(value, { stream: true });
-                  let parts = buffer.split("\n");
+                  // Hide Start Button
+                  const startBtn = document.querySelector("#modal-scanner .btn-success");
+                  if(startBtn) startBtn.style.display = "none";
                   
-                  // Process all complete lines
-                  buffer = parts.pop(); 
-                  
-                  for (let line of parts) {
-                      if (!line.trim()) continue;
-                      try {
-                          const msg = JSON.parse(line);
-                          if(msg.type === 'progress') {
-                              // Update UI
-                              document.getElementById("scan-progress-bar").style.width = msg.value + "%";
-                              document.getElementById("scan-status-text").innerText = `${msg.value}%`;
-                              document.getElementById("scan-status-detail").innerText = msg.text;
-                          } else if (msg.type === 'result') {
-                              renderScannerResults(msg.data);
-                          }
-                      } catch (e) {
-                           console.error("Bad JSON chunk", line);
-                      }
-                  }
+                  renderScannerResults(msg.data);
+                }
+              } catch (e) {
+                console.error("Bad JSON chunk", line);
               }
-
-          } catch(e) {
-              alert("Erro ao escanear: " + e);
-          } finally {
-              document.getElementById("scanner-loading").style.display = "none";
-              btn.disabled = false;
+            }
           }
+        } catch (e) {
+          document.getElementById("scan-status-text").innerText = "ERRO";
+          document.getElementById("scan-status-detail").innerText = "Falha: " + e.message;
+          document.getElementById("scan-status-detail").classList.add("text-danger");
+          console.error(e);
+        } finally {
+           if(btn) btn.disabled = false;
+        }
       }
 
       function renderScannerResults(data) {
-          const tbody = document.getElementById("tbody_scanner");
-          tbody.innerHTML = "";
-          
-          if(!data || data.length === 0) {
-              tbody.innerHTML = "<tr><td colspan='6' class='text-center'>Nenhum resultado encontrado.</td></tr>";
-              document.getElementById("scanner-results").style.display = "block";
-              return;
-          }
+        const tbody = document.getElementById("tbody_scanner");
+        tbody.innerHTML = "";
 
-          data.forEach((row, index) => {
-              const tr = document.createElement("tr");
-              const isWin = row.total_return > 0;
-              const colorClass = isWin ? "text-green" : "text-red";
-              
-              tr.innerHTML = `
+        if (!data || data.length === 0) {
+          tbody.innerHTML =
+            "<tr><td colspan='6' class='text-center'>Nenhum resultado encontrado.</td></tr>";
+          document.getElementById("scanner-results").style.display = "block";
+          return;
+        }
+
+        data.forEach((row, index) => {
+          const tr = document.createElement("tr");
+          const isWin = row.total_return > 0;
+          const colorClass = isWin ? "text-green" : "text-red";
+
+          tr.innerHTML = `
                   <td>${index + 1}</td>
                   <td class="fw-bold text-white">${row.symbol}</td>
                   <td class="${colorClass}">${(row.total_return * 100).toFixed(2)}%</td>
                   <td>${(row.win_rate * 100).toFixed(1)}%</td>
                   <td>${row.total_trades}</td>
                   <td>
-                      <button class="btn btn-sm btn-ghost-primary" onclick="selectScannedAsset('${row.symbol}')">
+                      <button class="btn btn-sm btn-ghost-secondary text-secondary" onclick="selectScannedAsset('${row.symbol}')">
                         Ver
                       </button>
                   </td>
               `;
-              tbody.appendChild(tr);
-          });
-          
-          document.getElementById("scanner-results").style.display = "block";
+          tbody.appendChild(tr);
+        });
+
+        document.getElementById("scanner-results").style.display = "block";
       }
 
       function selectScannedAsset(symbol) {
-          // Close modal
-          if(scannerModalInstance) scannerModalInstance.hide();
-          
-          // Set inputs
-          const select = document.getElementById("symbolSelect");
-          select.value = symbol;
-          
-          // Trigger change
-          changeSymbol();
-          
-          // Trigger backtest automatically for convenience
-          setTimeout(runBacktest, 500);
+        // Close modal
+        if (scannerModalInstance) scannerModalInstance.hide();
+
+        // Set inputs
+        const select = document.getElementById("symbolSelect");
+        select.value = symbol;
+
+        // Trigger change
+        changeSymbol();
+        
+        // Trigger backtest automatically for convenience
+        setTimeout(runBacktest, 500);
       }
 
       window.onload = init;

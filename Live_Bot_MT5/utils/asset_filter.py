@@ -18,11 +18,11 @@ def load_clean_assets():
         "INTB3", "IRBR3", "ITSA4", "ITUB4", "JBSS3", "JHSF3", "KEPL3", "KLBN11",
         "LREN3", "LWSA3", "MATD3", "MGLU3", "MILS3", "MOVI3", "MRFG3", "MRVE3",
         "MULT3", "MYPK3", "NEOE3", "NTCO3", "PCAR3", "PETR3", "PETR4", "PETZ3",
-        "POSI3", "PRIO3", "PSSA3", "RADL3", "RAIL3", "RAIZ4", "RANI3", "RDOR3",
+        "POSI3", "PRIO3", "PSSA3", "RADL3", "RAIL3", "RAIZ4", "RANI3", "RAPT4", "RDOR3",
         "RECV3", "RENT3", "ROMI3", "RRRP3", "SANB11", "SAPR11", "SAPR4", "SBSP3",
-        "SLCE3", "SMTO3", "SOMA3", "STBP3", "SUZB3", "TAEE11", "TIMS3", "TOTS3",
+        "SLCE3", "SMTO3", "SOMA3", "STBP3", "SUZB3", "TAEE11", "TASA4", "TIMS3", "TOTS3",
         "TRPL4", "UGPA3", "UNIP6", "USIM5", "VALE3", "VAMO3", "VBBR3", "VIVA3",
-        "VIVT3", "WEGE3", "YDUQ3"
+        "VIVT3", "WEGE3", "YDUQ3", "POMO4", "LEVE3"
     ]
     
     # Remove duplicatas e ordena

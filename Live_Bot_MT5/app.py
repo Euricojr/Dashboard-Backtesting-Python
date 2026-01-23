@@ -228,32 +228,47 @@ def batch_backtest():
     mt5_tf = TIMEFRAMES.get(timeframe_str, mt5.TIMEFRAME_M5)
 
     def generate():
+        print(f"[{datetime.now()}] Iniciando gerador do Scanner...")
+        
+        # 0. Ping imediato para destravar o buffer do navegador
+        yield json.dumps({"type": "progress", "value": 0, "text": "Conectado. Preparando..."}) + "\n"
+        time.sleep(0.1) 
+
         # 1. Get Assets
-        assets_data = load_clean_assets()
-        if isinstance(assets_data, dict):
-            assets = assets_data.get("Indices", []) + assets_data.get("Acoes", [])
-        else:
-            assets = assets_data
+        try:
+            assets_data = load_clean_assets()
+            if isinstance(assets_data, dict):
+                assets = assets_data.get("Indices", []) + assets_data.get("Acoes", [])
+            else:
+                assets = assets_data
+        except Exception as e:
+            print(f"Erro ao carregar assets: {e}")
+            yield json.dumps({"type": "progress", "value": 0, "text": f"Erro assets: {str(e)}"}) + "\n"
+            return
             
         total_assets = len(assets)
         yield json.dumps({"type": "progress", "value": 0, "text": f"Iniciando scan de {total_assets} ativos..."}) + "\n"
         
         results = []
         processed_count = 0
-        
         start_time = time.time()
         
         for i, symbol in enumerate(assets):
             processed_count += 1
             
-            # Yield progress every item (or every N items if list is huge, but for UI smooth is better)
+            # Emitir progresso
             pct = int((processed_count / total_assets) * 100)
-            yield json.dumps({"type": "progress", "value": pct, "text": f"Analisando {symbol}..."}) + "\n"
+            yield json.dumps({"type": "progress", "value": pct, "text": f"[{processed_count}/{total_assets}] Analisando {symbol}..."}) + "\n"
+            
+            # Sleep pequeno para permitir que o servidor envie o buffer e não trave a thread
+            time.sleep(0.01) 
             
             try:
                 # Select symbol
                 selected = mt5.symbol_select(symbol, True)
                 if not selected:
+                    # Tenta forçar adicionar se não estiver no Market Watch
+                    # (Alguns MT5 precisam disso)
                     continue
 
                 rates = mt5.copy_rates_from_pos(symbol, mt5_tf, 0, count)
@@ -283,20 +298,23 @@ def batch_backtest():
                 })
                 
             except Exception as e:
-                # print(f"Erro {symbol}: {e}")
+                print(f"Erro ao processar {symbol}: {e}")
                 continue
 
         # Sort and Finish
         results.sort(key=lambda x: x['total_return'], reverse=True)
         elapsed = time.time() - start_time
         
-        final_msg = f"Scan finalizado em {elapsed:.2f}s. {len(results)} oportunidades encontradas."
+        final_msg = f"Finalizado em {elapsed:.1f}s. {len(results)} ativos qualificados."
         yield json.dumps({"type": "progress", "value": 100, "text": final_msg}) + "\n"
         
         # Send Data
         yield json.dumps({"type": "result", "data": results}) + "\n"
 
-    return Response(stream_with_context(generate()), mimetype='application/x-ndjson')
+    response = Response(stream_with_context(generate()), mimetype='application/x-ndjson')
+    response.headers['X-Accel-Buffering'] = 'no'  # Nginx/Proxy buffering
+    response.headers['Cache-Control'] = 'no-cache' # Browser caching
+    return response
 
 if __name__ == '__main__':
     print("🚀 Servidor PoC WING26 rodando em http://localhost:5002")
