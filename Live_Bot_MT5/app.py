@@ -207,7 +207,8 @@ def run_backtest():
         "sma_short": sma_short_data,
         "sma_long": sma_long_data,
         "markers": markers,
-        "best_params": best_params
+        "best_params": best_params,
+        "candles": df_res[['time', 'open', 'high', 'low', 'close']].rename(columns={'time': 'time'}).to_dict('records') # Send Candle Data
     })
 
 @app.route('/api/batch_backtest', methods=['POST'])
@@ -222,6 +223,7 @@ def batch_backtest():
     count = int(req.get('candles', 1000))
     short_window = int(req.get('sma_short', 20))
     long_window = int(req.get('sma_long', 50))
+    do_optimize = req.get('optimize', False)
     mt5_tf = TIMEFRAMES.get(timeframe_str, mt5.TIMEFRAME_M5)
 
     def generate():
@@ -277,7 +279,15 @@ def batch_backtest():
                     continue
 
                 # Run Logic
-                df_res = strategy_sma_crossover(df, short_window, long_window)
+                current_short = short_window
+                current_long = long_window
+
+                if do_optimize:
+                     opt_short, opt_long = optimize_sma(df)
+                     current_short = opt_short
+                     current_long = opt_long
+
+                df_res = strategy_sma_crossover(df, current_short, current_long)
                 
                 trade_stats = calculate_trade_stats(df_res)
                 if trade_stats['total_trades'] == 0:
@@ -291,7 +301,8 @@ def batch_backtest():
                     "win_rate": trade_stats['win_rate'],
                     "total_trades": trade_stats['total_trades'],
                     "profit_factor": trade_stats['profit_factor'],
-                    "sharpe": metrics['sharpe']
+                    "sharpe": metrics['sharpe'],
+                    "params": {"short": current_short, "long": current_long} if do_optimize else None
                 })
                 
             except Exception as e:

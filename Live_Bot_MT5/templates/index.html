@@ -105,7 +105,7 @@
       }
 
       .big-chart-container {
-        height: 600px;
+        height: 75vh;
         width: 100%;
         border-radius: 4px;
         overflow: hidden;
@@ -355,6 +355,37 @@
         letter-spacing: 0.5px;
       }
       
+      /* Asset Icon & Placeholder System */
+      .asset-icon-wrapper {
+          width: 72px;
+          height: 72px;
+          margin: 0 auto 16px; /* Fixed margins for layout stability */
+          position: relative;
+      }
+      
+      .asset-icon-img {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+          border-radius: 12px;
+      }
+      
+      .asset-icon-placeholder {
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(135deg, #27272a, #3f3f46);
+          color: #e4e4e7;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.75rem;
+          font-weight: 700;
+          border-radius: 16px;
+          border: 1px solid rgba(255,255,255,0.08);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+          text-transform: uppercase;
+      }
+
       /* --- Financial Data Grid (Scanner Table) --- */
       .scanner-table {
         width: 100%;
@@ -598,18 +629,11 @@
                 <!-- Ativo & Preço (Mini destaque) -->
                 <div class="card mb-3">
                   <div class="card-body text-center">
-                    <div class="text-secondary text-uppercase mb-2">
-                      Ativo Atual
-                    </div>
+                    <div class="text-secondary text-uppercase small mb-3">Ativo Atual</div>
                     
-                    <div class="mb-3 d-flex justify-content-center">
-                        <img 
-                            id="current-asset-logo" 
-                            src="https://raw.githubusercontent.com/thefintz/icones-b3/main/icones/WING26.png" 
-                            class="avatar rounded me-2 mb-2" 
-                            style="width: 80px; height: 80px; object-fit: contain;"
-                            onerror="this.style.display='none';"
-                        >
+                    <!-- Asset Icon Wrapper (Pixel Perfect) -->
+                    <div class="asset-icon-wrapper" id="current-asset-wrapper">
+                        <!-- JS injected content -->
                     </div>
 
                     <!-- Input Pesquisável -->
@@ -682,25 +706,7 @@
                   </div>
                 </div>
 
-                <!-- Scanner Results List (Sidebar) -->
-                <div class="card mb-3" id="card-scanner-results" style="display: none; border: none; background: transparent;">
-                  <div class="card-body p-0">
-                     <div class="table-responsive" style="max-height: 400px; overflow-y: auto; border-radius: 4px; border: 1px solid #27272a; background: #18181b;">
-                        <table class="scanner-table">
-                            <thead style="position: sticky; top: 0; z-index: 20; background: #1f1f23;">
-                                <tr>
-                                    <th style="padding-left: 12px;">Ativo</th>
-                                    <th class="text-end">Retorno</th>
-                                    <th class="text-end" style="padding-right: 12px;">Win%</th>
-                                </tr>
-                            </thead>
-                            <tbody id="results-table-body">
-                                <tr><td colspan='3' class='text-muted text-center py-5 small'>Resultados do Scanner aparecerão aqui.</td></tr>
-                            </tbody>
-                        </table>
-                     </div>
-                  </div>
-                </div>
+                <!-- Scanner Results removed from sidebar to align with metrics -->
 
                 <!-- Scanner Modal -->
                 <div
@@ -798,28 +804,51 @@
                   </div>
                 </div>
 
-                <!-- Detailed Analysis Tables (Metrics Only - Full Width) -->
-                <div class="row row-cards mt-3">
-                  
-                  <!-- Métricas Grid -->
-                  <div class="col-12">
-                    <div class="card mb-3">
-                      <div class="card-header border-0 pb-0">
-                        <h3 class="card-title text-uppercase text-secondary small font-weight-bold">
-                          Relatório de Performance
-                        </h3>
-                      </div>
-                      <div class="card-body">
-                          <div id="metrics-grid" class="metrics-grid">
-                               <!-- JS Populated -->
-                               <div class="text-center text-muted p-4 w-100" style="grid-column: 1 / -1;">
-                                   Execute o Backtest para visualizar os dados.
-                               </div>
-                          </div>
-                      </div>
-                    </div>
+                
+              </div> <!-- End col-md-9 -->
+            </div> <!-- End Main Top Row -->
+
+            <!-- Detailed Analysis Section (New Row Below) -->
+            <div class="row g-2 align-items-stretch mt-3" id="analysis-section" style="display: none;">
+              
+              <!-- Left: Scanner Results (Matches Sidebar Width) -->
+              <div class="col-md-3">
+                <div class="card h-100" style="background: transparent; border: none;">
+                  <div class="card-body p-0 h-100">
+                     <div class="table-responsive" style="height: 335px; max-height: 335px; overflow-y: auto; border-radius: 4px; border: 1px solid #27272a; background: #18181b;">
+                        <table class="scanner-table">
+                            <thead style="position: sticky; top: 0; z-index: 20; background: #1f1f23;">
+                                <tr>
+                                    <th style="padding-left: 12px;">Ativo</th>
+                                    <th class="text-end">Retorno</th>
+                                    <th class="text-end" style="padding-right: 12px;">Win%</th>
+                                </tr>
+                            </thead>
+                            <tbody id="results-table-body">
+                                <tr><td colspan='3' class='text-muted text-center py-5 small'>Resultados do Scanner aparecerão aqui.</td></tr>
+                            </tbody>
+                        </table>
+                     </div>
                   </div>
                 </div>
+              </div>
+
+              <!-- Right: Metrics Grid (Matches Chart Width) -->
+              <div class="col-md-9">
+                <div class="card h-100 mb-3">
+                  <div class="card-header border-0 pb-0">
+                    <h3 class="card-title text-uppercase text-secondary small font-weight-bold">
+                      Relatório de Performance
+                    </h3>
+                  </div>
+                  <div class="card-body d-flex flex-column justify-content-center">
+                      <div id="metrics-grid" class="metrics-grid">
+                           <!-- JS Populated -->
+                           <div class="text-center text-muted p-4 w-100" style="grid-column: 1 / -1;">
+                               Execute o Backtest para visualizar os dados.
+                           </div>
+                      </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1031,6 +1060,18 @@
             return;
           }
 
+          // Critical: Update Chart Candles if backtest returned fresh data (Syncs Scale)
+          if(data.candles) {
+             const candleData = data.candles.map(c => ({
+                 time: new Date(c.time).getTime() / 1000,
+                 open: c.open,
+                 high: c.high,
+                 low: c.low,
+                 close: c.close
+             }));
+             candleSeries.setData(candleData);
+          }
+
           candleSeries.setMarkers(data.markers);
           smaShortSeries.setData(data.sma_short);
           smaLongSeries.setData(data.sma_long);
@@ -1043,6 +1084,9 @@
                logStatus("Backtest Concluído com Sucesso!", "success");
           }
 
+          // Show Analysis Section (Metrics + Scanner placeholder if visible)
+          document.getElementById("analysis-section").style.display = "flex";
+          
           renderMetrics(data); // Pass full data object
         } catch (e) {
           console.error(e);
@@ -1193,11 +1237,49 @@
         scannerModalInstance.show();
       }
 
+      // Helper: Asset Icon Logic
+      function updateAssetIcon(symbol) {
+          const wrapper = document.getElementById("current-asset-wrapper");
+          const url = `https://raw.githubusercontent.com/thefintz/icones-b3/main/icones/${symbol}.png`;
+          const initial = symbol.substring(0, 1) + symbol.substring(symbol.length-1); // First+Last char (ex: W6) or just W
+          
+          // Cleaner approach: Try loading image, on error replace with placeholder html
+          const img = new Image();
+          img.src = url;
+          img.className = "asset-icon-img";
+          
+          wrapper.innerHTML = ""; // Clear
+          wrapper.appendChild(img);
+          
+          img.onerror = () => {
+              wrapper.innerHTML = `<div class="asset-icon-placeholder">${symbol.substring(0,2)}</div>`;
+          };
+      }
+
+      // Helper: Asset Icon Logic
+      function updateAssetIcon(symbol) {
+          const wrapper = document.getElementById("current-asset-wrapper");
+          const url = `https://raw.githubusercontent.com/thefintz/icones-b3/main/icones/${symbol}.png`;
+          
+          // Generate Placeholder content (First 2 chars or First+Last depending on taste)
+          // For WING26 -> WI
+          const label = symbol ? symbol.substring(0, 2).toUpperCase() : "??";
+          
+          // Prepare HTML for both states (Image and Placeholder), toggle visibility via onerror
+          // We put the image first.
+          
+          wrapper.innerHTML = `
+             <img src="${url}" class="asset-icon-img" onload="this.style.display='block'; this.nextElementSibling.style.display='none'" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+             <div class="asset-icon-placeholder" style="display:none">${label}</div>
+          `;
+      }
+
       async function runScannerAPI() {
         const tf = document.getElementById("timeframeSelect").value;
         const count = document.getElementById("candleCountSelect").value;
         const short = document.getElementById("smaShort").value;
         const long = document.getElementById("smaLong").value;
+        const optimize = document.getElementById("optimizeCheck").checked;
 
         document.getElementById("scanner-loading").style.display = "flex";
         document.getElementById("scanner-results").style.display = "none";
@@ -1220,6 +1302,7 @@
               candles: count,
               sma_short: short,
               sma_long: long,
+              optimize: optimize
             }),
           });
           
@@ -1293,13 +1376,15 @@
         // ... (simplified or left empty if unused)
       }
 
+      var cachedScanResults = []; // Store results globally to access params later
+
       function renderSidebarResults(data) {
+          cachedScanResults = data; // Cache data
           const tbody = document.getElementById("results-table-body");
           tbody.innerHTML = "";
           
-          // Ensure visibility (though it's always visible now in layout)
-          const card = document.getElementById("card-scanner-results");
-          if(card) card.style.display = "block";
+          // Ensure visibility of the SECTION
+          document.getElementById("analysis-section").style.display = "flex";
           
           if(!data || data.length === 0) {
               tbody.innerHTML = "<tr><td colspan='3' class='text-muted text-center py-3'>Nenhum resultado.</td></tr>";
@@ -1312,7 +1397,8 @@
               const retPct = (row.total_return * 100).toFixed(2) + "%";
               
               const tr = document.createElement("tr");
-              tr.onclick = () => selectScannedAsset(row.symbol);
+              // Passa os parametros otimizados para a funcao de selecao
+              tr.onclick = () => selectScannedAsset(row.symbol, row.params);
               
               // Logo Logic
               const logoUrl = `https://raw.githubusercontent.com/thefintz/icones-b3/main/icones/${row.symbol}.png`;
@@ -1340,30 +1426,53 @@
               `;
               tbody.appendChild(tr);
           });
+
+          
+          // Auto-Select First Result (Champion)
+          if(data.length > 0) {
+              selectScannedAsset(data[0].symbol, data[0].params);
+          }
       }
 
-      function selectScannedAsset(symbol) {
+      function selectScannedAsset(symbol, params=null) {
         // Close modal if open
         if (scannerModalInstance) scannerModalInstance.hide();
-
-        // 1. Update Sidebar Active State
-        document.querySelectorAll("#results-list .list-group-item").forEach(el => {
-            el.classList.remove("active");
-            // Remove text-white etc if needed, but 'active' usually handles it in Bootstrap/Tabler
-        });
-        const activeItem = document.getElementById(`scan-item-${symbol}`);
-        if(activeItem) activeItem.classList.add("active");
-
-        // 2. Set inputs
-        const select = document.getElementById("symbolSelect");
-        if(select) {
-            select.value = symbol;
-             // Trigger change
-            changeSymbol();
+        
+        // 1. Update Input
+        document.getElementById("symbolSelect").value = symbol;
+        SYMBOL = symbol;
+        
+        // 2. Override Params if provided (Fix Discrepancy)
+        if (params) {
+            // Se veio do scanner, usamos os parâmetros QUE GERARAM aquele resultado.
+            document.getElementById("smaShort").value = params.short;
+            document.getElementById("smaLong").value = params.long;
             
-            // Trigger backtest automatically
-            setTimeout(runBacktest, 500);
+            // Importante: Desativamos a otimização automática para rodar com ESSES parâmetros fixos
+            // Caso contrário, o backtest rodaria a otimização de novo e poderia achar outros valores.
+            document.getElementById("optimizeCheck").checked = false;
+            toggleOptimizeInputs(); // Visual update
+            logStatus(`Carregando ${symbol} com parâmetros Otimizados (${params.short}/${params.long})...`);
+        } else {
+            // Se não tem parametros (clique normal), mantem o estado atual
+            logStatus(`Carregando ${symbol}...`);
         }
+
+        // 3. Trigger Change Logic
+        changeSymbol();
+        
+        // 4. Force Run Backtest immediately
+        setTimeout(runBacktest, 500); 
+      }
+
+      function changeSymbol() {
+        SYMBOL = document.getElementById("symbolSelect").value;
+        
+        // Update Icon System
+        updateAssetIcon(SYMBOL);
+        
+        // Reset Logic
+        candleSeries.setMarkers([]); 
       }
       
       // Auto-run scanner sidebar rendering if cache exists (on page logic if needed, but cache is volatile)

@@ -141,44 +141,63 @@ def strategy_sma_crossover(df, short_window=20, long_window=50):
 def optimize_sma(df):
     """
     Otimiza os parâmetros de Média Móvel (Curta e Longa) buscando o maior Profit Factor.
-    Ranges:
-      Curta: 5 a 25 (passo 2)
-      Longa: 30 a 100 (passo 5)
+    Versão Otimizada (Fast Numpy).
     """
-    best_pf = -1
-    best_params = (20, 50) # Default
+    # Converter para numpy para velocidade extrema
+    prices = df['close'].values
     
-    # Ranges definidos
+    # Ranges
     short_range = range(5, 25, 2)
-    long_range = range(30, 105, 5) # Até 100 incluso
+    long_range = range(30, 105, 5)
     
-    # Pre-calculate returns to speed up
-    # Na verdade, SMA depende de rolling, entao precisamos calcular rolling a cada iteracao
-    # Como o dataset eh pequeno (~1000-5000 rows), isso sera rapido.
+    best_score = -1
+    best_params = (20, 50)
+    
+    # Pre-cálculo de retornos %
+    # ret[i] = (price[i] - price[i-1]) / price[i-1]
+    # Usamos numpy diff
+    returns = np.diff(prices) / prices[:-1]
+    returns = np.insert(returns, 0, 0) # align with prices length
     
     for short in short_range:
+        # Calcular SMA Curta uma vez para todos os Longs compatíveis? 
+        # Não, pois muda a cada iteração. Mas pandas rolling é rápido.
+        # Para ultra performance, poderiamos usar convolution, mas rolling do pandas já é C-optimized.
+        # Vamos apenas evitar criar DataFrames inteiros.
+        
+        sma_short = pd.Series(prices).rolling(short).mean().values
+        
         for long in long_range:
             if short >= long:
                 continue
                 
-            # Executa estrategia (Versao Light - poderiamos otimizar nao copiando tudo, mas ok)
-            try:
-                # Calculate SMAs directly without full strategy function overhead if desired, 
-                # but using the function ensures consistency.
-                res = strategy_sma_crossover(df, short, long)
+            sma_long = pd.Series(prices).rolling(long).mean().values
+            
+            # Signal: 1 se Short > Long, 0 caso contrario
+            # Usamos np.nan_to_num para lidar com os nans iniciais do rolling
+            signals = np.where(np.nan_to_num(sma_short) > np.nan_to_num(sma_long), 1, 0)
+            
+            # Strategy Returns = Signal[t-1] * Returns[t]
+            # Shift signals forward by 1
+            shifted_signals = np.roll(signals, 1)
+            shifted_signals[0] = 0
+            
+            # Vectorized Returns
+            strat_rets = shifted_signals * returns
+            
+            # Fast Profit Factor Calculation (Vectorized)
+            wins = strat_rets[strat_rets > 0].sum()
+            losses = abs(strat_rets[strat_rets < 0].sum())
+            
+            # Se não operou, PF = 0
+            if losses == 0:
+                if wins > 0: pf = 100.0 # Infinite profit
+                else: pf = 0.0
+            else:
+                pf = wins / losses
                 
-                # Calculate lightweight Profit Factor
-                stats = calculate_trade_stats(res)
-                pf = stats['profit_factor']
-                
-                # Tie-breaker: Total Return? Or just PF. User asked for PF or Total Return.
-                # Let's prioritize PF, if PF is equal or very close, maybe shorter periods?
-                # For now simple max PF.
-                
-                if pf > best_pf:
-                    best_pf = pf
-                    best_params = (short, long)
-            except Exception as e:
-                continue
+            if pf > best_score:
+                best_score = pf
+                best_params = (short, long)
                 
     return best_params
