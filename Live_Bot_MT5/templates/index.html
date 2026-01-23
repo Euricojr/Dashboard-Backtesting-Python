@@ -173,6 +173,17 @@
       .table-hover tbody tr:hover {
         background-color: #27272a !important; 
       }
+      
+      /* Active List Item Neutral */
+      #results-list .list-group-item {
+        border: none !important;
+        margin-bottom: 2px; /* Slight spacing instead of lines */
+        border-radius: 4px; /* Soft rounded corners */
+      }
+      #results-list .list-group-item.active {
+        background-color: #27272a !important;
+        color: #ffffff !important;
+      }
 
       /* 5. Scrollbar (Universal Fix) */
       /* 5. Scrollbar (Universal & Firefox Support) */
@@ -350,7 +361,7 @@
                 </div>
 
                 <!-- Backtest Strategy -->
-                <div class="card">
+                <div class="card mb-3">
                   <div class="card-header">
                     <h3 class="card-title">Backtest (SMA)</h3>
                   </div>
@@ -432,6 +443,18 @@
                       </svg>
                       Escanear Mercado
                     </button>
+                  </div>
+                </div>
+
+                <!-- Scanner Results List (Sidebar Persistent) -->
+                <div class="card mb-3" id="card-scanner-results" style="display: none;">
+                  <div class="card-header">
+                    <h3 class="card-title">Resultados Scanner</h3>
+                  </div>
+                  <div class="card-body p-0">
+                    <div id="results-list" class="list-group list-group-flush" style="max-height: 400px; overflow-y: auto;">
+                        <!-- JS injected items -->
+                    </div>
                   </div>
                 </div>
 
@@ -865,6 +888,7 @@
 
       // ============ SCANNER LOGIC ============
       var scannerModalInstance = null;
+      var cachedScanResults = [];
 
       // Reset UI when opening modal
       function openScanner() {
@@ -945,14 +969,24 @@
                   document.getElementById("scan-status-detail").innerText =
                     msg.text;
                 } else if (msg.type === "result") {
-                  // Hide loading immediately when results arrive
+                  // Hide loading immediately
                   document.getElementById("scanner-loading").style.display = "none";
                   
                   // Hide Start Button
                   const startBtn = document.querySelector("#modal-scanner .btn-success");
                   if(startBtn) startBtn.style.display = "none";
                   
-                  renderScannerResults(msg.data);
+                  // Cache & Render Sidebar
+                  cachedScanResults = msg.data;
+                  renderSidebarResults(msg.data);
+                  
+                  // Hide Modal & Show First Result
+                  if(scannerModalInstance) scannerModalInstance.hide();
+                  document.getElementById("card-scanner-results").style.display = "block";
+                  
+                  if(msg.data.length > 0) {
+                      selectScannedAsset(msg.data[0].symbol);
+                  }
                 }
               } catch (e) {
                 console.error("Bad JSON chunk", line);
@@ -970,53 +1004,76 @@
       }
 
       function renderScannerResults(data) {
+        // Keep legacy modal render just in case, or for debugging
         const tbody = document.getElementById("tbody_scanner");
-        tbody.innerHTML = "";
+        if(tbody) tbody.innerHTML = "";
+        // ... (simplified or left empty if unused)
+      }
 
-        if (!data || data.length === 0) {
-          tbody.innerHTML =
-            "<tr><td colspan='6' class='text-center'>Nenhum resultado encontrado.</td></tr>";
-          document.getElementById("scanner-results").style.display = "block";
-          return;
-        }
-
-        data.forEach((row, index) => {
-          const tr = document.createElement("tr");
-          const isWin = row.total_return > 0;
-          const colorClass = isWin ? "text-green" : "text-red";
-
-          tr.innerHTML = `
-                  <td>${index + 1}</td>
-                  <td class="fw-bold text-white">${row.symbol}</td>
-                  <td class="${colorClass}">${(row.total_return * 100).toFixed(2)}%</td>
-                  <td>${(row.win_rate * 100).toFixed(1)}%</td>
-                  <td>${row.total_trades}</td>
-                  <td>
-                      <button class="btn btn-sm btn-ghost-secondary text-secondary" onclick="selectScannedAsset('${row.symbol}')">
-                        Ver
-                      </button>
-                  </td>
+      function renderSidebarResults(data) {
+          const list = document.getElementById("results-list");
+          list.innerHTML = "";
+          
+          if(!data || data.length === 0) {
+              list.innerHTML = "<div class='list-group-item'>Nenhum resultado.</div>";
+              return;
+          }
+          
+          data.forEach((row, i) => {
+              const isWin = row.total_return > 0;
+              const colorClass = isWin ? "text-green" : "text-red";
+              const retPct = (row.total_return * 100).toFixed(2) + "%";
+              
+              const item = document.createElement("a");
+              item.href = "#";
+              item.className = "list-group-item list-group-item-action";
+              item.id = `scan-item-${row.symbol}`;
+              item.onclick = (e) => {
+                  e.preventDefault();
+                  selectScannedAsset(row.symbol);
+              };
+              
+              item.innerHTML = `
+                  <div class="d-flex w-100 justify-content-between align-items-center">
+                    <div>
+                        <span class="badge bg-secondary-lt me-2">${i+1}</span>
+                        <strong class="text-white">${row.symbol}</strong>
+                    </div>
+                    <div class="text-end">
+                        <div class="${colorClass} fw-bold">${retPct}</div>
+                        <div class="small text-muted">${(row.win_rate*100).toFixed(0)}% WR</div>
+                    </div>
+                  </div>
               `;
-          tbody.appendChild(tr);
-        });
-
-        document.getElementById("scanner-results").style.display = "block";
+              list.appendChild(item);
+          });
       }
 
       function selectScannedAsset(symbol) {
-        // Close modal
+        // Close modal if open
         if (scannerModalInstance) scannerModalInstance.hide();
 
-        // Set inputs
-        const select = document.getElementById("symbolSelect");
-        select.value = symbol;
+        // 1. Update Sidebar Active State
+        document.querySelectorAll("#results-list .list-group-item").forEach(el => {
+            el.classList.remove("active");
+            // Remove text-white etc if needed, but 'active' usually handles it in Bootstrap/Tabler
+        });
+        const activeItem = document.getElementById(`scan-item-${symbol}`);
+        if(activeItem) activeItem.classList.add("active");
 
-        // Trigger change
-        changeSymbol();
-        
-        // Trigger backtest automatically for convenience
-        setTimeout(runBacktest, 500);
+        // 2. Set inputs
+        const select = document.getElementById("symbolSelect");
+        if(select) {
+            select.value = symbol;
+             // Trigger change
+            changeSymbol();
+            
+            // Trigger backtest automatically
+            setTimeout(runBacktest, 500);
+        }
       }
+      
+      // Auto-run scanner sidebar rendering if cache exists (on page logic if needed, but cache is volatile)
 
       window.onload = init;
     </script>
