@@ -5,3 +5,5 @@ flask
 flask-cors
 python-dotenv
 groq
+MetaTrader5
+openpyxl
