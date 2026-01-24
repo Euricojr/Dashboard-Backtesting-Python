@@ -1007,13 +1007,13 @@
         wickDownColor: "#ff1744",
       });
 
-      const smaShortSeries = chart.addLineSeries({
+      let smaShortSeries = chart.addLineSeries({
         color: "#FFFF00", // Bright Yellow
         lineWidth: 2,
         title: "SMA Short",
       });
 
-      const smaLongSeries = chart.addLineSeries({
+      let smaLongSeries = chart.addLineSeries({
         color: "#D500F9", // Bright Purple/Pink
         lineWidth: 2,
         title: "SMA Long",
@@ -1133,17 +1133,32 @@
 
 
           // 1. HARD RESET: Remove old series
-          if (candleSeries) {
-              chart.removeSeries(candleSeries);
-          }
+          // 1. HARD RESET: Remove ALL series to fix Z-Order (Candles -> SMAs)
+          if (candleSeries) chart.removeSeries(candleSeries);
+          if (smaShortSeries) chart.removeSeries(smaShortSeries);
+          if (smaLongSeries) chart.removeSeries(smaLongSeries);
           
-          // 2. Recreate Series
+          // 2. Recreate Series (Order Matters: Last added = Top Layer)
+          // 2.1 Candles (Background Layer)
           candleSeries = chart.addCandlestickSeries({
               upColor: '#00E396',
               downColor: '#FF4560',
               borderVisible: false,
               wickUpColor: '#00E396',
               wickDownColor: '#FF4560'
+          });
+          
+          // 2.2 SMAs (Overlay Layer)
+          smaShortSeries = chart.addLineSeries({
+            color: "#FFFF00", // Yellow
+            lineWidth: 2,
+            title: "SMA Short",
+          });
+          
+          smaLongSeries = chart.addLineSeries({
+            color: "#D500F9", // Purple
+            lineWidth: 2,
+            title: "SMA Long",
           });
 
           // 3. Set Data
@@ -1208,6 +1223,33 @@
                  low: c.low,
                  close: c.close
              }));
+             // 1. HARD RESET ALL (Fix Z-Order & Scaling)
+             if (candleSeries) chart.removeSeries(candleSeries);
+             if (smaShortSeries) chart.removeSeries(smaShortSeries);
+             if (smaLongSeries) chart.removeSeries(smaLongSeries);
+             
+             // 2. Recreate Series
+             candleSeries = chart.addCandlestickSeries({
+                 upColor: '#00E396',
+                 downColor: '#FF4560',
+                 borderVisible: false,
+                 wickUpColor: '#00E396',
+                 wickDownColor: '#FF4560'
+             });
+             
+             smaShortSeries = chart.addLineSeries({
+               color: "#FFFF00", 
+               lineWidth: 2,
+               title: "SMA Short",
+             });
+             
+             smaLongSeries = chart.addLineSeries({
+               color: "#D500F9", 
+               lineWidth: 2,
+               title: "SMA Long",
+             });
+             
+             // 3. Set Data
              candleSeries.setData(candleData);
              
              // CRITICAL FIX: Flat Line Bug (Backtest)
@@ -1512,6 +1554,29 @@
                 console.error("Bad JSON chunk", line);
               }
             }
+          }
+
+          // Process remaining buffer after stream end
+          if (buffer.trim()) {
+              try {
+                  const msg = JSON.parse(buffer);
+                  if (msg.type === "result") {
+                      // ... Copy Result Logic ...
+                      document.getElementById("scanner-loading").style.display = "none";
+                      const startBtn = document.querySelector("#modal-scanner .btn-success");
+                      if(startBtn) startBtn.style.display = "none";
+                      
+                      cachedScanResults = msg.data;
+                      renderSidebarResults(msg.data);
+                      
+                      if(scannerModalInstance) scannerModalInstance.hide();
+                      document.getElementById("card-scanner-results").style.display = "block";
+                      
+                      if(msg.data.length > 0) {
+                          selectScannedAsset(msg.data[0].symbol);
+                      }
+                  }
+              } catch(e) { console.error("Final Buffer Parse Error", e); }
           }
         } catch (e) {
           document.getElementById("scan-status-text").innerText = "ERRO";
