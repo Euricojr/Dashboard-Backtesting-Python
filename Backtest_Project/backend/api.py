@@ -84,10 +84,10 @@ INDICES = {
 }
 
 CATEGORIES = {
-    "🇧🇷 Ações Brasil": BR_STOCKS,
-    "🇺🇸 Ações EUA": US_STOCKS,
-    "₿ Criptomoedas": CRYPTO,
-    "📊 Índices Globais": INDICES
+    "BR_STOCKS": {"label": "🇧🇷 Ações Brasil", "data": BR_STOCKS},
+    "US_STOCKS": {"label": "🇺🇸 Ações EUA", "data": US_STOCKS},
+    "CRYPTO": {"label": "₿ Criptomoedas", "data": CRYPTO},
+    "INDICES": {"label": "📊 Índices Globais", "data": INDICES}
 }
 
 def clean_for_json(obj):
@@ -342,9 +342,13 @@ def run_backtest():
 
 @app.route('/batch_backtest', methods=['POST'])
 def run_batch_backtest():
+    results = []
     try:
         data_req = request.json
-        category_key = data_req.get('category', 'BR_STOCKS') # Key from CATEGORIES
+        if not data_req:
+            return jsonify({"error": "Requisição inválida (body vazio)."}), 400
+            
+        category_key = data_req.get('category', 'ALL')
         start_date = data_req.get('start', '2023-01-01')
         end_date = data_req.get('end', '2024-01-01')
         sma_short = int(data_req.get('sma_short', 20))
@@ -353,65 +357,58 @@ def run_batch_backtest():
         
         tickers_map = {}
         if category_key == 'ALL':
-             for cat in CATEGORIES.values():
-                 tickers_map.update(cat)
+             for cat_data in CATEGORIES.values():
+                 tickers_map.update(cat_data['data'])
         else:
-            # Encontra a categoria pelo nome (ex: "🇧🇷 Ações Brasil") ou chave direta se fosse o caso
-            # O frontend vai mandar o label da chave provavelmente.
-            # Vamos simplificar: O frontend manda a Key do dicionário CATEGORIES? 
-            # O dicionário CATEGORIES tem chaves com emojis. O frontend manda isso?
-            # Vamos assumir que o frontend manda a chave exata de CATEGORIES
-             tickers_map = CATEGORIES.get(category_key, {})
+             # Tenta achar pela chave direta (ASCII)
+             if category_key in CATEGORIES:
+                 tickers_map = CATEGORIES[category_key]['data']
+             else:
+                 # Fallback: se o frontend mandou o Label com emoji, tentamos encontrar
+                 for k, v in CATEGORIES.items():
+                     if v['label'] == category_key:
+                         tickers_map = v['data']
+                         break
 
-        results = []
-        
-        print(f"Iniciando Batch para {len(tickers_map)} ativos. Categoria: {category_key}")
+        if not tickers_map:
+            return jsonify({"error": f"Categoria '{category_key}' não encontrada."}), 404
+
+        print(f"Iniciando Batch para {len(tickers_map)} ativos.")
         
         for ticker, name in tickers_map.items():
             try:
-                # 1. Download (Otimizado: apenas colunas essenciais)
                 df = yf.download(ticker, start=start_date, end=end_date, progress=False)
+                if df.empty or len(df) < 20: 
+                    continue
                 
-                if df.empty: continue
                 if isinstance(df.columns, pd.MultiIndex):
                     df.columns = df.columns.get_level_values(0)
                 
-                # Check min length
-                if len(df) < 50: continue
-
-                # 2. Strategy
                 if strategy_name == "RSI":
                     res = backtest.strategy_rsi_weekly(df, lower=35, upper=70)
                 else:
                     res = backtest.strategy_sma_crossover(df, short_window=sma_short, long_window=sma_long)
                 
-                # 3. Split (50/50)
-                limit = int(len(res) * 0.5)
-                res_oos = res.iloc[limit:].copy()
-                
-                # 4. Metrics OOS
-                m_oos = backtest.calculate_metrics(res_oos['Strategy_Returns'])
+                m = backtest.calculate_metrics(res['Strategy_Returns'])
                 
                 results.append({
                     "ticker": ticker,
                     "name": name,
-                    "return_out": m_oos.get('Total Return', 0),
-                    "sharpe_out": m_oos.get('Sharpe Ratio', 0),
-                    "drawdown_out": m_oos.get('Max Drawdown', 0)
+                    "total_return": float(m.get('Total Return', 0)),
+                    "sharpe": float(m.get('Sharpe Ratio', 0)),
+                    "max_drawdown": float(m.get('Max Drawdown', 0))
                 })
                 
             except Exception as e:
-                print(f"Erro ao processar {ticker}: {e}")
+                print(f"Pulo em {ticker} por erro técnico.")
                 continue
         
-        # Sort by Return OOS Descending
-        results.sort(key=lambda x: x['return_out'], reverse=True)
-        
+        results.sort(key=lambda x: x.get('total_return', 0), reverse=True)
         return jsonify(clean_for_json(results))
 
     except Exception as e:
-        traceback.print_exc()
-        return jsonify({"error": str(e)}), 500
+        print("FALHA NO BATCH:")
+        return jsonify({"error": f"Falha no processamento: {str(e)}"}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

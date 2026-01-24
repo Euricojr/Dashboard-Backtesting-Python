@@ -70,8 +70,8 @@ function renderModalResults(query) {
 
   let hasResults = false;
 
-  for (const [category, stocks] of Object.entries(allAssets)) {
-    const filtered = Object.entries(stocks).filter(
+  for (const [key, categoryData] of Object.entries(allAssets)) {
+    const filtered = Object.entries(categoryData.data).filter(
       ([ticker, name]) =>
         ticker.toLowerCase().includes(q) || name.toLowerCase().includes(q),
     );
@@ -82,7 +82,7 @@ function renderModalResults(query) {
       group.className =
         "search-modal-group p-3 text-secondary small fw-bold text-uppercase";
       group.style.background = "rgba(255,255,255,0.02)";
-      group.innerText = category;
+      group.innerText = categoryData.label;
       resultsDiv.appendChild(group);
 
       filtered.forEach(([ticker, name]) => {
@@ -92,7 +92,7 @@ function renderModalResults(query) {
         item.innerHTML = `
                     <div class="d-flex flex-column">
                         <span class="fw-bold text-white">${name}</span>
-                        <span class="text-secondary small">${category}</span>
+                        <span class="text-secondary small">${categoryData.label}</span>
                     </div>
                     <span class="badge bg-green-lt">${ticker}</span>
                 `;
@@ -540,10 +540,10 @@ async function initBatchFeature() {
     optAll.innerText = "⭐ Todas as Categorias";
     select.appendChild(optAll);
 
-    for (const cat of Object.keys(allAssets)) {
+    for (const [key, categoryData] of Object.entries(allAssets)) {
       const opt = document.createElement("option");
-      opt.value = cat;
-      opt.innerText = cat;
+      opt.value = key;
+      opt.innerText = categoryData.label;
       select.appendChild(opt);
     }
   }, 1500);
@@ -579,19 +579,26 @@ async function initBatchFeature() {
       });
 
       const data = await res.json();
-      tableBody.innerHTML = "";
+      
+      if (data.error) {
+        alert("Erro no Servidor: " + data.error);
+        loading.style.display = "none";
+        btn.disabled = false;
+        return;
+      }
 
+      tableBody.innerHTML = "";
       data.forEach((item, index) => {
         const tr = document.createElement("tr");
-        const isPositive = item.return_out > 0;
+        const isPositive = item.total_return > 0;
 
         tr.innerHTML = `
                     <td><span class="badge ${index < 3 ? "bg-yellow text-dark" : "bg-dark text-secondary"}">#${index + 1}</span></td>
                     <td class="fw-bold">${item.ticker}</td>
                     <td class="text-secondary small">${item.name}</td>
-                    <td class="text-end fw-bold ${isPositive ? "val-profit" : "val-loss"}">${(item.return_out * 100).toFixed(2)}%</td>
-                    <td class="text-end fw-bold">${item.sharpe_out.toFixed(2)}</td>
-                    <td class="text-end val-loss">${(item.drawdown_out * 100).toFixed(2)}%</td>
+                    <td class="text-end fw-bold ${isPositive ? "val-profit" : "val-loss"}">${(item.total_return * 100).toFixed(2)}%</td>
+                    <td class="text-end fw-bold">${item.sharpe.toFixed(2)}</td>
+                    <td class="text-end val-loss">${(item.max_drawdown * 100).toFixed(2)}%</td>
                     <td class="text-end">
                        <button class="btn btn-sm btn-neon-outline" onclick="loadFromBatch('${item.ticker}', '${item.name}')">Ver</button>
                     </td>
@@ -612,13 +619,20 @@ async function initBatchFeature() {
 }
 
 window.loadFromBatch = function (ticker, name) {
-  // Global for onclick
   const modalEl = document.getElementById("modal_batch");
   const modal = bootstrap.Modal.getInstance(modalEl);
   if (modal) modal.hide();
 
+  // 1. Atualizar Ticker Selecionado (Trigger + Hidden Input)
   document.getElementById("selected_ticker").value = ticker;
   document.getElementById("trigger_label").innerText = name;
 
+  // 2. Disparar lógica de Seleção (Atualiza Logo e Badges do Topo)
+  selectAsset(ticker, name);
+
+  // 3. Executar o Backtest automaticamente
   runBacktest();
+
+  // 4. Garantir que a área de resultados esteja visível
+  document.getElementById("results_area").style.display = "flex";
 };
