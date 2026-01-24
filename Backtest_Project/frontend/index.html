@@ -7,503 +7,601 @@
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>QuantDashboard</title>
+    <title>FinSense | Backtest Engine</title>
     <!-- Tabler Core -->
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/css/tabler.min.css"
     />
-    <!-- Fonts -->
-    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <!-- RemixIcon -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <!-- Fonts (Montserrat & Inter) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;800&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    
     <style>
       :root {
-        --tblr-font-sans-serif:
-          "Inter", -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI,
-          Roboto, Helvetica Neue, sans-serif;
-      }
-      body {
-        font-feature-settings: "cv03", "cv04", "cv11";
+        --bg-color: #09090b;
+        --card-bg: #121214;
+        --input-bg: #18181b;
+        --border-color: #27272a;
+        --border-light: #3f3f46;
+        --text-primary: #f4f4f5;
+        --text-secondary: #a1a1aa;
+        --neon-green: #00E396;
+        --neon-green-glow: rgba(0, 227, 150, 0.4);
+        --neon-red: #FF4560;
+        
+        --font-main: 'Montserrat', sans-serif;
+        --font-ui: 'Inter', sans-serif;
       }
 
-      /* Command Palette Styles */
+      body {
+        background-color: var(--bg-color);
+        color: var(--text-primary);
+        font-family: var(--font-ui);
+        margin: 0;
+        overflow-x: hidden;
+      }
+
+      h1, h2, h3, h4, .navbar-brand, .btn {
+          font-family: var(--font-main);
+      }
+
+      /* Transitions */
+      * {
+          transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
+      }
+
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: var(--bg-color);
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--border-light);
+        border-radius: 10px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: var(--neon-green);
+      }
+
+      /* Navbar / Sidebar Branding */
+      header.navbar {
+          background-color: var(--input-bg) !important;
+          border-bottom: 1px solid var(--neon-green-glow) !important;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+          padding: 0.75rem 0;
+      }
+
+      .brand-wrapper {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          text-decoration: none;
+      }
+
+      .brand-icon-svg {
+          filter: drop-shadow(0 0 5px var(--neon-green-glow));
+      }
+
+      .brand-text-container {
+          display: flex;
+          flex-direction: column;
+          line-height: 1;
+      }
+
+      .logo-text {
+          font-size: 1.4rem;
+          letter-spacing: -1px;
+          display: flex;
+          align-items: center;
+      }
+
+      .logo-text .bold { font-weight: 800; color: #fff; }
+      .logo-text .neon { 
+          font-weight: 300; 
+          color: var(--neon-green); 
+          text-shadow: 0 0 15px var(--neon-green-glow);
+          margin-left: 2px;
+      }
+
+      .brand-sub {
+          font-size: 0.55rem;
+          color: var(--text-secondary);
+          letter-spacing: 2px;
+          font-weight: 700;
+          text-transform: uppercase;
+          margin-top: 2px;
+      }
+
+      /* Cards Escuros */
+      .card {
+          background-color: var(--card-bg) !important;
+          border: 1px solid var(--border-color) !important;
+          border-radius: 12px;
+          overflow: hidden;
+          margin-bottom: 1.5rem;
+      }
+
+      .card-header {
+          background-color: rgba(255, 255, 255, 0.02) !important;
+          border-bottom: 1px solid var(--border-color) !important;
+          padding: 1rem 1.25rem;
+      }
+
+      .card-title {
+          color: var(--text-primary);
+          font-weight: 700;
+          font-size: 0.9rem;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+      }
+
+      /* Dark Inputs */
+      .form-label {
+          color: var(--text-secondary);
+          font-weight: 600;
+          font-size: 0.75rem;
+          text-transform: uppercase;
+          margin-bottom: 0.5rem;
+      }
+
+      .form-control, .form-select {
+          background-color: var(--input-bg) !important;
+          border: 1px solid var(--border-light) !important;
+          color: #fff !important;
+          border-radius: 8px;
+          padding: 0.6rem 0.85rem;
+          font-size: 0.9rem;
+      }
+
+      .form-control:focus, .form-select:focus {
+          border-color: var(--neon-green) !important;
+          box-shadow: 0 0 0 3px rgba(0, 227, 150, 0.15) !important;
+          outline: none;
+      }
+
+      /* Neon Outline Button */
+      .btn-neon-outline {
+          background: transparent !important;
+          border: 1px solid var(--neon-green) !important;
+          color: var(--neon-green) !important;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          padding: 0.8rem 1.5rem;
+          border-radius: 8px;
+          transition: all 0.3s;
+          box-shadow: 0 0 10px rgba(0, 227, 150, 0.1);
+      }
+
+      .btn-neon-outline:hover {
+          background: var(--neon-green) !important;
+          color: #000 !important;
+          box-shadow: 0 0 20px var(--neon-green-glow);
+          transform: translateY(-2px);
+      }
+
+      /* Tables */
+      .table {
+          color: var(--text-primary) !important;
+          margin-bottom: 0;
+      }
+
+      .table thead th {
+          background-color: var(--input-bg) !important;
+          color: var(--neon-green) !important;
+          font-size: 0.7rem !important;
+          font-weight: 800 !important;
+          text-transform: uppercase !important;
+          letter-spacing: 1px;
+          border-bottom: 1px solid var(--border-color) !important;
+          padding: 0.75rem 1rem !important;
+      }
+
+      .table td {
+          border-bottom: 1px solid var(--border-color) !important;
+          padding: 1rem !important;
+          vertical-align: middle;
+      }
+
+      .table tbody tr:last-child td {
+          border-bottom: none !important;
+      }
+
+      .val-profit { color: var(--neon-green); font-weight: 600; }
+      .val-loss { color: var(--neon-red); font-weight: 600; }
+
+      /* Chart Placeholder */
+      .chart-placeholder {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-color: #0d0d0f;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 10;
+        color: var(--text-secondary);
+      }
+
+      /* Command Palette / Search Modal */
       .search-modal {
         position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.85);
-        backdrop-filter: blur(8px);
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0, 0, 0, 0.9);
+        backdrop-filter: blur(10px);
         z-index: 11000;
         display: none;
         justify-content: center;
         align-items: flex-start;
-        padding-top: 80px;
+        padding-top: 5vh;
       }
       .search-content {
         width: 95%;
         max-width: 650px;
-        background-color: #1c2128;
-        border: 1px solid var(--tblr-primary);
-        border-radius: 8px;
-        box-shadow: 0 30px 80px rgba(0, 0, 0, 1);
+        background-color: var(--card-bg);
+        border: 1px solid var(--neon-green);
+        border-radius: 12px;
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8);
         overflow: hidden;
-        animation: modalIn 0.25s ease-out;
       }
       .search-header {
-        padding: 20px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        display: flex;
-        align-items: center;
+        padding: 24px;
+        border-bottom: 1px solid var(--border-color);
       }
       .search-modal-input {
         width: 100%;
         background-color: transparent !important;
         color: white !important;
         border: none;
-        font-size: 1.3rem;
+        font-size: 1.5rem;
+        font-family: var(--font-main);
         outline: none;
-        padding: 0 10px;
-      }
-      .search-modal-results {
-        max-height: 400px;
-        overflow-y: auto;
-      }
-      .search-modal-group {
-        padding: 8px 20px;
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        color: #666;
-        background: rgba(255, 255, 255, 0.03);
-        font-weight: 600;
-      }
-      .search-modal-item {
-        padding: 12px 20px;
-        cursor: pointer;
-        display: flex;
-        justify-content: space-between;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        transition: background 0.1s;
-      }
-      .search-modal-item:hover,
-      .search-modal-item.active {
-        background-color: rgba(32, 107, 196, 0.2);
-      }
-      @keyframes modalIn {
-        from {
-          opacity: 0;
-          transform: translateY(-20px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
       }
 
-      /* Chart Placeholder */
-      .chart-placeholder {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: #1d222b; /* Slightly lighter than card bg */
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        z-index: 10;
-        border-radius: 4px;
-        color: #666;
+      /* Interactive Items */
+      .list-group-item-dark {
+          background-color: transparent;
+          border-color: var(--border-color);
+          color: var(--text-secondary);
+          cursor: pointer;
       }
+      .list-group-item-dark:hover {
+          background-color: rgba(0, 227, 150, 0.05);
+          color: #fff;
+      }
+
+      #ai_analysis {
+          line-height: 1.6;
+          font-size: 0.95rem;
+          color: var(--text-primary);
+      }
+
+      /* Loader */
+      .spinner-neon {
+          width: 3rem;
+          height: 3rem;
+          border: 3px solid rgba(0, 227, 150, 0.1);
+          border-top-color: var(--neon-green);
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+      }
+      @keyframes spin { to { transform: rotate(360deg); } }
+
     </style>
-    <!-- Lightweight Charts (Stable Version) -->
+    <!-- Lightweight Charts -->
     <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
   </head>
-  <body class="layout-fluid theme-dark" data-bs-theme="dark">
+  <body class="layout-fluid">
     <div class="page">
-      <!-- Navbar -->
+      <!-- Top Navbar (VECTRA Style) -->
       <header class="navbar navbar-expand-md d-print-none">
         <div class="container-xl">
-          <button
-            class="navbar-toggler"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#navbar-menu"
-            aria-controls="navbar-menu"
-            aria-expanded="false"
-            aria-label="Toggle navigation"
-          >
-            <span class="navbar-toggler-icon"></span>
-          </button>
-          <h1
-            class="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3"
-          >
-            <a href="."> Dashboard </a>
-          </h1>
+          <a href="." class="brand-wrapper">
+              <svg class="brand-icon-svg" width="36" height="36" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M16 2L16 6" stroke="#00E396" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M16 26L16 30" stroke="#00E396" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M2 16L6 16" stroke="#00E396" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M26 16L30 16" stroke="#00E396" stroke-width="2" stroke-linecap="round"/>
+                  <circle cx="16" cy="16" r="6" stroke="#00E396" stroke-width="2"/>
+                  <circle cx="16" cy="16" r="2" fill="#00E396">
+                      <animate attributeName="opacity" values="1;0.3;1" dur="2s" repeatCount="indefinite"/>
+                  </circle>
+              </svg>
+                  <div class="brand-text-container">
+                      <div class="logo-text">
+                          <span class="bold">FIN</span><span class="neon">SENSE</span>
+                      </div>
+                      <div class="brand-sub">Strategy System</div>
+                  </div>
+          </a>
+          <div class="navbar-nav flex-row order-md-last d-none d-md-flex">
+              <div class="nav-item">
+                  <div class="d-flex align-items-center text-secondary small">
+                    <i class="ri-pulse-line me-2 text-success"></i>
+                    SISTEMA ONLINE
+                  </div>
+              </div>
+          </div>
         </div>
       </header>
 
-      <div class="page-wrapper">
-        <!-- Page body -->
+      <div class="page-wrapper pt-4">
         <div class="page-body">
           <div class="container-xl">
-            <div class="row g-3">
-              <!-- Sidebar / Settings -->
-              <div class="col-md-3">
-                <div class="card">
+            <div class="row g-4">
+              
+              <!-- Column 1: Configuration (Left) -->
+              <aside class="col-md-3">
+                <div class="card h-100">
                   <div class="card-header">
-                    <h3 class="card-title">Configurações</h3>
+                    <h3 class="card-title"><i class="ri-settings-4-line me-2"></i>Parâmetros</h3>
                   </div>
                   <div class="card-body">
-                    <div class="mb-3">
-                      <label class="form-label">Ativo</label>
+                    
+                    <!-- Asset Icon & Display -->
+                    <div class="text-center mb-4">
+                        <div id="asset_icon_container" style="width: 80px; height: 80px; margin: 0 auto 15px; border-radius: 12px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color);">
+                            <img id="asset_logo" src="" style="width: 100%; height: 100%; object-fit: contain; display: none;">
+                            <i id="asset_icon_placeholder" class="ri-stock-line ri-2x text-secondary"></i>
+                        </div>
+                        <h2 id="display_ticker" class="mb-0 text-white fw-800" style="letter-spacing: -1px;">---</h2>
+                        <p id="display_name" class="text-secondary small text-uppercase fw-bold m-0">Selecione um Ativo</p>
+                    </div>
+
+                    <!-- Asset Selector -->
+                    <div class="mb-4">
+                      <label class="form-label">Ativo Selecionado</label>
                       <div
                         id="sidebar_trigger"
                         class="form-control d-flex justify-content-between align-items-center"
-                        style="cursor: pointer; background-color: #232e3c"
+                        style="cursor: pointer;"
                       >
-                        <span id="trigger_label">Petrobras (PETR4.SA)</span>
+                        <span id="trigger_label" class="fw-bold">Selecionar Ativo</span>
+                        <i class="ri-search-2-line text-neon"></i>
                       </div>
+                      <input type="hidden" id="selected_ticker" value="PETR4.SA" />
                     </div>
 
-                    <input
-                      type="hidden"
-                      id="selected_ticker"
-                      value="PETR4.SA"
-                    />
-
-                    <div
-                      id="custom_ticker_div"
-                      class="mb-3"
-                      style="display: none"
-                    >
-                      <label class="form-label">Ticker Customizado</label>
-                      <input
-                        type="text"
-                        id="custom_ticker"
-                        class="form-control"
-                        placeholder="Ex: AAPL"
-                      />
-                    </div>
-
-                    <div class="row g-2">
+                    <!-- Dates -->
+                    <div class="row g-2 mb-4">
                       <div class="col-6">
                         <label class="form-label">Início</label>
-                        <input
-                          type="date"
-                          id="start_date"
-                          class="form-control"
-                          value="2020-01-01"
-                        />
+                        <input type="date" id="start_date" class="form-control" value="2020-01-01" />
                       </div>
                       <div class="col-6">
                         <label class="form-label">Fim</label>
-                        <input
-                          type="date"
-                          id="end_date"
-                          class="form-control"
-                          value="2024-01-01"
-                        />
+                        <input type="date" id="end_date" class="form-control" value="2024-01-01" />
                       </div>
                     </div>
 
-                    <div class="mb-3">
+                    <!-- Strategy -->
+                    <div class="mb-4">
                       <label class="form-label">Estratégia</label>
                       <select id="strategy_select" class="form-select">
                         <option value="SMA">Cruzamento de Médias (SMA)</option>
-                        <option value="RSI">
-                          RSI Semanal (Mean Reversion)
-                        </option>
+                        <option value="RSI">RSI Semanal (Mean Reversion)</option>
                       </select>
                     </div>
 
-                    <div id="sma_settings">
-                      <div class="row g-2 mt-2">
+                    <!-- Strategy Params (Dynamic) -->
+                    <div id="sma_settings" class="mb-4">
+                      <div class="row g-2">
                         <div class="col-6">
                           <label class="form-label">SMA Curta</label>
-                          <input
-                            type="number"
-                            id="sma_short"
-                            class="form-control"
-                            value="20"
-                          />
+                          <input type="number" id="sma_short" class="form-control" value="20" />
                         </div>
                         <div class="col-6">
                           <label class="form-label">SMA Longa</label>
-                          <input
-                            type="number"
-                            id="sma_long"
-                            class="form-control"
-                            value="50"
-                          />
+                          <input type="number" id="sma_long" class="form-control" value="50" />
                         </div>
                       </div>
                     </div>
 
-                    <div class="mt-4">
-                      <button id="run_btn" class="btn btn-primary w-100">
-                        Executar Backtest
+                    <!-- Action Buttons -->
+                    <div class="mt-5">
+                      <button id="run_btn" class="btn btn-neon-outline w-100 mb-3">
+                        <i class="ri-play-fill me-2"></i>Executar Backtest
                       </button>
-                      <button id="open_batch_btn" class="btn btn-ghost-primary w-100 mt-2" data-bs-toggle="modal" data-bs-target="#modal_batch">
-                         Ver Ranking de Ativos
+                      <button id="open_batch_btn" class="btn btn-link w-100 text-secondary text-decoration-none" data-bs-toggle="modal" data-bs-target="#modal_batch">
+                         <i class="ri-layout-grid-line me-2"></i>Ranking de Ativos
                       </button>
+                    </div>
+
+                  </div>
+                </div>
+              </aside>
+
+              <!-- Column 2: Results (Right) -->
+              <main class="col-md-9">
+                
+                <!-- Metrics Grid -->
+                <div class="row g-3 mb-4">
+                  <div class="col-12">
+                     <div class="card mb-0">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                           <h3 class="card-title">Relatório de Performance: IS vs OOS</h3>
+                           <span class="badge bg-green-lt">Live Engine</span>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table card-table table-vcenter">
+                              <thead>
+                                <tr>
+                                  <th>Métrica Chave</th>
+                                  <th class="text-center">Treino (In-Sample)</th>
+                                  <th class="text-center">Teste (Out-of-Sample)</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr>
+                                  <td>Retorno Total</td>
+                                  <td class="text-center text-secondary" id="td_total_in">-</td>
+                                  <td class="text-center fw-bold" id="td_total_out">-</td>
+                                </tr>
+                                <tr>
+                                  <td>CAGR (Anual)</td>
+                                  <td class="text-center text-secondary" id="td_cagr_in">-</td>
+                                  <td class="text-center fw-bold" id="td_cagr_out">-</td>
+                                </tr>
+                                <tr>
+                                  <td>Sharpe Ratio</td>
+                                  <td class="text-center text-secondary" id="td_sharpe_in">-</td>
+                                  <td class="text-center fw-bold" id="td_sharpe_out">-</td>
+                                </tr>
+                                <tr>
+                                  <td>Volatilidade Anual</td>
+                                  <td class="text-center text-secondary" id="td_vol_in">-</td>
+                                  <td class="text-center fw-bold" id="td_vol_out">-</td>
+                                </tr>
+                                <tr>
+                                  <td>Max Drawdown</td>
+                                  <td class="text-center text-secondary" id="td_dd_in">-</td>
+                                  <td class="text-center fw-bold" id="td_dd_out">-</td>
+                                </tr>
+                              </tbody>
+                            </table>
+                        </div>
+                     </div>
+                  </div>
+                </div>
+
+                <!-- Chart Card -->
+                <div class="card">
+                  <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title">Gráfico Analítico: Preço & Sinais</h3>
+                    <div id="split_badge_container"></div>
+                  </div>
+                  <div class="card-body p-0 position-relative">
+                    <div id="chart_wrapper" style="height: 500px; width: 100%">
+                      <div id="chart" style="width: 100%; height: 100%"></div>
+                      <div id="chart_placeholder" class="chart-placeholder">
+                        <div class="spinner-neon mb-3" style="display:none;" id="chart_spinner"></div>
+                        <i class="ri-line-chart-line ri-4x opacity-20 mb-3"></i>
+                        <h3 class="text-secondary">Aguardando Execução</h3>
+                        <p class="text-secondary opacity-50">Selecione um ativo e clique em Executar Backtest</p>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              <!-- Main Content -->
-              <div class="col-md-9">
-                <!-- Metrics Row -->
-                <div class="row row-cards mb-3">
-                  <!-- Comparative Table -->
-                  <div class="col-12 mb-3">
-                    <div class="card">
+                <!-- Bottom Row: Multi-Analysis -->
+                <div class="row g-3" id="results_area" style="display: none">
+                  <!-- Trade Stats -->
+                  <div class="col-md-5">
+                    <div class="card h-100">
                       <div class="card-header">
-                        <h3 class="card-title">
-                          Relatório de Performance: Treino vs Teste
-                        </h3>
+                        <h3 class="card-title">Estatísticas de Trades</h3>
                       </div>
                       <div class="table-responsive">
-                        <table class="table table-vcenter card-table">
-                          <thead>
-                            <tr>
-                              <th>Métrica</th>
-                              <th class="text-secondary text-center">Treino (In-Sample)</th>
-                              <th class="text-primary fw-bold text-center">
-                                Teste (Out-of-Sample)
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr>
-                              <td>Retorno Total</td>
-                              <td class="text-secondary text-center" id="td_total_in">-</td>
-                              <td class="fw-bold text-center" id="td_total_out">-</td>
-                            </tr>
-                            <tr>
-                              <td>CAGR (Anual)</td>
-                              <td class="text-secondary text-center" id="td_cagr_in">-</td>
-                              <td class="fw-bold text-center" id="td_cagr_out">-</td>
-                            </tr>
-                            <tr>
-                              <td>Sharpe Ratio</td>
-                              <td class="text-secondary text-center" id="td_sharpe_in">
-                                -
-                              </td>
-                              <td class="fw-bold text-center" id="td_sharpe_out">-</td>
-                            </tr>
-                            <tr>
-                              <td>Volatilidade</td>
-                              <td class="text-secondary text-center" id="td_vol_in">-</td>
-                              <td class="fw-bold text-center" id="td_vol_out">-</td>
-                            </tr>
-                            <tr>
-                              <td>Max Drawdown</td>
-                              <td class="text-secondary text-center" id="td_dd_in">-</td>
-                              <td class="fw-bold text-center" id="td_dd_out">-</td>
-                            </tr>
-                          </tbody>
+                        <table class="table card-table">
+                           <thead>
+                              <tr>
+                                 <th>KPI</th>
+                                 <th class="text-center">Treino</th>
+                                 <th class="text-center">Teste</th>
+                              </tr>
+                           </thead>
+                           <tbody>
+                              <tr>
+                                <td>Total Trades</td>
+                                <td class="text-center" id="ts_total_in">-</td>
+                                <td class="text-center" id="ts_total_out">-</td>
+                              </tr>
+                              <tr>
+                                <td>Win Rate</td>
+                                <td class="text-center" id="ts_win_in">-</td>
+                                <td class="text-center" id="ts_win_out">-</td>
+                              </tr>
+                              <tr>
+                                <td>Retorno Médio</td>
+                                <td class="text-center" id="ts_avg_ret_in">-</td>
+                                <td class="text-center" id="ts_avg_ret_out">-</td>
+                              </tr>
+                              <tr>
+                                <td>Profit Factor</td>
+                                <td class="text-center" id="ts_pf_in">-</td>
+                                <td class="text-center" id="ts_pf_out">-</td>
+                              </tr>
+                           </tbody>
                         </table>
                       </div>
                     </div>
                   </div>
-                </div>
 
-                <!-- Trade Statistics Table -->
-                <div class="col-12 mb-3">
-                  <div class="card">
-                    <div class="card-header">
-                      <h3 class="card-title">Estatísticas de Trades</h3>
-                    </div>
-                    <div class="table-responsive">
-                      <table class="table table-vcenter card-table">
-                        <thead>
-                          <tr>
-                            <th>Métrica</th>
-                            <th class="text-secondary text-center">Treino (In-Sample)</th>
-                            <th class="text-primary fw-bold text-center">Teste (Out-of-Sample)</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr>
-                            <td>Total de Trades</td>
-                            <td class="text-secondary text-center" id="ts_total_in">-</td>
-                            <td class="fw-bold text-center" id="ts_total_out">-</td>
-                          </tr>
-                          <tr>
-                            <td>Taxa de Acerto (Win Rate)</td>
-                            <td class="text-secondary text-center" id="ts_win_in">-</td>
-                            <td class="fw-bold text-center" id="ts_win_out">-</td>
-                          </tr>
-                          <tr>
-                            <td>Retorno Médio por Trade</td>
-                            <td class="text-secondary text-center" id="ts_avg_ret_in">-</td>
-                            <td class="fw-bold text-center" id="ts_avg_ret_out">-</td>
-                          </tr>
-                          <tr>
-                            <td>Duração Média (Dias)</td>
-                            <td class="text-secondary text-center" id="ts_dur_in">-</td>
-                            <td class="fw-bold text-center" id="ts_dur_out">-</td>
-                          </tr>
-                          <tr>
-                            <td>Fator de Lucro (Profit Factor)</td>
-                            <td class="text-secondary text-center" id="ts_pf_in">-</td>
-                            <td class="fw-bold text-center" id="ts_pf_out">-</td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </div>
-                </div>
-
-                <!-- Chart -->
-                <div class="card">
-                  <div class="card-header">
-                    <h3 class="card-title">
-                      Gráfico de Preços (In-Sample / Out-of-Sample)
-                    </h3>
-                  </div>
-                  <div class="card-body p-0">
-                    <div
-                      class="chart-wrapper"
-                      style="position: relative; height: 500px; width: 100%"
-                    >
-                      <div id="chart" style="width: 100%; height: 100%"></div>
-                      <div id="chart_placeholder" class="chart-placeholder">
-                        <h3 class="text-secondary">Aguardando Backtest</h3>
-                        <p class="text-secondary opacity-50">
-                          Configure e execute para visualizar
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Results Area -->
-                <div id="results_area" class="mt-3" style="display: none">
-                  <div class="row row-cards">
-                    <div class="col-md-12">
-                      <div class="card">
+                  <!-- IA Analysis + Equity Curve -->
+                  <div class="col-md-7">
+                    <div class="card mb-3">
                         <div class="card-header">
-                          <h3 class="card-title">Curva de Patrimônio (OOS)</h3>
+                            <h3 class="card-title"><i class="ri-robot-2-line me-2"></i>Análise FinSense AI</h3>
                         </div>
-                        <div class="card-body p-0">
-                          <div
-                            id="perf_chart"
-                            style="width: 100%; height: 350px"
-                          ></div>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="col-md-12">
-                      <div class="card">
                         <div class="card-body">
-                          <div id="ai_analysis" style="text-align: justify;"></div>
+                            <div id="ai_analysis"></div>
                         </div>
+                    </div>
+                    <div class="card mb-0">
+                      <div class="card-header">
+                        <h3 class="card-title">Curva de Patrimônio (OOS)</h3>
+                      </div>
+                      <div class="card-body p-0">
+                        <div id="perf_chart" style="width: 100%; height: 250px"></div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
+
+              </main>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Batch Analysis Modal -->
-    <div
-      class="modal modal-blur fade"
-      id="modal_batch"
-      tabindex="-1"
-      role="dialog"
-      aria-hidden="true"
-    >
+    <!-- Batch Analysis Modal (Styled) -->
+    <div class="modal modal-blur fade" id="modal_batch" tabindex="-1" role="dialog" aria-hidden="true">
       <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Ranking de Performance (Batch Analysis)</h5>
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            ></button>
+        <div class="modal-content" style="background: var(--card-bg); border: 1px solid var(--neon-green);">
+          <div class="modal-header border-bottom border-secondary">
+            <h5 class="modal-title text-white">Ranking de Performance (Multi-Asset)</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            <div class="row mb-3">
-              <div class="col-md-6">
-                <label class="form-label"
-                  >Selecionar Categoria para Análise</label
-                >
-                <select id="batch_category" class="form-select">
-                  <!-- Populated by JS -->
-                </select>
-                <small class="form-hint"
-                  >Atenção: Testar muitos ativos pode levar alguns
-                  segundos.</small
-                >
+            <div class="row g-3 mb-4">
+              <div class="col-md-8">
+                <label class="form-label">Categoria de Ativos</label>
+                <select id="batch_category" class="form-select"></select>
               </div>
-              <div class="col-md-6 d-flex align-items-end">
-                <button id="btn_run_batch" class="btn btn-primary w-100">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="icon icon-tabler icon-tabler-rocket"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    stroke-width="2"
-                    stroke="currentColor"
-                    fill="none"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                    <path
-                      d="M4 13a8 8 0 0 1 7 7a6 6 0 0 0 3 -5a9 9 0 0 0 6 -8a3 3 0 0 0 -3 -3a9 9 0 0 0 -8 6a6 6 0 0 0 -5 3"
-                    ></path>
-                    <path d="M7 14a6 6 0 0 0 -3 6a6 6 0 0 0 6 -3"></path>
-                    <circle cx="15" cy="9" r="1"></circle>
-                  </svg>
-                  Executar Ranking
+              <div class="col-md-4 d-flex align-items-end">
+                <button id="btn_run_batch" class="btn btn-neon-outline w-100">
+                  <i class="ri-rocket-2-line me-2"></i>Iniciar Varredura
                 </button>
               </div>
             </div>
 
-            <div
-              id="batch_loading"
-              style="display: none"
-              class="text-center p-4"
-            >
-              <div class="spinner-border text-primary" role="status"></div>
-              <p class="mt-2 text-secondary">
-                Processando... Isso pode demorar.
-              </p>
+            <div id="batch_loading" style="display: none" class="text-center p-5">
+              <div class="spinner-neon mx-auto mb-3"></div>
+              <p class="text-secondary">Processando dados do mercado... Aguarde.</p>
             </div>
 
-            <div
-              class="table-responsive"
-              id="batch_results_area"
-              style="display: none; max-height: 500px; overflow-y: auto"
-            >
-              <table class="table table-vcenter table-mobile-md card-table">
+            <div class="table-responsive card" id="batch_results_area" style="display: none; max-height: 500px; border-radius: 8px;">
+              <table class="table table-vcenter">
                 <thead>
                   <tr>
-                    <th>Ranking</th>
+                    <th>Pos</th>
                     <th>Ticker</th>
-                    <th>Nome</th>
-                    <th class="text-end">Ret. Teste (OOS)</th>
+                    <th>Ativo</th>
+                    <th class="text-end">Retorno OOS</th>
                     <th class="text-end">Sharpe</th>
-                    <th class="text-end">Drawdown</th>
+                    <th class="text-end">Max DD</th>
                     <th></th>
                   </tr>
                 </thead>
-                <tbody id="batch_table_body">
-                  <!-- JS Populate -->
-                </tbody>
+                <tbody id="batch_table_body"></tbody>
               </table>
             </div>
           </div>
@@ -511,7 +609,7 @@
       </div>
     </div>
 
-    <!-- Floating Search Modal -->
+    <!-- Search Modal (VECTRA Style) -->
     <div id="search_modal" class="search-modal">
       <div class="search-content">
         <div class="search-header">
@@ -519,16 +617,13 @@
             type="text"
             id="modal_search_input"
             class="search-modal-input"
-            placeholder="Pesquisar ativo ou ticker..."
+            placeholder="Pesquisar ticker (ex: PETR4)..."
             autocomplete="off"
           />
         </div>
-        <div id="modal_results" class="search-modal-results"></div>
-        <div
-          class="p-3 border-top border-secondary opacity-50 text-center"
-          style="font-size: 0.75rem; background: #161b22"
-        >
-          ESC para fechar | ↑↓ para navegar | Enter para selecionar
+        <div id="modal_results" class="search-modal-results" style="max-height: 400px; overflow-y: auto;"></div>
+        <div class="p-3 border-top border-secondary opacity-30 text-center small">
+          ESC para sair | SETAS para navegar | ENTER para selecionar
         </div>
       </div>
     </div>
@@ -538,3 +633,4 @@
     <script src="script.js"></script>
   </body>
 </html>
+
