@@ -5,9 +5,19 @@ import pandas as pd
 
 app = Flask(__name__)
 
+# Helper para garantir conexão com MT5
+def ensure_mt5_connected():
+    # Verifica se já está inicializado e com terminal rodando
+    if mt5.terminal_info() is None:
+        if not mt5.initialize():
+            err = mt5.last_error()
+            return False, err
+    return True, None
+
 # Se conecta ao MT5 ao iniciar
-if not mt5.initialize():
-    print("❌ Falha ao inicializar MT5")
+connected, start_err = ensure_mt5_connected()
+if not connected:
+    print(f"⚠️ Aviso: Servidor iniciado sem conexão ativa com o MT5 ({start_err})")
 else:
     print("✅ MT5 Conectado com sucesso")
 
@@ -74,6 +84,11 @@ def get_history():
     tf_str = request.args.get('timeframe', 'M5')
     count = int(request.args.get('count', 1000))
     
+    # 0. Check connection
+    connected, err = ensure_mt5_connected()
+    if not connected:
+        return jsonify({"error": f"Erro de conexão com MT5. Certifique-se que o terminal está aberto. Erro: {err}"}), 503
+
     timeframe = TIMEFRAMES.get(tf_str, mt5.TIMEFRAME_M5)
     
     # Garante que o simbolo esta selecionado no Market Watch
@@ -98,6 +113,11 @@ def get_candle():
     symbol = request.args.get('symbol', 'WING26')
     tf_str = request.args.get('timeframe', 'M5')
     
+    # 0. Check connection
+    connected, err = ensure_mt5_connected()
+    if not connected:
+        return jsonify({"error": "Erro de conexão com MT5"}), 503
+
     timeframe = TIMEFRAMES.get(tf_str, mt5.TIMEFRAME_M5)
     
     # Pega apenas a ultima vela (1) do timeframe escolhido
@@ -127,6 +147,11 @@ def run_backtest():
     long_window = int(request.args.get('long', 50))
     do_optimize = request.args.get('optimize', 'false').lower() == 'true'
     
+    # 0. Check connection
+    connected, err = ensure_mt5_connected()
+    if not connected:
+        return jsonify({"error": f"Erro de conexão com MT5: {err}"}), 503
+
     timeframe = TIMEFRAMES.get(tf_str, mt5.TIMEFRAME_M5)
     
     # Garante que o simbolo esta selecionado
@@ -228,6 +253,14 @@ def batch_backtest():
     short_window = int(req.get('sma_short', 20))
     long_window = int(req.get('sma_long', 50))
     do_optimize = req.get('optimize', False)
+    
+    # Check connection once before starting the stream
+    connected, err = ensure_mt5_connected()
+    if not connected:
+        def err_gen():
+            yield json.dumps({"type": "progress", "value": 0, "text": f"Erro: MT5 desconectado ({err})"}) + "\n"
+        return Response(stream_with_context(err_gen()), mimetype='application/x-ndjson')
+
     mt5_tf = TIMEFRAMES.get(timeframe_str, mt5.TIMEFRAME_M5)
 
     def generate():

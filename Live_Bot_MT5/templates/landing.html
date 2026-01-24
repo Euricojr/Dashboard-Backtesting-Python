@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LiveBot MT5 - Market Intelligence</title>
+    <title>FinSense | Market Intelligence</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
@@ -63,26 +63,35 @@
             }
         }
 
-        /* Tipografia */
-        h1 {
-            font-size: 3.5rem;
+        /* FinSense Branding */
+        .finsense-logo {
+            font-size: 4rem;
             font-weight: 800;
-            margin-bottom: 10px;
-            color: #fff;
-            letter-spacing: -1px;
-            line-height: 1.1;
+            margin-bottom: 5px;
+            letter-spacing: -2px;
+            line-height: 1;
+            display: inline-block;
         }
 
-        h1 span {
-            color: #00E396; /* Destaque Verde */
+        .finsense-logo .text-white {
+            color: #ffffff !important;
+            font-weight: 800;
         }
 
-        p.subtitle {
-            font-size: 1.1rem;
-            color: #a1a1aa;
+        .finsense-logo .text-neon {
+            color: #00E396 !important;
+            font-weight: 300;
+            margin-left: 2px;
+            text-shadow: 0 0 10px rgba(0, 227, 150, 0.2);
+        }
+
+        .brand-sub {
+            font-size: 0.8rem;
+            color: #71717a;
+            letter-spacing: 4px;
+            font-weight: 600;
             margin-bottom: 40px;
-            font-weight: 400;
-            letter-spacing: 0.5px;
+            text-transform: uppercase;
         }
 
         /* Botão Moderno */
@@ -119,8 +128,10 @@
     <canvas id="fintech-canvas"></canvas>
 
     <div class="glass-card">
-        <h1>LIVEBOT <span>MT5</span></h1>
-        <p class="subtitle">Algorithmic Market Intelligence</p>
+        <h1 class="finsense-logo">
+            <span class="text-white">FIN</span><span class="text-neon">SENSE</span>
+        </h1>
+        <div class="brand-sub">STRATEGY SYSTEM</div>
         
         <a href="/dashboard" class="btn-fintech">
             ACESSAR TERMINAL
