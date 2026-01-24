@@ -73,8 +73,8 @@
       /* Navbar */
       /* Navbar (Fixed: Remove Blue Line) */
       header, .navbar, .page-header {
-          border-bottom: 1px solid #27272a !important;
-          box-shadow: none !important;
+          border-bottom: 1px solid rgba(0, 227, 150, 0.5) !important;
+          box-shadow: 0 4px 20px rgba(0, 227, 150, 0.1) !important;
           background-color: #18181b !important;
       }
 
@@ -101,7 +101,14 @@
         text-align: center;
         letter-spacing: 1px;
         background-color: var(--bg-color);
-        border: 1px solid var(--border-color);
+        border: 1px solid rgba(0, 227, 150, 0.4) !important; /* Green Border */
+      }
+      
+
+      /* Force z-index on focus to keep border visible over button */
+      #symbolSelect:focus {
+          z-index: 20 !important;
+          position: relative;
       }
 
       .big-chart-container {
@@ -127,33 +134,39 @@
 
       /* --- CARBON OVERRIDES (Remove Blues) --- */
 
-      /* 1. Buttons (Cinza Chumbo) */
+      /* 1. Buttons (Green Primary) */
       .btn-primary {
-        background-color: #27272a !important;
-        border-color: #3f3f46 !important;
-        color: var(--text-primary) !important;
-        box-shadow: none !important;
+        background: linear-gradient(135deg, #10b981, #059669) !important;
+        border: 1px solid #10b981 !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4) !important;
+        font-weight: 700;
+        transition: all 0.3s ease;
       }
       .btn-primary:hover,
       .btn-primary:focus,
       .btn-primary:active {
-        background-color: #3f3f46 !important;
-        border-color: #52525b !important;
+        background: linear-gradient(135deg, #059669, #047857) !important;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(16, 185, 129, 0.6) !important;
       }
 
       /* 2. Forms (Inputs/Selects) */
       .form-control,
       .form-select {
         background-color: #18181b !important;
-        border: 1px solid #3f3f46 !important;
+        border: 1px solid rgba(0, 227, 150, 0.4) !important; /* Green Border */
         color: var(--text-primary) !important;
+        border-radius: 6px;
       }
       .form-control:focus,
       .form-select:focus {
         background-color: #18181b !important;
-        border-color: #71717a !important; /* Cinza Claro no Focus */
-        box-shadow: 0 0 0 2px rgba(113, 113, 122, 0.25) !important;
+        border-color: #00E396 !important; /* Green Focus */
+        box-shadow: 0 0 0 2px rgba(0, 227, 150, 0.25) !important;
         color: white !important;
+        z-index: 5; /* Ensure border is above input-group siblings */
+        position: relative;
       }
 
       /* 3. Links */
@@ -215,13 +228,19 @@
       .bg-primary { background-color: #27272a !important; color: #f4f4f5 !important; }
       .progress-bar { background-color: #27272a !important; }
       /* --- AGGRESSIVE COMPONENT OVERRIDES --- */
-      .card,
       .card-header,
       .card-body,
       .card-footer {
         background-color: #18181b !important;
         border-color: #27272a !important;
         color: #f4f4f5 !important;
+      }
+
+      .card {
+        background-color: #18181b !important;
+        color: #f4f4f5 !important;
+        border: 1px solid rgba(0, 227, 150, 0.3) !important;
+        box-shadow: 0 0 30px rgba(0, 227, 150, 0.1) !important;
       }
 
       .page,
@@ -243,7 +262,7 @@
       }
       .hr-text::before,
       .hr-text::after {
-        background-color: var(--border-color) !important;
+        background-color: rgba(0, 227, 150, 0.3) !important; /* Green Lines */
       }
 
       /* Ensure asset input doesn't show blue on focus */
@@ -327,14 +346,17 @@
           box-shadow: 0 6px 16px rgba(16, 185, 129, 0.6);
       }
       .btn-scan {
-          background: rgba(255,255,255,0.05);
-          color: #a1a1aa;
-          border: 1px solid rgba(255,255,255,0.1);
+          background: rgba(0, 227, 150, 0.05);
+          color: #00E396;
+          border: 1px solid rgba(0, 227, 150, 0.5);
+          font-weight: 600;
       }
       .btn-scan:hover {
-          background: rgba(255,255,255,0.1);
-          color: white;
-          border-color: rgba(255,255,255,0.3);
+          background: rgba(0, 227, 150, 0.15);
+          color: #00ffaf;
+          border-color: #00E396;
+          box-shadow: 0 0 15px rgba(0, 227, 150, 0.2);
+          transform: translateY(-1px);
       }
 
       /* Separator */
@@ -579,6 +601,91 @@
       .val-neg { color: #FF4560; text-shadow: 0 0 10px rgba(255, 69, 96, 0.2); }
       .val-neu { color: #E0E0E0; }
       .val-warn { color: #FEB019; }
+      /* Custom Dropdowns */
+      .custom-dropdown {
+          position: relative;
+          display: inline-block;
+          font-family: inherit;
+      }
+
+      .dropdown-selected {
+          background-color: rgba(0,0,0,0.3);
+          border: 1px solid rgba(255,255,255,0.15);
+          color: #f4f4f5;
+          border-radius: 8px;
+          padding: 6px 12px;
+          font-size: 0.85rem;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          min-width: 80px;
+          transition: all 0.2s;
+      }
+
+      .dropdown-selected:hover {
+          border-color: rgba(255,255,255,0.3);
+      }
+      
+      /* Green focus state when active/open */
+      .custom-dropdown.active .dropdown-selected {
+          border-color: #00E396;
+          box-shadow: 0 0 0 2px rgba(0, 227, 150, 0.25);
+      }
+
+      .dropdown-options {
+          display: none;
+          position: absolute;
+          top: 100%;
+          left: 0;
+          margin-top: 4px;
+          background-color: #18181b;
+          border: 1px solid #27272a;
+          border-radius: 8px;
+          box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+          z-index: 1000;
+          min-width: 100%;
+          overflow: hidden;
+      }
+
+      .custom-dropdown.active .dropdown-options {
+          display: block;
+          animation: fadeIn 0.15s ease-out;
+      }
+      
+      @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(-5px); }
+          to { opacity: 1; transform: translateY(0); }
+      }
+
+      .dropdown-item {
+          padding: 8px 12px;
+          color: #a1a1aa;
+          cursor: pointer;
+          font-size: 0.85rem;
+          transition: background 0.1s, color 0.1s;
+          white-space: nowrap;
+      }
+
+      .dropdown-item:hover {
+          background-color: #27272a;
+          color: #f4f4f5;
+      }
+      
+      .dropdown-item.selected {
+          color: #00E396;
+          background-color: rgba(0, 227, 150, 0.1);
+      }
+
+      .dropdown-arrow {
+          margin-left: 8px;
+          font-size: 0.8rem;
+          transition: transform 0.2s;
+      }
+      
+      .custom-dropdown.active .dropdown-arrow {
+          transform: rotate(180deg);
+      }
     </style>
     <!-- Lightweight Charts -->
     <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
@@ -592,22 +699,7 @@
             class="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3"
           >
             <a href="." class="text-reset">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="icon icon-tabler icon-tabler-activity"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                stroke-width="2"
-                stroke="currentColor"
-                fill="none"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                <path d="M3 12h4l3 8l4 -16l3 8h4"></path>
-              </svg>
-              LiveBot MT5
+
             </a>
           </h1>
           <div class="navbar-nav flex-row order-md-last">
@@ -637,17 +729,22 @@
                         <!-- JS injected content -->
                     </div>
 
-                    <!-- Input Pesquisável -->
+                    <!-- Input Pesquisável (Input Group) -->
                     <div class="mb-3">
-                      <input
-                        list="assetsList"
-                        id="symbolSelect"
-                        class="form-control asset-input"
-                        onchange="changeSymbol()"
-                        value="WING26"
-                        placeholder="Buscar..."
-                        autocomplete="off"
-                      />
+                         <div class="input-group">
+                              <input
+                                list="assetsList"
+                                id="symbolSelect"
+                                class="form-control asset-input"
+                                value="WING26"
+                                placeholder="Buscar..."
+                                autocomplete="off"
+                                style="border-top-right-radius: 0; border-bottom-right-radius: 0;"
+                              />
+                              <button class="btn btn-scan" type="button" id="search-btn" onclick="changeSymbol()" style="border-top-left-radius: 0; border-bottom-left-radius: 0;">
+                                <i class="ri-search-line"></i> 
+                              </button>
+                         </div>
                       <datalist id="assetsList">
                         {% for asset in assets %}
                         <option value="{{ asset }}">{% endfor %}</option>
@@ -783,23 +880,38 @@
                   <div class="card-body p-0 position-relative">
                     
                     <!-- New Floating Toolbar (Simplified) -->
+                    <!-- New Floating Toolbar (Simplified) -->
                     <div class="floating-toolbar">
                         <!-- Controls -->
                         <div class="d-flex align-items-center">
                             <span class="toolbar-label">TF</span>
-                            <select id="timeframeSelect" class="form-select toolbar-select" style="min-width: 70px;">
-                                <!-- JS Populated -->
-                            </select>
+                            <!-- Custom TF Dropdown -->
+                            <div class="custom-dropdown" id="tf-dropdown">
+                                <div class="dropdown-selected" onclick="toggleDropdown('tf-dropdown')">
+                                    <span id="tf-value" data-value="M5">M5</span>
+                                    <i class="ri-arrow-down-s-line dropdown-arrow"></i>
+                                </div>
+                                <div class="dropdown-options" id="tf-options">
+                                    <!-- Populated by JS -->
+                                </div>
+                            </div>
                         </div>
                         
                         <div class="toolbar-sep"></div>
                         
                         <div class="d-flex align-items-center">
-                            <select id="candleCountSelect" class="form-select toolbar-select" style="width: auto;">
-                                <option value="100">100 velas</option>
-                                <option value="1000" selected>1000 velas</option>
-                                <option value="5000">MAX</option>
-                            </select>
+                             <!-- Custom Candles Dropdown -->
+                             <div class="custom-dropdown" id="candles-dropdown">
+                                <div class="dropdown-selected" onclick="toggleDropdown('candles-dropdown')">
+                                    <span id="candles-value" data-value="1000">1000 velas</span>
+                                    <i class="ri-arrow-down-s-line dropdown-arrow"></i>
+                                </div>
+                                <div class="dropdown-options">
+                                    <div class="dropdown-item" onclick="selectOption('candles', '100', '100 velas')">100 velas</div>
+                                    <div class="dropdown-item selected" onclick="selectOption('candles', '1000', '1000 velas')">1000 velas</div>
+                                    <div class="dropdown-item" onclick="selectOption('candles', '5000', 'MAX')">MAX</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -887,7 +999,7 @@
         },
       });
 
-      const candleSeries = chart.addCandlestickSeries({
+      let candleSeries = chart.addCandlestickSeries({
         upColor: "#00e676",
         downColor: "#ff1744",
         borderVisible: false,
@@ -917,6 +1029,8 @@
       }).observe(chartContainer);
 
       // ============ LOGIC ============
+      const INITIAL_ZOOM_CANDLES = 200; // <--- Mude este número para ajustar o Zoom inicial
+
       let SYMBOL = document.getElementById("symbolSelect").value;
       let updateInterval = null;
 
@@ -976,20 +1090,10 @@
         try {
           const res = await fetch("/api/timeframes");
           const timeframes = await res.json();
-          const select = document.getElementById("timeframeSelect");
-
-          timeframes.forEach((tf) => {
-            const opt = document.createElement("option");
-            opt.value = tf;
-            opt.innerText = tf;
-            if (tf === "M5") opt.selected = true;
-            select.appendChild(opt);
-          });
-
-          select.addEventListener("change", loadHistory);
-          document
-            .getElementById("candleCountSelect")
-            .addEventListener("change", loadHistory);
+          // Legacy select population removed.
+          // Custom dropdowns are initialized via DOMContentLoaded.
+          
+          loadHistory();
 
           loadHistory();
         } catch (e) {
@@ -1000,8 +1104,8 @@
       async function loadHistory() {
         if (updateInterval) clearInterval(updateInterval);
 
-        const tf = document.getElementById("timeframeSelect").value;
-        const count = document.getElementById("candleCountSelect").value;
+        const tf = getTimeframeValue();
+        const count = getCandleValue();
 
         SYMBOL = document.getElementById("symbolSelect").value;
 
@@ -1027,8 +1131,40 @@
             return;
           }
 
+
+          // 1. HARD RESET: Remove old series
+          if (candleSeries) {
+              chart.removeSeries(candleSeries);
+          }
+          
+          // 2. Recreate Series
+          candleSeries = chart.addCandlestickSeries({
+              upColor: '#00E396',
+              downColor: '#FF4560',
+              borderVisible: false,
+              wickUpColor: '#00E396',
+              wickDownColor: '#FF4560'
+          });
+
+          // 3. Set Data
           candleSeries.setData(data);
-          // chart.timeScale().fitContent(); // Desativado para manter zoom manual e foco no recente
+          
+          // 4. Force Scale Reset (Critical)
+          chart.priceScale('right').applyOptions({
+              autoScale: true,
+              scaleMargins: { top: 0.1, bottom: 0.2 },
+          });
+          // 4.1 ZOOM FIX: Show only last N candles (Strategic Zoom)
+          const totalCandles = data.length;
+          const visibleRange = INITIAL_ZOOM_CANDLES; 
+          
+          if(totalCandles > 0) {
+              chart.timeScale().setVisibleLogicalRange({
+                  from: totalCandles - visibleRange,
+                  to: totalCandles
+              });
+          }
+          chart.timeScale().applyOptions({ rightOffset: 5 });
 
           logStatus("Dados carregados. Sincronizando...", "success");
 
@@ -1043,8 +1179,8 @@
       }
 
       async function runBacktest() {
-        const tf = document.getElementById("timeframeSelect").value;
-        const count = document.getElementById("candleCountSelect").value;
+        const tf = getTimeframeValue();
+        const count = getCandleValue();
         const short = document.getElementById("smaShort").value;
         const long = document.getElementById("smaLong").value;
         const optimize = document.getElementById("optimizeCheck").checked;
@@ -1073,6 +1209,21 @@
                  close: c.close
              }));
              candleSeries.setData(candleData);
+             
+             // CRITICAL FIX: Flat Line Bug (Backtest)
+             chart.priceScale('right').applyOptions({
+                 autoScale: true,
+                 scaleMargins: { top: 0.1, bottom: 0.1 },
+             });
+             // 4.1 ZOOM FIX: Show only last N candles
+             const totalCandles = candleData.length;
+             const visibleRange = INITIAL_ZOOM_CANDLES; 
+             
+             chart.timeScale().setVisibleLogicalRange({
+                 from: totalCandles - visibleRange,
+                 to: totalCandles
+             });
+             chart.timeScale().applyOptions({ rightOffset: 5 });
           }
 
           candleSeries.setMarkers(data.markers);
@@ -1189,7 +1340,7 @@
       }
 
       async function updateLive() {
-        const tf = document.getElementById("timeframeSelect").value;
+        const tf = getTimeframeValue();
         try {
           const res = await fetch(
             `/api/candle?symbol=${SYMBOL}&timeframe=${tf}`,
@@ -1278,8 +1429,8 @@
       }
 
       async function runScannerAPI() {
-        const tf = document.getElementById("timeframeSelect").value;
-        const count = document.getElementById("candleCountSelect").value;
+        const tf = getTimeframeValue();
+        const count = getCandleValue();
         const short = document.getElementById("smaShort").value;
         const long = document.getElementById("smaLong").value;
         const optimize = document.getElementById("optimizeCheck").checked;
@@ -1476,11 +1627,133 @@
         
         // Reset Logic
         candleSeries.setMarkers([]); 
+        
+        // Trigger Reload
+        loadHistory();
       }
+      
+      // Bind Enter Key to Search
+      document.addEventListener("DOMContentLoaded", function() {
+          const input = document.getElementById("symbolSelect");
+          if(input) {
+              input.addEventListener("keypress", function(event) {
+                  if (event.key === "Enter") {
+                      event.preventDefault();
+                      document.getElementById("search-btn").click();
+                  }
+              });
+          }
+      });
       
       // Auto-run scanner sidebar rendering if cache exists (on page logic if needed, but cache is volatile)
 
       window.onload = init;
+    </script>
+    <script>
+      /* --- Custom Dropdown Logic --- */
+      
+      // Toggle dropdown visibility
+      function toggleDropdown(id) {
+          // Close all other dropdowns first
+          const allDropdowns = document.querySelectorAll('.custom-dropdown');
+          allDropdowns.forEach(dd => {
+              if (dd.id !== id) dd.classList.remove('active');
+          });
+          
+          const dropdown = document.getElementById(id);
+          dropdown.classList.toggle('active');
+      }
+
+      // Handle option selection
+      function selectOption(type, value, label) {
+          if (type === 'tf') {
+              document.getElementById('tf-value').textContent = label || value;
+              document.getElementById('tf-value').setAttribute('data-value', value);
+              
+              // Validate TF options styling
+              document.querySelectorAll('#tf-options .dropdown-item').forEach(item => {
+                 item.classList.remove('selected');
+                 if(item.textContent === (label || value)) item.classList.add('selected');
+              });
+
+              // Trigger Update
+              changeTimeframe(value); 
+              
+          } else if (type === 'candles') {
+              document.getElementById('candles-value').textContent = label;
+              document.getElementById('candles-value').setAttribute('data-value', value);
+              
+              document.querySelectorAll('#candles-dropdown .dropdown-item').forEach(item => {
+                 item.classList.remove('selected');
+                 if(item.textContent === label) item.classList.add('selected');
+              });
+
+              // Trigger Update
+              changeCandleCount(value);
+          }
+          
+          // Close dropdown
+          const parentId = type === 'tf' ? 'tf-dropdown' : 'candles-dropdown';
+          document.getElementById(parentId).classList.remove('active');
+      }
+
+      // Close dropdowns when clicking outside
+      window.addEventListener('click', function(e) {
+          if (!e.target.closest('.custom-dropdown')) {
+              document.querySelectorAll('.custom-dropdown').forEach(dd => {
+                  dd.classList.remove('active');
+              });
+          }
+      });
+      
+      // Populate Timeframes (Override existing populate)
+      // We will perform this ON LOADER or Initialization
+      function populateCustomTimeframes() {
+          const timeframes = ["M1", "M5", "M15", "M30", "H1", "H4", "D1"];
+          const container = document.getElementById('tf-options');
+          container.innerHTML = ''; // Clear
+          
+          timeframes.forEach(tf => {
+              const item = document.createElement('div');
+              item.className = 'dropdown-item';
+              if (tf === 'M5') item.classList.add('selected'); // Default
+              item.textContent = tf;
+              item.onclick = () => selectOption('tf', tf, tf);
+              container.appendChild(item);
+          });
+      }
+      
+      // Initialize Dropdowns
+      document.addEventListener('DOMContentLoaded', () => {
+          populateCustomTimeframes();
+      });
+
+      // ADAPT EXISTING FUNCTIONS to use new values
+      // Override the old getters if necessary, or just update the handlers.
+      // Since we changed the HTML, `document.getElementById('timeframeSelect').value` will fail in existing code if we don't fix it.
+      // Let's create helper functions that act as the old selectors
+      
+      function getTimeframeValue() {
+          const el = document.getElementById('tf-value');
+          return el ? el.getAttribute('data-value') : 'M5'; 
+      }
+      
+      function getCandleValue() {
+          const el = document.getElementById('candles-value');
+          return el ? el.getAttribute('data-value') : '1000';
+      }
+
+      // BRIDGE FUNCTIONS
+      function changeTimeframe(val) {
+          console.log("Timeframe changed to:", val);
+          loadHistory(); // Trigger Full Reload
+      }
+
+      function changeCandleCount(val) {
+          console.log("Candle count changed to:", val);
+          loadHistory(); // Trigger Full Reload
+      }
+
     </script>
   </body>
 </html>
