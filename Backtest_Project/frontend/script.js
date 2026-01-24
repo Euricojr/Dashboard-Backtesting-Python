@@ -226,6 +226,74 @@ function initChart() {
   setTimeout(handleResize, 500);
 }
 
+function renderMetrics(data) {
+  const m = data.metrics;
+  const t = data.trade_stats;
+  const grid = document.getElementById("metrics-grid");
+
+  if (!grid) return;
+
+  const createCard = (label, value, icon, type = "neutral") => {
+    let valClass = "val-neu";
+    let accentClass = "accent-purple";
+    let displayVal = value;
+
+    if (type === "pct") {
+      displayVal = value;
+      const numeric = parseFloat(value.replace("%", ""));
+      if (numeric > 0) {
+        valClass = "val-pos";
+        accentClass = "accent-green";
+      } else if (numeric < 0) {
+        valClass = "val-neg";
+        accentClass = "accent-red";
+      }
+    } else if (type === "drawdown") {
+      displayVal = value;
+      valClass = "val-neg";
+      accentClass = "accent-red";
+    } else if (type === "pf") {
+      displayVal = value.toFixed(2);
+      if (value >= 1.5) {
+        valClass = "val-pos";
+        accentClass = "accent-green";
+      } else if (value >= 1.0) {
+        valClass = "val-warn";
+        accentClass = "accent-warn";
+      } else {
+        valClass = "val-neg";
+        accentClass = "accent-red";
+      }
+    } else if (type === "winrate") {
+      displayVal = (value * 100).toFixed(2) + "%";
+      valClass = value > 0.5 ? "val-pos" : "val-warn";
+      accentClass = value > 0.5 ? "accent-green" : "accent-warn";
+    } else if (type === "int") {
+      displayVal = value;
+      accentClass = "accent-blue";
+    }
+
+    return `
+            <div class="metric-card ${accentClass}">
+                <span class="metric-label"><i class="${icon}"></i>${label}</span>
+                <span class="metric-value ${valClass}">${displayVal}</span>
+            </div>
+        `;
+  };
+
+  grid.innerHTML = `
+        ${createCard("Retorno Total", m.total_return, "ri-funds-box-line", "pct")}
+        ${createCard("Win Rate", t.win_rate, "ri-crosshair-2-line", "winrate")}
+        ${createCard("Profit Factor", t.profit_factor, "ri-scales-3-line", "pf")}
+        ${createCard("Total Trades", t.total_trades, "ri-exchange-dollar-line", "int")}
+        
+        ${createCard("Max Drawdown", m.max_drawdown, "ri-arrow-down-circle-line", "drawdown")}
+        ${createCard("Sharpe Ratio", m.sharpe_ratio, "ri-pulse-line", "neutral")}
+        ${createCard("Volatilidade", m.volatilidade_anual, "ri-activity-line", "pct")}
+        ${createCard("CAGR Anual", m.cagr, "ri-stock-line", "pct")}
+    `;
+}
+
 async function runBacktest() {
   const ticker = document.getElementById("selected_ticker").value;
   const start = document.getElementById("start_date").value;
@@ -268,21 +336,7 @@ async function runBacktest() {
     if (data.sma_short_data) window.smaShortSeries.setData(data.sma_short_data);
     if (data.sma_long_data) window.smaLongSeries.setData(data.sma_long_data);
 
-    let finalMarkers = [...data.markers];
-    if (data.split_date) {
-      window.vLineSeries.setData([
-        { time: data.split_date, value: 1000000000 },
-      ]);
-      finalMarkers.push({
-        time: data.split_date,
-        position: "aboveBar",
-        color: "#FFD700",
-        shape: "arrowDown",
-        text: "FIM TREINO",
-        size: 2,
-      });
-    }
-    candleSeries.setMarkers(finalMarkers);
+    candleSeries.setMarkers(data.markers);
     mainChart.timeScale().fitContent();
 
     if (data.equity_data) {
@@ -295,8 +349,7 @@ async function runBacktest() {
       perfChart.timeScale().fitContent();
     }
 
-    updateMetricsTable(data);
-    updateTradeStatsTable(data);
+    renderMetrics(data);
 
     const aiBox = document.getElementById("ai_analysis");
     if (aiBox) {
@@ -320,63 +373,11 @@ async function runBacktest() {
       const perfDiv = document.getElementById("perf_chart");
       if (chartDiv) mainChart.resize(chartDiv.clientWidth, 500);
       if (perfDiv) {
-        perfChart.resize(perfDiv.clientWidth, 250);
+        perfChart.resize(perfDiv.clientWidth, 280);
         perfChart.timeScale().fitContent();
       }
     }, 300);
   }
-}
-
-function updateMetricsTable(data) {
-  const mIn = data.metrics_in;
-  const mOut = data.metrics_out;
-
-  const setCell = (id, val, isMetric = true) => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.innerText = val;
-      if (isMetric && val.includes("%")) {
-        const numeric = parseFloat(val.replace("%", ""));
-        if (numeric > 0) el.className = "text-center fw-bold val-profit";
-        else if (numeric < 0) el.className = "text-center fw-bold val-loss";
-        else el.className = "text-center fw-bold text-white";
-      }
-    }
-  };
-
-  setCell("td_total_in", mIn.total_return);
-  setCell("td_cagr_in", mIn.cagr);
-  setCell("td_sharpe_in", mIn.sharpe_ratio, false);
-  setCell("td_vol_in", mIn.volatilidade_anual);
-  setCell("td_dd_in", mIn.max_drawdown);
-
-  setCell("td_total_out", mOut.total_return);
-  setCell("td_cagr_out", mOut.cagr);
-  setCell("td_sharpe_out", mOut.sharpe_ratio, false);
-  setCell("td_vol_out", mOut.volatilidade_anual);
-  setCell("td_dd_out", mOut.max_drawdown);
-}
-
-function updateTradeStatsTable(data) {
-  const tsIn = data.trade_stats_in;
-  const tsOut = data.trade_stats_out;
-
-  if (!tsIn || !tsOut) return;
-
-  const setStat = (id, val) => {
-    const el = document.getElementById(id);
-    if (el) el.innerText = val;
-  };
-
-  setStat("ts_total_in", tsIn.total_trades);
-  setStat("ts_win_in", (tsIn.win_rate * 100).toFixed(2) + "%");
-  setStat("ts_avg_ret_in", (tsIn.avg_return * 100).toFixed(2) + "%");
-  setStat("ts_pf_in", tsIn.profit_factor.toFixed(2));
-
-  setStat("ts_total_out", tsOut.total_trades);
-  setStat("ts_win_out", (tsOut.win_rate * 100).toFixed(2) + "%");
-  setStat("ts_avg_ret_out", (tsOut.avg_return * 100).toFixed(2) + "%");
-  setStat("ts_pf_out", tsOut.profit_factor.toFixed(2));
 }
 
 document.addEventListener("DOMContentLoaded", () => {

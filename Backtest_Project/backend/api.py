@@ -122,7 +122,7 @@ try:
 except Exception as e:
     print(f"Erro ao inicializar Groq: {e}")
 
-def generate_analysis_text(metrics_in, metrics_out, trade_stats_in=None, trade_stats_out=None):
+def generate_analysis_text(metrics, trade_stats):
     """
     Gera análise textual usando Groq AI (Llama 3 70B).
     """
@@ -132,35 +132,29 @@ def generate_analysis_text(metrics_in, metrics_out, trade_stats_in=None, trade_s
             
         # Preparar dados para o prompt
         data_str = f"""
-        [DADOS DO BACKTEST]
+        [DADOS DO BACKTEST - PERÍODO TOTAL]
+        - Retorno Total: {metrics.get('Total Return', 0):.2%}
+        - Sharpe Ratio: {metrics.get('Sharpe Ratio', 0):.2f}
+        - Drawdown Máximo: {metrics.get('Max Drawdown', 0):.2%}
+        - Volatilidade Anual: {metrics.get('Vol Anual', 0):.2%}
+        - Win Rate: {trade_stats.get('win_rate', 0):.2%} (Total Trades: {trade_stats.get('total_trades', 0)})
+        - Profit Factor: {trade_stats.get('profit_factor', 0):.2f}
         
-        PERÍODO DE TREINO (IN-SAMPLE):
-        - Retorno Total: {metrics_in.get('Total Return', 0):.2%}
-        - Sharpe Ratio: {metrics_in.get('Sharpe Ratio', 0):.2f}
-        - Drawdown Máximo: {metrics_in.get('Max Drawdown', 0):.2%}
-        - Win Rate: {trade_stats_in.get('win_rate', 0):.2%} (Total Trades: {trade_stats_in.get('total_trades', 0)})
-        
-        PERÍODO DE TESTE (OUT-OF-SAMPLE):
-        - Retorno Total: {metrics_out.get('Total Return', 0):.2%}
-        - Sharpe Ratio: {metrics_out.get('Sharpe Ratio', 0):.2f}
-        - Drawdown Máximo: {metrics_out.get('Max Drawdown', 0):.2%}
-        - Win Rate: {trade_stats_out.get('win_rate', 0):.2%} (Total Trades: {trade_stats_out.get('total_trades', 0)})
-        
-        BENCHMARK (BUY & HOLD no Teste):
-        - Retorno: {metrics_out.get('BH_Total', 0):.2%}
+        BENCHMARK (BUY & HOLD):
+        - Retorno: {metrics.get('BH_Total', 0):.2%}
         """
         
         prompt = f"""
-        Você é um analista quantitativo sênior. Analise os resultados deste backtest (estratégia vs buy & hold).
+        Você é um analista quantitativo sênior da FinSense. Analise os resultados deste backtest total (estratégia vs buy & hold).
         
         {data_str}
         
         Gere um relatório HTML curto (apenas tags <p>, <b>, <br>) com 3 parágrafos concisos:
-        1. **Veredito**: A estratégia superou o Buy & Hold no teste? É robusta?
-        2. **Pontos Fortes**: Analise o Sharpe e Win Rate.
-        3. **Riscos/Alertas**: Comente sobre o Drawdown e possível Overfitting (se o treino for muito melhor que o teste).
+        1. **Veredito**: A estratégia superou o Buy & Hold? É lucrativa e estável?
+        2. **Pontos Fortes**: Analise o Profit Factor, Sharpe e Win Rate.
+        3. **Riscos/Alertas**: Comente sobre o Drawdown e volatilidade.
         
-        Se houver overfitting claro ou prejuízo no teste, termine com um alerta claro.
+        Se houver prejuízo ou drawdown excessivo (>30%), termine com um alerta claro em vermelho (usando style='color: #FF4560').
         Não use markdown, apenas HTML básico (<b>, <br>). Seja direto e profissional.
         """
         
@@ -168,7 +162,7 @@ def generate_analysis_text(metrics_in, metrics_out, trade_stats_in=None, trade_s
             messages=[
                 {
                     "role": "system",
-                    "content": "Você é um especialista em trading quantitativo.",
+                    "content": "Você é um especialista em trading quantitativo da FinSense.",
                 },
                 {
                     "role": "user",
@@ -177,14 +171,14 @@ def generate_analysis_text(metrics_in, metrics_out, trade_stats_in=None, trade_s
             ],
             model="llama-3.3-70b-versatile",
             temperature=0.7,
-            max_tokens=500,
+            max_tokens=600,
         )
         
         analysis = chat_completion.choices[0].message.content
         
         # Detectar warning simples
         is_warning = False
-        if metrics_out.get('Total Return', 0) < 0 or metrics_out.get('Max Drawdown', 0) < -0.30:
+        if metrics.get('Total Return', 0) < 0 or metrics.get('Max Drawdown', 0) < -0.30:
             is_warning = True
             
         return analysis, is_warning
@@ -206,9 +200,9 @@ def run_backtest():
         end_date = data_req.get('end', '2024-01-01')
         sma_short = int(data_req.get('sma_short', 20))
         sma_long = int(data_req.get('sma_long', 50))
-        strategy_name = data_req.get('strategy', 'SMA') # SMA or RSI
+        strategy_name = data_req.get('strategy', 'SMA') 
         
-        print(f"Executando backtest para {ticker}. Estratégia: {strategy_name}")
+        print(f"Executando backtest total para {ticker}. Estratégia: {strategy_name}")
         
         df = yf.download(ticker, start=start_date, end=end_date, progress=False)
         if df.empty:
@@ -222,46 +216,33 @@ def run_backtest():
             if col not in df.columns:
                 return jsonify({"error": f"Coluna {col} ausente nos dados baixados."}), 400
 
-        # Executa Estratégia Selecionada (Retorna DF completo)
+        # Executa Estratégia
         if strategy_name == "RSI":
-            # Parâmetros fixos por enquanto ou poderiam vir do JSON também
             res = backtest.strategy_rsi_weekly(df, lower=35, upper=70)
         else:
-            # Default to SMA
             res = backtest.strategy_sma_crossover(df, short_window=sma_short, long_window=sma_long)
         
-        # Divisão IS/OOS Data-Based (50%)
-        limit = int(len(res) * 0.5)
-        if limit < 20: 
-             return jsonify({"error": "Período muito curto para análise IS/OOS (mínimo 30-50 dias)."}), 400
-             
-        res_is = res.iloc[:limit].copy()
-        res_oos = res.iloc[limit:].copy()
-        split_date = res.index[limit].strftime('%Y-%m-%d')
+        # Cálculo de Métricas (PERÍODO INTEGRAL)
+        m_raw = backtest.calculate_metrics(res['Strategy_Returns'])
+        bh_metrics = backtest.calculate_metrics(res['Close'].pct_change())
+        m_raw['BH_Total'] = bh_metrics['Total Return']
         
-        # Cálculo de Métricas (DUPLO OBRIGATÓRIO)
-        m_is_raw = backtest.calculate_metrics(res_is['Strategy_Returns'])
-        m_oos_raw = backtest.calculate_metrics(res_oos['Strategy_Returns'])
+        # Trade Stats
+        trade_stats = backtest.calculate_trade_stats(res)
         
-        # Converter chaves para snake_case
-        def normalize_metrics(m):
-            return {
-                "total_return": f"{m.get('Total Return', 0):.2%}",
-                "cagr": f"{m.get('CAGR', 0):.2%}",
-                "volatilidade_anual": f"{m.get('Vol Anual', 0):.2%}",
-                "sharpe_ratio": f"{m.get('Sharpe Ratio', 0):.2f}",
-                "max_drawdown": f"{m.get('Max Drawdown', 0):.2%}"
-            }
+        # IA Analysis
+        ai_text, is_warning = generate_analysis_text(m_raw, trade_stats)
+        
+        # Formatação para o Frontend
+        metrics_formatted = {
+            "total_return": f"{m_raw.get('Total Return', 0):.2%}",
+            "cagr": f"{m_raw.get('CAGR', 0):.2%}",
+            "volatilidade_anual": f"{m_raw.get('Vol Anual', 0):.2%}",
+            "sharpe_ratio": f"{m_raw.get('Sharpe Ratio', 0):.2f}",
+            "max_drawdown": f"{m_raw.get('Max Drawdown', 0):.2%}"
+        }
 
-        metrics_in = normalize_metrics(m_is_raw)
-        metrics_out = normalize_metrics(m_oos_raw)
-        
         # Dados para Gráficos
-        
-        # 1. Equity Data (Curva de Patrimônio)
-        # Recalcular indices acumulados para o período todo ou separado? 
-        # Geralmente mostra o gráfico todo, mas marcando onde cortou.
-        # Vamos mandar tudo, o frontend pinta o background diferente.
         res['Strategy_Cumulative'] = (1 + res['Strategy_Returns'].fillna(0)).cumprod()
         asset_rets = res['Close'].pct_change()
         res['Asset_Cumulative'] = (1 + asset_rets.fillna(0)).cumprod()
@@ -274,7 +255,6 @@ def run_backtest():
                 "asset": float(r['Asset_Cumulative'])
             })
 
-        # 2. Candle Data
         candle_data = []
         for i, r in df.iterrows():
             candle_data.append({
@@ -290,20 +270,38 @@ def run_backtest():
         markers = []
         for index, row in res.iterrows():
             if row['trades'] == 1:
-                markers.append({"time": index.strftime('%Y-%m-%d'), "position": "belowBar", "color": "#26a69a", "shape": "arrowUp", "text": "COMPRA"})
+                markers.append({"time": index.strftime('%Y-%m-%d'), "position": "belowBar", "color": "#00E396", "shape": "arrowUp", "text": "COMPRA"})
             elif row['trades'] == -1:
-                markers.append({"time": index.strftime('%Y-%m-%d'), "position": "aboveBar", "color": "#ef5350", "shape": "arrowDown", "text": "VENDA"})
+                markers.append({"time": index.strftime('%Y-%m-%d'), "position": "aboveBar", "color": "#FF4560", "shape": "arrowDown", "text": "VENDA"})
 
-        # IA Analysis (Pode usar raw data para lógica)
-        # Adicionar B&H ao OOS Raw para comparação na IA
-        bh_metrics = backtest.calculate_metrics(res_oos['Close'].pct_change())
-        m_oos_raw['BH_Total'] = bh_metrics['Total Return']
+        # SMA Data
+        sma_short_data = []
+        sma_long_data = []
+        if 'SMA_Short' in res.columns:
+            for i, r in res.iterrows():
+                if not pd.isna(r['SMA_Short']):
+                    sma_short_data.append({"time": i.strftime('%Y-%m-%d'), "value": float(r['SMA_Short'])})
         
-        # Trade Stats
-        trade_stats_in = backtest.calculate_trade_stats(res_is)
-        trade_stats_out = backtest.calculate_trade_stats(res_oos)
+        if 'SMA_Long' in res.columns:
+             for i, r in res.iterrows():
+                if not pd.isna(r['SMA_Long']):
+                    sma_long_data.append({"time": i.strftime('%Y-%m-%d'), "value": float(r['SMA_Long'])})
+
+        # Montagem do JSON Final (Sem Split)
+        response_data = {
+            "metrics": metrics_formatted,
+            "trade_stats": trade_stats,
+            "candle_data": candle_data,
+            "equity_data": equity_data,
+            "sma_short_data": sma_short_data,
+            "sma_long_data": sma_long_data,
+            "markers": markers,
+            "ai_analysis": ai_text,
+            "is_warning": is_warning,
+            "ticker": ticker
+        }
         
-        ai_text, is_warning = generate_analysis_text(m_is_raw, m_oos_raw, trade_stats_in, trade_stats_out)
+        return jsonify(clean_for_json(response_data))
 
         # SMA Data (if available)
         sma_short_data = []

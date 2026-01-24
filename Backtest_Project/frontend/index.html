@@ -214,9 +214,97 @@
           border-bottom: none !important;
       }
 
-      .val-profit { color: var(--neon-green); font-weight: 600; }
-      .val-loss { color: var(--neon-red); font-weight: 600; }
+      /* --- Metrics Modern Dashboard (FinSense Style) --- */
+      .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+      
+      @media (max-width: 1400px) {
+         .metrics-grid {
+            grid-template-columns: repeat(2, 1fr);
+         }
+      }
 
+      .metric-card {
+        background: linear-gradient(180deg, #1e1e24 0%, #18181b 100%);
+        border: 1px solid rgba(255,255,255,0.05);
+        border-radius: 12px;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        border-left: 4px solid var(--border-light);
+      }
+
+      .metric-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px rgba(0,0,0,0.4);
+        border-color: rgba(0, 227, 150, 0.3);
+      }
+      
+      .accent-green { border-left-color: var(--neon-green) !important; }
+      .accent-red { border-left-color: var(--neon-red) !important; }
+      .accent-purple { border-left-color: #7E57C2 !important; }
+      .accent-blue { border-left-color: #008FFB !important; }
+      .accent-warn { border-left-color: #FEB019 !important; }
+
+      .metric-label {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--text-secondary);
+        margin-bottom: 10px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      
+      .metric-label i {
+          font-size: 1.1rem;
+          color: var(--text-secondary);
+      }
+      
+      .metric-value {
+        font-family: 'Inter', sans-serif;
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        line-height: 1.1;
+      }
+      
+      .val-pos { color: var(--neon-green); text-shadow: 0 0 10px rgba(0, 227, 150, 0.2); }
+      .val-neg { color: var(--neon-red); text-shadow: 0 0 10px rgba(255, 69, 96, 0.2); }
+      .val-neu { color: var(--text-primary); }
+      .val-warn { color: #FEB019; }
+
+      /* AI Analysis Styles */
+      #ai_analysis {
+          background: rgba(255,255,255,0.02);
+          border-left: 4px solid var(--neon-green);
+          padding: 20px;
+          border-radius: 0 12px 12px 0;
+          font-size: 0.95rem;
+          line-height: 1.6;
+      }
+
+      /* Loader */
+      .spinner-neon {
+          width: 3rem;
+          height: 3rem;
+          border: 3px solid rgba(0, 227, 150, 0.1);
+          border-top-color: var(--neon-green);
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+      }
+      @keyframes spin { to { transform: rotate(360deg); } }
       /* Chart Placeholder */
       .chart-placeholder {
         position: absolute;
@@ -277,22 +365,35 @@
           color: #fff;
       }
 
-      #ai_analysis {
-          line-height: 1.6;
-          font-size: 0.95rem;
-          color: var(--text-primary);
+      .search-modal-group {
+        padding: 12px 24px;
+        background: rgba(255, 255, 255, 0.02);
+        color: var(--neon-green);
+        font-size: 0.75rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        border-bottom: 1px solid var(--border-color);
       }
 
-      /* Loader */
-      .spinner-neon {
-          width: 3rem;
-          height: 3rem;
-          border: 3px solid rgba(0, 227, 150, 0.1);
-          border-top-color: var(--neon-green);
-          border-radius: 50%;
-          animation: spin 1s linear infinite;
+      /* Modal Customizations */
+      .modal-content {
+          background-color: var(--card-bg) !important;
+          border: 1px solid var(--neon-green) !important;
+          color: var(--text-primary);
       }
-      @keyframes spin { to { transform: rotate(360deg); } }
+      .modal-header {
+          background-color: rgba(255, 255, 255, 0.03) !important;
+          border-bottom: 1px solid var(--border-color) !important;
+      }
+      .modal-title {
+          font-family: var(--font-main);
+          font-weight: 800;
+          letter-spacing: -0.5px;
+      }
+      .btn-close-white {
+          filter: invert(1) grayscale(100%) brightness(200%);
+      }
 
     </style>
     <!-- Lightweight Charts -->
@@ -339,7 +440,7 @@
               
               <!-- Column 1: Configuration (Left) -->
               <aside class="col-md-3">
-                <div class="card h-100">
+                <div class="card">
                   <div class="card-header">
                     <h3 class="card-title"><i class="ri-settings-4-line me-2"></i>Parâmetros</h3>
                   </div>
@@ -421,51 +522,19 @@
               <!-- Column 2: Results (Right) -->
               <main class="col-md-9">
                 
-                <!-- Metrics Grid -->
+                <!-- Relatório de Performance (Cards) -->
                 <div class="row g-3 mb-4">
                   <div class="col-12">
                      <div class="card mb-0">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                           <h3 class="card-title">Relatório de Performance: IS vs OOS</h3>
-                           <span class="badge bg-green-lt">Live Engine</span>
+                        <div class="card-header d-flex justify-content-between align-items-center border-0">
+                           <h3 class="card-title">Relatório de Performance</h3>
+                           <span class="badge bg-green-lt">Mercado Real (yFinance)</span>
                         </div>
-                        <div class="table-responsive">
-                            <table class="table card-table table-vcenter">
-                              <thead>
-                                <tr>
-                                  <th>Métrica Chave</th>
-                                  <th class="text-center">Treino (In-Sample)</th>
-                                  <th class="text-center">Teste (Out-of-Sample)</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr>
-                                  <td>Retorno Total</td>
-                                  <td class="text-center text-secondary" id="td_total_in">-</td>
-                                  <td class="text-center fw-bold" id="td_total_out">-</td>
-                                </tr>
-                                <tr>
-                                  <td>CAGR (Anual)</td>
-                                  <td class="text-center text-secondary" id="td_cagr_in">-</td>
-                                  <td class="text-center fw-bold" id="td_cagr_out">-</td>
-                                </tr>
-                                <tr>
-                                  <td>Sharpe Ratio</td>
-                                  <td class="text-center text-secondary" id="td_sharpe_in">-</td>
-                                  <td class="text-center fw-bold" id="td_sharpe_out">-</td>
-                                </tr>
-                                <tr>
-                                  <td>Volatilidade Anual</td>
-                                  <td class="text-center text-secondary" id="td_vol_in">-</td>
-                                  <td class="text-center fw-bold" id="td_vol_out">-</td>
-                                </tr>
-                                <tr>
-                                  <td>Max Drawdown</td>
-                                  <td class="text-center text-secondary" id="td_dd_in">-</td>
-                                  <td class="text-center fw-bold" id="td_dd_out">-</td>
-                                </tr>
-                              </tbody>
-                            </table>
+                        <div class="card-body">
+                            <div id="metrics-grid" class="metrics-grid">
+                               <!-- JS Populated -->
+                               <div class="p-4 text-center text-muted col-12" style="grid-column: 1 / -1;">Aguardando execução do backtest...</div>
+                            </div>
                         </div>
                      </div>
                   </div>
@@ -475,7 +544,6 @@
                 <div class="card">
                   <div class="card-header d-flex justify-content-between align-items-center">
                     <h3 class="card-title">Gráfico Analítico: Preço & Sinais</h3>
-                    <div id="split_badge_container"></div>
                   </div>
                   <div class="card-body p-0 position-relative">
                     <div id="chart_wrapper" style="height: 500px; width: 100%">
@@ -492,64 +560,25 @@
 
                 <!-- Bottom Row: Multi-Analysis -->
                 <div class="row g-3" id="results_area" style="display: none">
-                  <!-- Trade Stats -->
-                  <div class="col-md-5">
-                    <div class="card h-100">
-                      <div class="card-header">
-                        <h3 class="card-title">Estatísticas de Trades</h3>
-                      </div>
-                      <div class="table-responsive">
-                        <table class="table card-table">
-                           <thead>
-                              <tr>
-                                 <th>KPI</th>
-                                 <th class="text-center">Treino</th>
-                                 <th class="text-center">Teste</th>
-                              </tr>
-                           </thead>
-                           <tbody>
-                              <tr>
-                                <td>Total Trades</td>
-                                <td class="text-center" id="ts_total_in">-</td>
-                                <td class="text-center" id="ts_total_out">-</td>
-                              </tr>
-                              <tr>
-                                <td>Win Rate</td>
-                                <td class="text-center" id="ts_win_in">-</td>
-                                <td class="text-center" id="ts_win_out">-</td>
-                              </tr>
-                              <tr>
-                                <td>Retorno Médio</td>
-                                <td class="text-center" id="ts_avg_ret_in">-</td>
-                                <td class="text-center" id="ts_avg_ret_out">-</td>
-                              </tr>
-                              <tr>
-                                <td>Profit Factor</td>
-                                <td class="text-center" id="ts_pf_in">-</td>
-                                <td class="text-center" id="ts_pf_out">-</td>
-                              </tr>
-                           </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- IA Analysis + Equity Curve -->
-                  <div class="col-md-7">
-                    <div class="card mb-3">
-                        <div class="card-header">
+                  <div class="col-12">
+                     <div class="card mb-0">
+                        <div class="card-header border-0">
                             <h3 class="card-title"><i class="ri-robot-2-line me-2"></i>Análise FinSense AI</h3>
                         </div>
-                        <div class="card-body">
+                        <div class="card-body pt-0">
                             <div id="ai_analysis"></div>
                         </div>
-                    </div>
+                     </div>
+                  </div>
+
+                  <div class="col-12">
                     <div class="card mb-0">
-                      <div class="card-header">
-                        <h3 class="card-title">Curva de Patrimônio (OOS)</h3>
+                      <div class="card-header d-flex justify-content-between align-items-center border-0">
+                        <h3 class="card-title">Curva de Patrimônio (Equidade)</h3>
+                        <span class="text-secondary small">Comparativo Estratégia vs Buy & Hold</span>
                       </div>
                       <div class="card-body p-0">
-                        <div id="perf_chart" style="width: 100%; height: 250px"></div>
+                        <div id="perf_chart" style="width: 100%; height: 280px"></div>
                       </div>
                     </div>
                   </div>
@@ -595,7 +624,7 @@
                     <th>Pos</th>
                     <th>Ticker</th>
                     <th>Ativo</th>
-                    <th class="text-end">Retorno OOS</th>
+                    <th class="text-end">Retorno</th>
                     <th class="text-end">Sharpe</th>
                     <th class="text-end">Max DD</th>
                     <th></th>
