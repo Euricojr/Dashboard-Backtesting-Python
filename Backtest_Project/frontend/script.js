@@ -404,6 +404,9 @@ function renderMetrics(data) {
     } else if (type === "int") {
       displayVal = value;
       accentClass = "accent-blue";
+    } else if (type === "days") {
+      displayVal = parseFloat(value).toFixed(1) + " dias";
+      accentClass = "accent-blue";
     }
 
     return `
@@ -423,7 +426,7 @@ function renderMetrics(data) {
         ${createCard("Max Drawdown", m.max_drawdown, "ri-arrow-down-circle-line", "drawdown")}
         ${createCard("Sharpe Ratio", m.sharpe_ratio, "ri-pulse-line", "neutral")}
         ${createCard("Volatilidade", m.volatilidade_anual, "ri-activity-line", "pct")}
-        ${createCard("CAGR Anual", m.cagr, "ri-stock-line", "pct")}
+        ${createCard("Tempo Médio", t.avg_duration, "ri-timer-flash-line", "days")}
     `;
 }
 
