@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinSense | Market Intelligence</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        /* Reset e Base */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: radial-gradient(circle at center, #121214 0%, #000000 100%);
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Canvas Background */
+        #fintech-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        /* Glassmorphism Card */
+        .glass-card {
+            position: relative;
+            z-index: 10;
+            background: rgba(20, 20, 20, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 227, 150, 0.3);
+            box-shadow: 0 0 30px rgba(0, 227, 150, 0.1);
+            border-radius: 20px;
+            padding: 50px 70px;
+            text-align: center;
+            max-width: 600px;
+            width: 90%;
+            animation: floatUp 1s ease-out forwards;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        @keyframes floatUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* FinSense Branding */
+        .finsense-logo {
+            font-size: 4rem;
+            font-weight: 800;
+            margin-bottom: 5px;
+            letter-spacing: -2px;
+            line-height: 1;
+            display: inline-block;
+        }
+
+        .finsense-logo .text-white {
+            color: #ffffff !important;
+            font-weight: 800;
+        }
+
+        .finsense-logo .text-neon {
+            color: #00E396 !important;
+            font-weight: 300;
+            margin-left: 2px;
+            text-shadow: 0 0 10px rgba(0, 227, 150, 0.2);
+        }
+
+        .brand-sub {
+            font-size: 0.8rem;
+            color: #71717a;
+            letter-spacing: 4px;
+            font-weight: 600;
+            margin-bottom: 40px;
+            text-transform: uppercase;
+        }
+
+        /* Botão Moderno */
+        .btn-fintech {
+            background: #00E396;
+            color: #000;
+            border: none;
+            padding: 16px 48px;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            text-decoration: none;
+            display: inline-block;
+            box-shadow: 0 4px 15px rgba(0, 227, 150, 0.3);
+        }
+
+        .btn-fintech:hover {
+            transform: scale(1.05) translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 227, 150, 0.5);
+            background: #00ffaf;
+        }
+
+        .btn-fintech:active {
+            transform: scale(0.98);
+        }
+
+    </style>
+</head>
+<body>
+
+    <canvas id="fintech-canvas"></canvas>
+
+    <div class="glass-card">
+        <h1 class="finsense-logo">
+            <span class="text-white">FIN</span><span class="text-neon">SENSE</span>
+        </h1>
+        <div class="brand-sub">STRATEGY SYSTEM</div>
+        
+        <a href="/dashboard" class="btn-fintech">
+            ACESSAR TERMINAL
+        </a>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('fintech-canvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // Configuração da Chuva
+        // APENAS NÚMEROS conforme solicitado
+        const chars = "0123456789"; 
+        const charArray = chars.split("");
+        
+        const fontSize = 14;
+        let columns = canvas.width / fontSize;
+        let drops = [];
+
+        function initDrops() {
+            columns = canvas.width / fontSize;
+            drops = [];
+            for (let i = 0; i < columns; i++) {
+                drops[i] = Math.random() * -100; // Começam fora da tela aleatoriamente
+            }
+        }
+        initDrops();
+        window.addEventListener('resize', initDrops);
+
+        function draw() {
+            // Rastro suave (Fade effect)
+            ctx.fillStyle = "rgba(18, 18, 20, 0.1)"; // Cor do fundo com transparência
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.font = fontSize + "px 'Inter', sans-serif"; // Fonte moderna
+
+            for (let i = 0; i < drops.length; i++) {
+                // Aleatoriedade no brilho
+                const isBright = Math.random() > 0.95;
+                ctx.fillStyle = isBright ? "#fff" : "#00E396"; // Branco ou Verde Neon
+                
+                const text = charArray[Math.floor(Math.random() * charArray.length)];
+                
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                // Reset aleatório
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.98) {
+                    drops[i] = 0;
+                }
+
+                // Velocidade variável para profundidade
+                drops[i] += 0.5 + Math.random() * 0.5; 
+            }
+            
+            requestAnimationFrame(draw);
+        }
+
+        // Inicia animação
+        draw();
+
+    </script>
+</body>
+</html>
