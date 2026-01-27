@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinSense Fundamentals</title>
+    <!-- Tabler Core (Same as Index) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/css/tabler.min.css" />
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    
+    <!-- ApexCharts -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+    <style>
+        :root {
+            /* Index Compatibility Variables */
+            --bg-color: #09090b;
+            --card-bg: #121214;
+            --input-bg: #18181b;
+            --border-color: #27272a;
+            --border-light: #3f3f46;
+            --text-primary: #f4f4f5;
+            --text-secondary: #a1a1aa;
+            --neon-green: #00E396;
+            --neon-green-glow: rgba(0, 227, 150, 0.4);
+            --neon-red: #FF4560;
+            
+            --font-main: 'Montserrat', sans-serif;
+            --font-ui: 'Inter', sans-serif;
+
+            /* Legacy Fundamentals Variables (Aliases) */
+            --bg-dark: var(--bg-color);
+            --bg-card-hover: #18181b;
+            --accent-neon: var(--neon-green);
+            --accent-red: var(--neon-red);
+            --font-brand: var(--font-main);
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: var(--font-ui); /* Inter */
+            overflow-x: hidden;
+            margin: 0;
+        }
+
+        h1, h2, h3, h4, .navbar-brand, .btn {
+            font-family: var(--font-main); /* Montserrat */
+        }
+
+        /* Transitions matching Index */
+        * {
+            transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
+        }
+
+
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 100%;
+        }
+
+        /* --- RESTORED & STANDARDIZED HEADER STYLES --- */
+        .brand-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-icon {
+            width: 36px;
+            height: 36px;
+            filter: drop-shadow(0 0 5px rgba(0, 227, 150, 0.4));
+        }
+
+        .brand-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1;
+        }
+
+        .brand-title {
+            font-family: var(--font-brand);
+            font-size: 1.4rem;
+            letter-spacing: -1px;
+            display: flex;
+            align-items: center;
+        }
+
+        .brand-title .bold { font-weight: 800; color: #fff; }
+        .brand-title .thin { 
+            font-weight: 300; 
+            color: var(--accent-neon); 
+            text-shadow: 0 0 15px rgba(0, 227, 150, 0.4);
+            margin-left: 2px;
+        }
+
+        .brand-subtitle {
+            font-size: 0.55rem;
+            color: var(--text-secondary);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: 700;
+            margin-top: 2px;
+        }
+        
+        /* Buttons Match */
+        .btn-neon-outline {
+            background: transparent;
+            border: 1px solid var(--accent-neon);
+            color: var(--accent-neon);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 0.4rem 1rem; /* Matched inline style from index.html */
+            font-size: 0.8rem;
+            border-radius: 8px;
+            transition: all 0.3s;
+            box-shadow: 0 0 10px rgba(0, 227, 150, 0.1);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* RE-ADD System Status (Lost in overwrite) */
+        .system-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            font-weight: 400;
+        }
+
+        /* --- HERO & GRID ALIGNMENT --- */
+        .hero-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: nowrap; /* Impede que caia para linha de baixo em telas normais */
+            width: 100%;
+        }
+
+        /* --- SEARCH BAR --- */
+        .search-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            max-width: 400px; /* Garante tamanho controlado */
+        }
+
+        .search-wrapper {
+            position: relative;
+            flex: 1;
+        }
+
+        .search-input {
+            width: 100%;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 12px 15px 12px 42px; /* Espaço para o ícone */
+            border-radius: 8px;
+            font-family: var(--font-main);
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .search-input:focus {
+            border-color: var(--accent-neon);
+            box-shadow: 0 0 0 2px rgba(0, 227, 150, 0.2);
+        }
+
+        .search-input::placeholder {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Ícone dentro do input */
+        .search-icon-inside {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            pointer-events: none;
+        }
+
+        /* Botão de Busca Dedicado */
+        .btn-search {
+            background-color: var(--accent-neon);
+            color: #09090b; /* Fundo escuro -> Texto preto contrastante */
+            border: none;
+            border-radius: 8px;
+            padding: 0 1.25rem; /* Altura definida pelo flex */
+            height: 46px; /* Altura visual similar ao input */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-search:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 227, 150, 0.4);
+        }
+        
+        .btn-search i {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+        
+        .status-icon {
+            color: #2fb344; /* text-success match */
+            animation: pulse-fast 1.5s infinite;
+        }
+
+        /* --- INDICATORS GRID --- */
+        .main-content {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            padding-left: 12px;
+            border-left: 3px solid var(--accent-neon);
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .metric-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.25rem 1rem;
+            position: relative;
+            transition: transform 0.2s, box-shadow 0.2s;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            border-color: #3f3f46;
+        }
+
+        .metric-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .metric-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: -0.5px;
+        }
+
+        .metric-unit {
+            font-size: 0.7rem;
+            color: #52525b;
+            margin-left: 2px;
+        }
+
+        .quality-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+        }
+
+        /* Cores da barra de qualidade */
+        .qb-neutral { background-color: var(--border-color); }
+        .qb-good { background-color: var(--accent-neon); }
+        .qb-bad { background-color: var(--accent-red); }
+
+        /* --- CHARTS --- */
+        .charts-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .chart-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            height: 400px;
+        }
+        
+        .chart-container h3 {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        @media (max-width: 1024px) {
+            .charts-section {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Animations */
+        @keyframes pulse-glow {
+            0%, 100% { text-shadow: 0 0 10px rgba(0,227,150,0.2); opacity: 1; }
+            50% { text-shadow: 0 0 20px rgba(0,227,150,0.6); opacity: 0.8; }
+        }
+        
+        @keyframes pulse-fast {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        /* Utilities */
+        .text-green { color: var(--accent-neon); }
+        .text-red { color: var(--accent-red); }
+
+        /* Custom Container to match Tabler .container-xl */
+        .container-custom {
+            width: 100%;
+            padding-right: 0.75rem;
+            padding-left: 0.75rem;
+            margin-right: auto;
+            margin-left: auto;
+            max-width: 1320px;
+        }
+        @media (max-width: 1400px) { .container-custom { max-width: 1140px; } }
+        @media (max-width: 1200px) { .container-custom { max-width: 960px; } }
+        @media (max-width: 992px) { .container-custom { max-width: 720px; } }
+        @media (max-width: 768px) { .container-custom { max-width: 540px; } }
+        @media (max-width: 576px) { .container-custom { max-width: 100%; } }
+
+
+      /* Custom Form Controls (Matches Index) */
+        .form-control:focus, .form-select:focus {
+            border-color: var(--neon-green) !important;
+            box-shadow: 0 0 0 3px rgba(0, 227, 150, 0.15) !important;
+            outline: none;
+        }
+
+        /* Neon Outline Button (Matches Index) */
+        .btn-neon-outline {
+            background: transparent !important;
+            border: 1px solid var(--neon-green) !important;
+            color: var(--neon-green) !important;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            transition: all 0.3s;
+            box-shadow: 0 0 10px rgba(0, 227, 150, 0.1);
+        }
+
+        .btn-neon-outline:hover {
+            background: var(--neon-green) !important;
+            color: #000 !important;
+            box-shadow: 0 0 20px var(--neon-green-glow);
+            transform: translateY(-2px);
+        }
+
+      /* Navbar / Sidebar Branding (From Index) */
+      header.navbar {
+          background-color: var(--input-bg) !important;
+          border-bottom: 1px solid var(--neon-green-glow) !important;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+          padding: 0.75rem 0;
+      }
+
+      .brand-wrapper {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          text-decoration: none;
+      }
+
+      .brand-icon-svg {
+          filter: drop-shadow(0 0 5px var(--neon-green-glow));
+      }
+
+      .brand-text-container {
+          display: flex;
+          flex-direction: column;
+          line-height: 1;
+      }
+
+      .logo-text {
+          font-size: 1.4rem;
+          letter-spacing: -1px;
+          display: flex;
+          align-items: center;
+      }
+
+      .logo-text .bold { font-weight: 800; color: #fff; }
+      .logo-text .neon { 
+          font-weight: 300; 
+          color: var(--neon-green); 
+          text-shadow: 0 0 15px var(--neon-green-glow);
+          margin-left: 2px;
+      }
+
+      .brand-sub {
+          font-size: 0.55rem;
+          color: var(--text-secondary);
+          letter-spacing: 2px;
+          text-transform: uppercase;
+          font-weight: 700;
+          margin-top: 2px;
+      }
+    </style>
+</head>
+<body class="layout-fluid">
+
+     <!-- Top Navbar (VECTRA Style) -->
+      <header class="navbar navbar-expand-md d-print-none">
+        <div class="container-xl">
+          <a href="." class="brand-wrapper">
+              <svg class="brand-icon-svg" width="36" height="36" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M16 2L16 6" stroke="#00E396" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M16 26L16 30" stroke="#00E396" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M2 16L6 16" stroke="#00E396" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M26 16L30 16" stroke="#00E396" stroke-width="2" stroke-linecap="round"/>
+                  <circle cx="16" cy="16" r="6" stroke="#00E396" stroke-width="2"/>
+                  <circle cx="16" cy="16" r="2" fill="#00E396">
+                      <animate attributeName="opacity" values="1;0.3;1" dur="2s" repeatCount="indefinite"/>
+                  </circle>
+              </svg>
+                  <div class="brand-text-container">
+                      <div class="logo-text">
+                          <span class="bold">FIN</span><span class="neon">SENSE</span>
+                      </div>
+                      <div class="brand-sub">Strategy System</div>
+                  </div>
+          </a>
+          <div class="navbar-nav flex-row order-md-last d-none d-md-flex align-items-center gap-3">
+              <a href="fundamentals.html" class="btn btn-neon-outline btn-sm" style="padding: 0.4rem 1rem; border-width: 1px; font-size: 0.8rem;">
+                <i class="ri-file-list-3-line me-2"></i>Fundamentos
+              </a>
+              <div class="nav-item">
+                  <div class="d-flex align-items-center text-secondary small">
+                    <i class="ri-pulse-line me-2 text-success"></i>
+                    SISTEMA ONLINE
+                  </div>
+              </div>
+          </div>
+        </div>
+      </header>
+      
+      <!-- 2. Hero Section -->
+    <div class="hero-section">
+        <div class="container-xl">
+            <div class="hero-content">
+                <div class="asset-info">
+                    <div class="asset-details">
+                        <!-- Preenchido via JS -->
+                        <h1 id="asset-header">Selecione um Ativo <span class="asset-ticker"></span></h1>
+                        <div class="asset-price-block" id="price-header" style="visibility: hidden;">
+                            <span class="current-price">---</span>
+                            <span class="price-change">
+                                -
+                            </span>
+                        </div>
+                    </div>
+                </div>
+        
+                <div class="search-container">
+                    <div class="search-wrapper">
+                        <i class="ri-search-line search-icon-inside"></i>
+                        <input type="text" id="ticker-search" class="search-input" placeholder="Pesquisar Ativo (ex: WEGE3)..." list="tickers-list">
+                    </div>
+                    <button id="search-btn" class="btn-search">
+                        <i class="ri-arrow-right-line"></i>
+                    </button>
+                    
+                    <datalist id="tickers-list">
+                        <option value="PETR4">
+                        <option value="VALE3">
+                        <option value="ITUB4">
+                        <option value="WEGE3">
+                        <option value="BBAS3">
+                        <option value="MGLU3">
+                        <option value="PRIO3">
+                        <option value="ELET3">
+                    </datalist>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Main Content (Grid) -->
+    <div class="container-custom main-content">
+        
+        <!-- Valuation -->
+        <h3 class="section-title">Valuation</h3>
+        <div class="grid-container">
+            <div class="metric-card">
+                <span class="metric-label">P/L</span>
+                <span class="metric-value">-</span>
+                <div class="quality-bar"></div>
+            </div>
+            <div class="metric-card">
+                <span class="metric-label">P/VP</span>
+                <span class="metric-value">-</span>
+                <div class="quality-bar"></div>
+            </div>
+            <div class="metric-card">
+                <span class="metric-label">EV/EBITDA</span>
+                <span class="metric-value">-</span>
+                <div class="quality-bar"></div>
+            </div>
+            <div class="metric-card">
+                <span class="metric-label">Div. Yield</span>
+                <span class="metric-value">-</span>
+                <div class="quality-bar"></div>
+            </div>
+            <div class="metric-card">
+                <span class="metric-label">LPA</span>
+                <span class="metric-value">-</span>
+                <div class="quality-bar"></div>
+            </div>
+            <div class="metric-card">
+                <span class="metric-label">VPA</span>
+                <span class="metric-value">-</span>
+                <div class="quality-bar"></div>
+            </div>
+        </div>
+
+        <!-- Endividamento -->
+        <h3 class="section-title">Endividamento e Liquidez</h3>
+        <div class="grid-container">
+            <div class="metric-card">
+                <span class="metric-label">Dív. Liq / EBITDA</span>
+                <span class="metric-value">-</span>
+                <div class="quality-bar"></div>
+            </div>
+            <div class="metric-card">
+                <span class="metric-label">Liquidez Corr.</span>
+                <span class="metric-value">-</span>
+                <div class="quality-bar"></div>
+            </div>
+            <div class="metric-card">
+                <span class="metric-label">Dívida Bruta</span>
+                <span class="metric-value">-</span>
+                <div class="quality-bar"></div>
+            </div>
+            <div class="metric-card">
+                <span class="metric-label">Disponibilidades</span>
+                <span class="metric-value">-</span>
+                <div class="quality-bar"></div>
+            </div>
+        </div>
+
+        <!-- Eficiência -->
+        <h3 class="section-title">Eficiência e Rentabilidade</h3>
+        <div class="grid-container">
+            <div class="metric-card">
+                <span class="metric-label">Margem Bruta</span>
+                <span class="metric-value">-</span>
+                <div class="quality-bar"></div>
+            </div>
+            <div class="metric-card">
+                <span class="metric-label">Margem Líquida</span>
+                <span class="metric-value">-</span>
+                <div class="quality-bar"></div>
+            </div>
+            <div class="metric-card">
+                <span class="metric-label">ROE</span>
+                <span class="metric-value">-</span>
+                <div class="quality-bar"></div>
+            </div>
+            <div class="metric-card">
+                <span class="metric-label">ROIC</span>
+                <span class="metric-value">-</span>
+                <div class="quality-bar"></div>
+            </div>
+        </div>
+                <span class="metric-label">Margem Bruta</span>
+                <span class="metric-value">52,0<span class="metric-unit">%</span></span>
+                <div class="quality-bar qb-good"></div>
+            </div>
+            <div class="metric-card">
+                <span class="metric-label">Margem Líquida</span>
+                <span class="metric-value">28,5<span class="metric-unit">%</span></span>
+                <div class="quality-bar qb-good"></div>
+            </div>
+            <div class="metric-card">
+                <span class="metric-label">ROE</span>
+                <span class="metric-value">32,1<span class="metric-unit">%</span></span>
+                <div class="quality-bar qb-good"></div>
+            </div>
+            <div class="metric-card">
+                <span class="metric-label">ROIC</span>
+                <span class="metric-value">24,5<span class="metric-unit">%</span></span>
+                <div class="quality-bar qb-good"></div>
+            </div>
+        </div>
+
+        <!-- 4. Charts -->
+        <div class="charts-section">
+            <div class="chart-container" id="chart-results">
+                <!-- ApexCharts will render here -->
+            </div>
+            <div class="chart-container" id="chart-debt">
+                <!-- ApexCharts will render here -->
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Integration Script -->
+    <script src="fundamentals.js"></script>
+
+</body>
+</html>

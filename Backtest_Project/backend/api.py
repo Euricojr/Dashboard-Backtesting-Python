@@ -12,6 +12,7 @@ from datetime import datetime
 from groq import Groq  # Import Groq
 
 import backtest  # Agora no mesmo diretório
+import cvm_fundamentalista
 
 app = Flask(__name__, static_folder='../frontend', static_url_path='')
 
@@ -413,6 +414,23 @@ def run_batch_backtest():
     except Exception as e:
         print("FALHA NO BATCH:")
         return jsonify({"error": f"Falha no processamento: {str(e)}"}), 500
+
+@app.route('/api/fundamentos', methods=['GET'])
+def get_fundamentos():
+    try:
+        ticker = request.args.get('ticker', 'PETR4.SA')
+        
+        # O módulo cvm_fundamentalista agora gerencia cache, nomes e cálculos
+        resultado = cvm_fundamentalista.processar_ativo(ticker)
+        
+        if "error" in resultado:
+            return jsonify(resultado), 500
+            
+        return jsonify(resultado)
+        
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": f"Erro interno API: {str(e)}"}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

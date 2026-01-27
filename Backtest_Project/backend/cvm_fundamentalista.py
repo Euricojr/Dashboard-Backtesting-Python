@@ -3,54 +3,195 @@ import requests
 import zipfile
 import io
 import yfinance as yf
+import os
+import urllib3
+
+# --- CACHE GLOBAL (Para não baixar toda hora) ---
+DATA_CACHE = {
+    "BPA": None, "BPP": None, "DRE": None, "DFC": None, "ANO": None
+}
+
+# --- DICIONÁRIO DE TRADUÇÃO (Ticker -> Razão Social na CVM) ---
+TICKER_TO_CVM_NAME = {
+    "PETR4": "PETROLEO BRASILEIRO", "PETR3": "PETROLEO BRASILEIRO",
+    "VALE3": "VALE",
+    "ITUB4": "ITAU UNIBANCO", "ITUB3": "ITAU UNIBANCO",
+    "BBDC4": "BANCO BRADESCO", "BBDC3": "BANCO BRADESCO",
+    "BBAS3": "BANCO DO BRASIL",
+    "WEGE3": "WEG",
+    "ABEV3": "AMBEV",
+    "MGLU3": "MAGAZINE LUIZA",
+    "VIIA3": "VIA", "BHIA3": "CASAS BAHIA",
+    "JBSS3": "JBS",
+    "SUZB3": "SUZANO",
+    "GGBR4": "GERDAU",
+    "CSNA3": "SIDERURGICA NACIONAL",
+    "PRIO3": "PRIO",
+    "RAIZ4": "RAIZEN",
+    "RENT3": "LOCALIZA",
+    "B3SA3": "B3",
+    "ELET3": "ELETROBRAS", "ELET6": "ELETROBRAS",
+    "EMBR3": "EMBRAER",
+    "HAPV3": "HAPVIDA",
+    "RDOR3": "REDE D'OR",
+    "RADL3": "RAIA DROGASIL",
+    "EQTL3": "EQUATORIAL",
+    "LREN3": "LOJAS RENNER",
+    "VIVT3": "TELEFONICA BRASIL", # Vivo é Telefonica na CVM
+    "TIMS3": "TIM",
+    "CMIG4": "CEMIG",
+    "SBSP3": "SABESP",
+    "CPLE6": "COPEL",
+    "CSAN3": "COSAN",
+    "TOTS3": "TOTVS",
+    "VBBR3": "VIBRA ENERGIA",
+    "BBSE3": "BB SEGURIDADE",
+    "ALOS3": "ALLOS", # Antiga Aliansce
+    "EGIE3": "ENGIE BRASIL",
+    "ENEV3": "ENEVA",
+}
+
+def carregar_dados_cache(ano=2024):
+    """
+    Carrega os dados na memória global apenas uma vez.
+    Tenta o ano solicitado. Se falhar, tenta o ano anterior.
+    """
+    global DATA_CACHE
+    
+    # Se já carregou este ano e tem dados, retorna do cache
+    if DATA_CACHE["ANO"] == ano and DATA_CACHE["BPA"] is not None:
+        return DATA_CACHE["BPA"], DATA_CACHE["BPP"], DATA_CACHE["DRE"], DATA_CACHE["DFC"]
+
+    bpa, bpp, dre, dfc = obter_dados_cvm(ano)
+    
+    # Fallback no Carregamento: Se o arquivo do ano não existir na CVM, tenta anterior
+    if bpa is None:
+        print(f"⚠️ Dados brutos de {ano} não encontrados. Tentando {ano-1}...")
+        if ano < 2020:
+            return None, None, None, None
+        return carregar_dados_cache(ano - 1)
+
+    # Salva no Cache
+    DATA_CACHE["BPA"], DATA_CACHE["BPP"], DATA_CACHE["DRE"], DATA_CACHE["DFC"], DATA_CACHE["ANO"] = bpa, bpp, dre, dfc, ano
+    return bpa, bpp, dre, dfc
+
+def processar_ativo(ticker):
+    """
+    Função Mestra chamada pela API.
+    Aplica validação de dados zerados para garantir robustez.
+    """
+    # 1. Limpeza
+    ticker_clean = ticker.upper().replace(".SA", "").strip()
+    
+    # 2. Tradução (Ticker -> Nome CVM)
+    nome_cvm = TICKER_TO_CVM_NAME.get(ticker_clean)
+    if not nome_cvm:
+        print(f"⚠️ Ticker {ticker_clean} não mapeado, tentando busca fuzzy...")
+        nome_cvm = ticker_clean 
+
+    # 3. Preço Yahoo
+    try:
+        yf_sym = f"{ticker_clean}.SA"
+        hist = yf.Ticker(yf_sym).history(period="1d")
+        if hist.empty:
+            return {"error": "Ticker não encontrado no Yahoo Finance"}
+        price = float(hist['Close'].iloc[-1])
+    except Exception as e:
+        return {"error": f"Erro Yahoo: {str(e)}"}
+
+    # 4. Tenta Dados de 2024 (Ano Base Seguro)
+    ano_alvo = 2024
+    bpa, bpp, dre, dfc = carregar_dados_cache(ano=ano_alvo)
+    
+    if bpa is None:
+        return {"error": "Dados CVM indisponíveis no momento."}
+
+    # 5. Cálculo Inicial
+    try:
+        resultado = calcular_fundamentos(
+            ticker=ticker_clean,
+            preco_atual=price,
+            bpa=bpa, bpp=bpp, dre=dre, dfc=dfc,
+            nome_empresa=nome_cvm
+        )
+        
+        # 6. Validação "Zero Data"
+        # Se Ativo Total for 0, provavelmente a empresa não mandou DFP 2024 ainda ou o nome não bateu.
+        # Vamos tentar forçar o ano anterior (2023).
+        if resultado['raw']['ativo_total'] == 0:
+            print(f"⚠️ Dados zerados em {ano_alvo} para {ticker_clean}. Tentando ano anterior ({ano_alvo - 1})...")
+            
+            # Força carregamento do ano anterior
+            # Nota: Isso vai sobrescrever o cache global, o que é aceitável para buscar dados válidos.
+            # Se quiser otimizar depois, poderiamos ter cache por ano.
+            global DATA_CACHE
+            DATA_CACHE["ANO"] = None # Invalida cache atual para forçar reload
+            
+            bpa_old, bpp_old, dre_old, dfc_old = carregar_dados_cache(ano=ano_alvo - 1)
+            
+            if bpa_old is not None:
+                resultado = calcular_fundamentos(
+                    ticker=ticker_clean,
+                    preco_atual=price,
+                    bpa=bpa_old, bpp=bpp_old, dre=dre_old, dfc=dfc_old,
+                    nome_empresa=nome_cvm
+                )
+                ano_alvo = ano_alvo - 1 # Atualiza para informar meta correta
+            else:
+                 print("⚠️ Dados do ano anterior também falharam.")
+
+        # Injeta o ano dos dados no JSON
+        resultado["meta"] = {"ano_balanco": ano_alvo, "empresa_cvm": nome_cvm}
+        return resultado
+        
+    except Exception as e:
+        print(f"Erro cálculo: {e}")
+        return {"error": "Empresa não encontrada nos dados da CVM."}
 
 def obter_dados_cvm(ano):
     """
     Baixa e lê os arquivos de dados financeiros da CVM (DFP) para o ano especificado.
-    Retorna dataframes contendo BPA, BPP, DRE e DFC (Método Indireto).
     """
     base_url = f"https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/dfp_cia_aberta_{ano}.zip"
-    print(f"[CVM] Baixando dados de {ano}...")
+    print(f"⬇️ [CVM] Baixando dados de {ano} (Pode demorar)...")
     
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+    }
+
     try:
-        response = requests.get(base_url)
+        response = requests.get(base_url, headers=headers, verify=False, timeout=120)
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
-        print(f"Erro ao baixar dados da CVM: {e}")
+        print(f"❌ Erro CVM {ano}: {e}")
         return None, None, None, None
 
     with zipfile.ZipFile(io.BytesIO(response.content)) as z:
-        # Definir nomes dos arquivos esperados dentro do ZIP
-        file_bpa = f'dfp_cia_aberta_BPA_con_{ano}.csv'
-        file_bpp = f'dfp_cia_aberta_BPP_con_{ano}.csv'
-        file_dre = f'dfp_cia_aberta_DRE_con_{ano}.csv'
-        file_dfc = f'dfp_cia_aberta_DFC_MI_con_{ano}.csv' # Fluxo de Caixa Método Indireto
-
         try:
-            # Ler arquivos CSV com encoding ISO-8859-1 (padrão CVM)
-            print("[CVM] Processando BPA...")
+            print("[CVM] Lendo CSVs...")
+            # Definir nomes dos arquivos esperados dentro do ZIP
+            file_bpa = f'dfp_cia_aberta_BPA_con_{ano}.csv'
+            file_bpp = f'dfp_cia_aberta_BPP_con_{ano}.csv'
+            file_dre = f'dfp_cia_aberta_DRE_con_{ano}.csv'
+            file_dfc = f'dfp_cia_aberta_DFC_MI_con_{ano}.csv'
+
             bpa = pd.read_csv(z.open(file_bpa), sep=';', encoding='ISO-8859-1')
-            
-            print("[CVM] Processando BPP...")
             bpp = pd.read_csv(z.open(file_bpp), sep=';', encoding='ISO-8859-1')
-            
-            print("[CVM] Processando DRE...")
             dre = pd.read_csv(z.open(file_dre), sep=';', encoding='ISO-8859-1')
-            
-            print("[CVM] Processando DFC (Método Indireto)...")
             dfc = pd.read_csv(z.open(file_dfc), sep=';', encoding='ISO-8859-1')
             
-            # Filtro básico para garantir 'ORDEM_EXERC' == 'ÚLTIMO' se aplicável
-            bpa = bpa[bpa['ORDEM_EXERC'] == 'ÚLTIMO']
-            bpp = bpp[bpp['ORDEM_EXERC'] == 'ÚLTIMO']
-            dre = dre[dre['ORDEM_EXERC'] == 'ÚLTIMO']
-            dfc = dfc[dfc['ORDEM_EXERC'] == 'ÚLTIMO']
+            # Filtro 'ÚLTIMO'
+            return (
+                bpa[bpa['ORDEM_EXERC'] == 'ÚLTIMO'],
+                bpp[bpp['ORDEM_EXERC'] == 'ÚLTIMO'],
+                dre[dre['ORDEM_EXERC'] == 'ÚLTIMO'],
+                dfc[dfc['ORDEM_EXERC'] == 'ÚLTIMO']
+            )
 
         except KeyError as e:
-            print(f"Arquivo não encontrado no ZIP: {e}")
+            print(f"❌ Arquivo não encontrado no ZIP: {e}")
             return None, None, None, None
-
-    return bpa, bpp, dre, dfc
 
 def extrair_valor_conta(df, cd_conta, ticker_cvm=None, nome_empresa=None):
     """
@@ -234,44 +375,8 @@ def calcular_fundamentos(ticker, preco_atual, bpa, bpp, dre, dfc, nome_empresa=N
             "divida_bruta": divida_bruta,
             "market_cap": market_cap,
             "ev": ev
-        }
+        },
+        "price": preco_atual
     }
 
-if __name__ == "__main__":
-    # Teste rápido
-    import sys
-    
-    ano_teste = 2023
-    print(f"--- Iniciando Teste (Ano {ano_teste}) ---")
-    
-    bpa, bpp, dre, dfc = obter_dados_cvm(ano_teste)
-    
-    if bpa is not None and dfc is not None:
-        # Exemplo: PETR4 (Petrobras)
-        ticker_teste = "PETR4"
-        nome_empresa_simulada = "PETROLEO BRASILEIRO" 
-        
-        pk_price = 38.0 
-        
-        try:
-             t = yf.Ticker(f"{ticker_teste}.SA")
-             hist = t.history(period="1d")
-             if not hist.empty:
-                 pk_price = hist['Close'].iloc[-1]
-                 print(f"Preço Yahoo: {pk_price}")
-        except Exception as e:
-            print(f"Erro yahoo: {e}")
 
-        resultado = calcular_fundamentos(
-            ticker=ticker_teste, 
-            preco_atual=pk_price, 
-            bpa=bpa, 
-            bpp=bpp, 
-            dre=dre, 
-            dfc=dfc,
-            nome_empresa=nome_empresa_simulada
-        )
-        
-        import json
-        print("\nResultado JSON:")
-        print(json.dumps(resultado, indent=4))
