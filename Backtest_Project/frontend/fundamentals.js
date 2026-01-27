@@ -284,6 +284,9 @@ function resetDashboard() {
       dividendChart.destroy();
       dividendChart = null;
     }
+
+    const marketStrip = document.getElementById('market_strip');
+    if (marketStrip) marketStrip.style.display = 'none';
 }
 
 async function loadFundamentals(ticker) {
@@ -308,6 +311,36 @@ async function loadFundamentals(ticker) {
 function renderDashboard(data, requestedTicker = null) {
     console.log("Dados Recebidos:", data);
 
+    // --- Market Strip ---
+    const marketStrip = document.getElementById('market_strip');
+    if (marketStrip && data.mercado) {
+        marketStrip.style.display = 'flex';
+        
+        // Min/Máx
+        document.getElementById('strip_min_52').innerText = (data.mercado.min_52sem || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        document.getElementById('strip_max_52').innerText = (data.mercado.max_52sem || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        
+        document.getElementById('strip_min_mes').innerText = (data.mercado.min_mes || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        document.getElementById('strip_max_mes').innerText = (data.mercado.max_mes || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+        // DY
+        const dy = data.valuation['Div_Yield'] || 0;
+        const dyEl = document.getElementById('strip_dy');
+        dyEl.innerText = `${dy.toFixed(2)}%`;
+        dyEl.className = `market-strip-value ${dy > 0 ? 'text-green' : ''}`;
+
+        // Valorização 12M e Mês
+        const val12m = data.mercado.valorizacao_12m || 0;
+        const val12mEl = document.getElementById('strip_val_12m');
+        val12mEl.innerHTML = `${val12m > 0 ? '<i class="ri-arrow-up-s-fill"></i>' : '<i class="ri-arrow-down-s-fill"></i>'} ${Math.abs(val12m).toFixed(2)}%`;
+        val12mEl.className = `market-strip-value ${val12m >= 0 ? 'text-green' : 'text-red'}`;
+
+        const valMes = data.mercado.valorizacao_mes || 0;
+        const valMesEl = document.getElementById('strip_val_mes');
+        valMesEl.innerText = `${valMes > 0 ? '+' : ''}${valMes.toFixed(2)}%`;
+        valMesEl.className = valMes >= 0 ? 'text-green fw-bold' : 'text-red fw-bold';
+    }
+
     // --- Header ---
     const nameEl = document.getElementById('display_name');
     const logoImg = document.getElementById('asset_logo');
@@ -323,26 +356,28 @@ function renderDashboard(data, requestedTicker = null) {
       document.getElementById('display_industry').innerText = data.meta.industria || 'N/A';
     }
 
-    // Logo Logic HD
+    // --- Valuation Cards ---
+    const v = data.valuation;
+    updateCard('P/L', v['P/L'], false);
+    updateCard('P/VP', v['P/VP'], false);
+    updateCard('EV/EBITDA', v['EV_Ebitda'], false);
+    updateCard('LPA', v['LPA'], false);
+    updateCard('VPA', v['VPA'], false);
+    updateCard('Beta (5Y)', v['beta'], false);
+    updateCard('PEG Ratio', v['peg_ratio'], false);
+
+    // Logo Logic (Prioridade Total para Icones B3 em BR Stocks)
     if (logoImg && requestedTicker) {
         const fullTicker = requestedTicker.toUpperCase();
+        const cleanTicker = fullTicker.split(".")[0];
         let logoUrl = null;
 
-        // 1. Direct Mapping
+        // 1. Mapeamento Direto (AAPL, Indices, Crypto)
         if (ASSET_LOGOS[fullTicker]) {
             logoUrl = ASSET_LOGOS[fullTicker];
         } 
-        // 2. Clearbit via Website
-        else if (data.meta.website && data.meta.website !== 'N/A') {
-            try {
-              const domain = new URL(data.meta.website).hostname.replace('www.', '');
-              logoUrl = `https://logo.clearbit.com/${domain}`;
-            } catch(e) {}
-        }
-        
-        // 3. Fallback B3
-        if (!logoUrl) {
-            const cleanTicker = fullTicker.split(".")[0];
+        // 2. Icones B3 (Repositorio Oficial - Melhor para BR)
+        else {
             logoUrl = `https://raw.githubusercontent.com/thefintz/icones-b3/main/icones/${cleanTicker}.png`;
         }
 
@@ -351,13 +386,29 @@ function renderDashboard(data, requestedTicker = null) {
           logoImg.style.display = "block";
           if (logoPlaceholder) logoPlaceholder.style.display = "none";
         };
+
         logoImg.onerror = () => {
-          // Final Fallback: Google Favicon
+          // Se falhou o B3 ou Direto, tenta Clearbit via Website
           if (data.meta.website && data.meta.website !== 'N/A') {
-             logoImg.src = `https://www.google.com/s2/favicons?domain=${data.meta.website}&sz=128`;
+              try {
+                  const domain = new URL(data.meta.website).hostname.replace('www.', '');
+                  logoImg.src = `https://logo.clearbit.com/${domain}`;
+                  // Se o Clearbit carregar agora, o erro de antes é resolvido.
+                  // Mas precisamos garantir que ele não entre em loop se o Clearbit também falhar.
+                  logoImg.onerror = () => {
+                      logoImg.src = `https://www.google.com/s2/favicons?domain=${data.meta.website}&sz=128`;
+                      logoImg.onerror = () => {
+                        logoImg.style.display = "none";
+                        if (logoPlaceholder) logoPlaceholder.style.display = "block";
+                      };
+                  };
+              } catch(e) {
+                  logoImg.style.display = "none";
+                  if (logoPlaceholder) logoPlaceholder.style.display = "block";
+              }
           } else {
-             logoImg.style.display = "none";
-             if (logoPlaceholder) logoPlaceholder.style.display = "block";
+              logoImg.style.display = "none";
+              if (logoPlaceholder) logoPlaceholder.style.display = "block";
           }
         };
     }
@@ -372,18 +423,8 @@ function renderDashboard(data, requestedTicker = null) {
     }
     
     // --- Metric Cards ---
-    updateCard('P/L', data.valuation['P/L'], false);
-    updateCard('P/VP', data.valuation['P/VP'], false);
-    updateCard('EV/EBITDA', data.valuation['EV_Ebitda'], false);
-    updateCard('LPA', data.valuation['LPA'], false);
-    updateCard('VPA', data.valuation['VPA'], false);
-    updateCard('Div. Yield', data.valuation['Div_Yield'], true); 
-
-    // Mercado e Risco
-    document.getElementById('val_beta').innerText = data.valuation.beta || '-';
-    document.getElementById('val_peg').innerText = data.valuation.peg_ratio || '-';
-    document.getElementById('val_max_52').innerText = data.valuation.max_52sem ? `R$ ${data.valuation.max_52sem}` : '-';
-    document.getElementById('val_min_52').innerText = data.valuation.min_52sem ? `R$ ${data.valuation.min_52sem}` : '-';
+    // (Consolidado na parte superior)
+    // Mercado e Risco Removido (Subiu para Market Strip)
 
     updateCard('Dív. Liq / EBITDA', data.endividamento['DivLiq_Ebitda'], false);
     updateCard('Liquidez Corr.', data.endividamento['Liq_Corrente'], false);

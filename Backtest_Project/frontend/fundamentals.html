@@ -341,16 +341,19 @@
             border: 1px solid var(--border-color);
             border-radius: 12px;
             padding: 1.5rem;
-            margin-bottom: 2.5rem;
-            font-size: 0.9rem;
-            line-height: 1.6;
+            height: 350px; /* Mesma altura que o chart-container */
+            display: flex;
+            flex-direction: column;
             color: var(--text-secondary);
         }
 
         .summary-text {
-            max-height: 120px;
+            flex-grow: 1;
             overflow-y: auto;
             padding-right: 10px;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            text-align: justify;
         }
 
         .summary-text::-webkit-scrollbar {
@@ -450,6 +453,76 @@
             left: 0;
             width: 100%;
             height: 3px;
+        }
+
+        /* Market Strip (Clean & Integrated) */
+        .market-strip {
+            display: flex;
+            align-items: center;
+            background: transparent;
+            padding: 1.5rem 0 1rem 0;
+            margin-top: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            flex-grow: 1;
+        }
+
+        .market-strip-item {
+            flex: 1;
+            padding: 0 1.25rem;
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 120px;
+        }
+
+        .market-strip-item:first-child {
+            padding-left: 0;
+        }
+
+        .market-strip-item:last-child {
+            border-right: none;
+        }
+
+        .market-strip-label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .market-strip-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            line-height: 1.1;
+        }
+
+        .market-strip-value.text-green { color: var(--neon-green); }
+        .market-strip-value.text-red { color: var(--neon-red); }
+
+        .market-strip-sub {
+            font-size: 0.65rem;
+            color: rgba(255, 255, 255, 0.3);
+            font-weight: 500;
+        }
+
+        /* Flex container para alinhar Strip e Search */
+        .hero-footer-flex {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 2rem;
+            width: 100%;
+        }
+
+        .search-trigger-container {
+            margin-bottom: 1rem;
+            min-width: 350px;
         }
 
         /* Cores da barra de qualidade */
@@ -643,16 +716,44 @@
                     </div>
                 </div>
         
-                <div id="search-trigger" class="search-trigger">
-                    <div class="d-flex align-items-center gap-2">
-                        <i class="ri-search-line"></i>
-                        <span id="trigger-label">PESQUISAR ATIVO...</span>
+                </div>
+        
+                <div class="hero-footer-flex">
+                    <!-- 2.5 Market Strip (Clean & Integrated) -->
+                    <div class="market-strip" id="market_strip" style="display: none;">
+                        <div class="market-strip-item">
+                            <span class="market-strip-label">Min. 52 Semanas</span>
+                            <span class="market-strip-value" id="strip_min_52">R$ 0,00</span>
+                            <span class="market-strip-sub">Min. Mês: <span id="strip_min_mes">R$ 0,00</span></span>
+                        </div>
+                        <div class="market-strip-item">
+                            <span class="market-strip-label">Máx. 52 Semanas</span>
+                            <span class="market-strip-value" id="strip_max_52">R$ 0,00</span>
+                            <span class="market-strip-sub">Máx. Mês: <span id="strip_max_mes">R$ 0,00</span></span>
+                        </div>
+                        <div class="market-strip-item">
+                            <span class="market-strip-label">Dividend Yield</span>
+                            <span class="market-strip-value text-green" id="strip_dy">0,00%</span>
+                            <span class="market-strip-sub">Últimos 12 meses</span>
+                        </div>
+                        <div class="market-strip-item">
+                            <span class="market-strip-label">Valorização (12M)</span>
+                            <span class="market-strip-value" id="strip_val_12m">0,00%</span>
+                            <span class="market-strip-sub">Mês Atual: <span id="strip_val_mes" class="fw-bold">0,00%</span></span>
+                        </div>
                     </div>
-                    <small class="opacity-30 d-none d-md-block">CTRL + K</small>
-                </div>
-                    
 
+                    <div class="search-trigger-container">
+                        <div id="search-trigger" class="search-trigger">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="ri-search-line"></i>
+                                <span id="trigger-label">PESQUISAR ATIVO...</span>
+                            </div>
+                            <small class="opacity-30 d-none d-md-block">CTRL + K</small>
+                        </div>
+                    </div>
                 </div>
+
             </div>
         </div>
     </div>
@@ -679,11 +780,6 @@
                 <div class="quality-bar"></div>
             </div>
             <div class="metric-card">
-                <span class="metric-label">Div. Yield</span>
-                <span class="metric-value">-</span>
-                <div class="quality-bar"></div>
-            </div>
-            <div class="metric-card">
                 <span class="metric-label">LPA</span>
                 <span class="metric-value">-</span>
                 <div class="quality-bar"></div>
@@ -693,11 +789,6 @@
                 <span class="metric-value">-</span>
                 <div class="quality-bar"></div>
             </div>
-        </div>
- 
-        <!-- Mercado e Risco -->
-        <h3 class="section-title">Mercado e Risco</h3>
-        <div class="grid-container">
             <div class="metric-card">
                 <span class="metric-label">Beta (5Y)</span>
                 <span class="metric-value" id="val_beta">-</span>
@@ -706,16 +797,6 @@
             <div class="metric-card">
                 <span class="metric-label">PEG Ratio</span>
                 <span class="metric-value" id="val_peg">-</span>
-                <div class="quality-bar qb-neutral"></div>
-            </div>
-            <div class="metric-card">
-                <span class="metric-label">Máx. 52 Sem.</span>
-                <span class="metric-value" id="val_max_52">R$ 0,00</span>
-                <div class="quality-bar qb-neutral"></div>
-            </div>
-            <div class="metric-card">
-                <span class="metric-label">Min. 52 Sem.</span>
-                <span class="metric-value" id="val_min_52">R$ 0,00</span>
                 <div class="quality-bar qb-neutral"></div>
             </div>
         </div>

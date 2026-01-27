@@ -1,6 +1,7 @@
 import yfinance as yf
 import pandas as pd
 import numpy as np
+from datetime import datetime
 
 def obter_historico_dividendos(ticker_sa):
     """
@@ -34,44 +35,76 @@ def processar_ativo(ticker):
     Busca dados fundamentalistas usando yfinance (Yahoo Finance)
     e retorna no formato esperado pelo Frontend do FinSense.
     """
-    # 1. Ajuste do Ticker (.SA)
+    # 1. Normalização de Ticker Robusta
     ticker = ticker.upper().strip()
-    if not ticker.endswith('.SA'):
-        symbol = f"{ticker}.SA"
-    else:
-        symbol = ticker
-        
-    print(f"--- Buscando dados no Yahoo Finance para: {symbol} ---")
+    symbols_to_try = [f"{ticker}.SA", ticker] if not ticker.endswith('.SA') else [ticker, ticker.replace('.SA', '')]
     
-    try:
-        # 2. Busca objeto Ticker
+    info = {}
+    stock = None
+    symbol = ""
+    erro_api = False
+
+    # 2. Mecanismo de Tentativa (Retry)
+    for s in symbols_to_try:
+        try:
+            print(f"--- Tentando Yahoo Finance para: {s} ---")
+            stock = yf.Ticker(s)
+            # Acessar uma propriedade leve para validar se o ticker existe no Yahoo
+            temp_info = stock.info
+            if temp_info and len(temp_info) > 10:
+                info = temp_info
+                symbol = s
+                break
+        except Exception as e:
+            print(f"Falha ao tentar {s}: {e}")
+            continue
+
+    # 3. Fallback: Se não encontrou 'info' robusto, tentamos pelo menos o preço
+    if not info:
+        print(f"Aviso: .info vazio para {ticker}. Tentando extração mínima de emergência.")
+        erro_api = True
+        symbol = symbols_to_try[0] # Assume .SA como padrão para BR
         stock = yf.Ticker(symbol)
-        info = stock.info
+        info = {} # Garante que info seja um dict
+
+    # Helper para pegar valor seguro (0 se None)
+    def get_val(key, default=0):
+        val = info.get(key)
+        return val if val is not None else default
+
+    # Fallback de Preço Prioritário
+    price = get_val('currentPrice', get_val('regularMarketPrice', 0))
+    if price == 0:
+        try:
+            # Tenta via fast_info (mais rápido)
+            price = stock.fast_info.last_price
+            if not price:
+                # Tenta via history (último recurso)
+                hist_now = stock.history(period="1d")
+                if not hist_now.empty:
+                    price = hist_now['Close'].iloc[-1]
+        except:
+            price = 0
+
+    # Variação do Dia
+    var_dia = get_val('regularMarketChangePercent', 0)
+    # Se for decimal (0.02), converte para (2.0)
+    if -1 < var_dia < 1 and var_dia != 0:
+        var_dia *= 100
         
-        # Helper para pegar valor seguro (0 se None)
-        def get_val(key, default=0):
-            val = info.get(key)
-            return val if val is not None else default
+    if var_dia == 0 and price > 0:
+        try:
+            prev_close = stock.fast_info.previous_close
+            if prev_close and prev_close > 0:
+                var_dia = ((price - prev_close) / prev_close) * 100
+        except: pass
 
-        # Fallback de Preço: Yahoo às vezes falha no info['regularMarketPrice']
-        price = get_val('currentPrice', get_val('regularMarketPrice', 0))
-        if price == 0:
-            try:
-                # 1. Tenta via fast_info (mais rápido)
-                price = stock.fast_info.last_price
-                if price is None or price == 0:
-                    # 2. Tenta via history (mais pesado mas garantido)
-                    hist_now = stock.history(period="1d")
-                    if not hist_now.empty:
-                        price = hist_now['Close'].iloc[-1]
-            except:
-                price = 0
+    # Se ainda assim o preço for 0, o ativo realmente não está disponível
+    if price == 0:
+        print(f"Dados insuficientes (Preço=0) para {ticker}. Abortando.")
+        return None
 
-        # Verifica se pelo menos o preço foi encontrado
-        if price == 0 and (not info or len(info) < 5):
-            print(f"Dados insuficientes para {symbol}. Abortando.")
-            return None
-
+    try:
         # 3. Mapeamento de Dados
         
         # --- Preço e Meta ---
@@ -81,8 +114,6 @@ def processar_ativo(ticker):
         setor = info.get('sector', 'N/A')
         industria = info.get('industry', 'N/A')
         descricao = info.get('longBusinessSummary', '')
-        if len(descricao) > 500:
-            descricao = descricao[:497] + "..."
         website = info.get('website', 'N/A')
         
         # --- Valuation ---
@@ -101,8 +132,6 @@ def processar_ativo(ticker):
             pvp = get_val('priceToBook', 0)
             
         # 3. Dividend Yield (TTM Manual)
-        # Yahoo 'dividendYield' no Brasil é muito instável (mistura decimal com %).
-        # Calculamos via histórico de 1 ano para ser preciso (TTM).
         try:
             hist_1y = stock.history(period="1y")
             if not hist_1y.empty and 'Dividends' in hist_1y.columns:
@@ -117,13 +146,11 @@ def processar_ativo(ticker):
         except:
             div_yield = 0
 
-        # Trava de segurança para evitar erros de split/grupamento mal processados
         if div_yield > 100: div_yield = 0
             
         # 4. EV/EBITDA
         ev_ebitda = get_val('enterpriseToEbitda', 0)
         
-        # Novos campos em Valuation
         peg_ratio = get_val('pegRatio', 0)
         beta = get_val('beta', 0)
         max_52sem = get_val('fiftyTwoWeekHigh', 0)
@@ -133,7 +160,6 @@ def processar_ativo(ticker):
         margem_bruta = get_val('grossMargins', 0) * 100
         margem_liquida = get_val('profitMargins', 0) * 100
         
-        # ROE Calculado
         shares = get_val('sharesOutstanding', 0)
         vpa_val = get_val('bookValue', 0)
         lucro_l = get_val('netIncomeToCommon', get_val('netIncome', 0))
@@ -146,7 +172,6 @@ def processar_ativo(ticker):
             
         roic = 0 
 
-        # --- Calculo de Dívida Líquida e Liquidez ---
         total_debt = get_val('totalDebt', 0)
         total_cash = get_val('totalCash', 0)
         ebitda = get_val('ebitda', 0)
@@ -159,10 +184,40 @@ def processar_ativo(ticker):
             
         liq_corrente = get_val('currentRatio', 0)
 
-        # --- Histórico de Proventos ---
         proventos_hist = obter_historico_dividendos(symbol)
 
-        # --- Estrutura para Gráficos (Raw Data) ---
+        val_12m = 0
+        val_mes = 0
+        try:
+            if 'hist_1y' not in locals():
+                hist_1y = stock.history(period="1y", auto_adjust=False)
+            
+            if not hist_1y.empty:
+                ref_price = price if price > 0 else hist_1y['Close'].iloc[-1]
+                preco_ini_12m = hist_1y['Close'].iloc[0]
+                if preco_ini_12m > 0:
+                    val_12m = ((ref_price - preco_ini_12m) / preco_ini_12m) * 100
+                
+                now = datetime.now()
+                hist_mes = hist_1y[
+                    (hist_1y.index.month == now.month) & 
+                    (hist_1y.index.year == now.year)
+                ]
+                
+                if not hist_mes.empty:
+                    preco_ini_mes = hist_mes['Open'].iloc[0]
+                    val_mes = ((ref_price - preco_ini_mes) / preco_ini_mes) * 100
+                    min_mes = hist_mes['Low'].min()
+                    max_mes = hist_mes['High'].max()
+                else:
+                    min_mes = ref_price
+                    max_mes = ref_price
+
+                min_52sem = hist_1y['Low'].min()
+                max_52sem = hist_1y['High'].max()
+        except Exception as e:
+            print(f"Erro ao calcular valorização para {symbol}: {e}")
+
         receita_liquida = get_val('totalRevenue', 0)
         lucro_liquido = get_val('netIncomeToCommon', get_val('netIncome', 0))
         
@@ -181,9 +236,20 @@ def processar_ativo(ticker):
                 'setor': setor,
                 'industria': industria,
                 'descricao': descricao,
-                'website': website
+                'website': website,
+                'erro_api': erro_api
             },
             'price': price,
+            'mercado': {
+                'preco_atual': price,
+                'variacao_dia': round(var_dia, 2),
+                'max_52sem': round(max_52sem, 2),
+                'min_52sem': round(min_52sem, 2),
+                'max_mes': round(max_mes if 'max_mes' in locals() else price, 2),
+                'min_mes': round(min_mes if 'min_mes' in locals() else price, 2),
+                'valorizacao_12m': round(val_12m, 2),
+                'valorizacao_mes': round(val_mes, 2)
+            },
             'valuation': {
                 'P/L': round(pl, 2),
                 'P/VP': round(pvp, 2),
