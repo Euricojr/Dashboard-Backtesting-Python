@@ -1,4 +1,5 @@
 let allAssets = {};
+let dividendChart = null;
 
 const ASSET_LOGOS = {
   AAPL: "https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg",
@@ -238,7 +239,6 @@ function showLoading() {
     const overlay = document.getElementById('loading-overlay');
     if (overlay) {
         overlay.style.display = 'flex';
-        // Ensure it's visible by forcing a redraw if needed, but flex should do it
     }
 }
 
@@ -250,14 +250,19 @@ function hideLoading() {
 }
 
 function resetDashboard() {
-    // Limpa Nome e Ticker
     const tickerEl = document.getElementById('display_ticker');
     const nameEl = document.getElementById('display_name');
     const logoImg = document.getElementById('asset_logo');
     const logoPlaceholder = document.getElementById('asset_icon_placeholder');
+    const badges = document.getElementById('asset_badges_container');
+    const description = document.getElementById('display_description');
+    const website = document.getElementById('display_website');
 
     if (tickerEl) tickerEl.innerText = "---";
     if (nameEl) nameEl.innerText = "Selecione um Ativo";
+    if (badges) badges.style.display = 'none';
+    if (description) description.innerText = "Selecione um ativo para ver o sumário do modelo de negócio.";
+    if (website) website.style.display = 'none';
     
     if (logoImg) {
         logoImg.style.display = 'none';
@@ -265,7 +270,6 @@ function resetDashboard() {
     }
     if (logoPlaceholder) logoPlaceholder.style.display = 'block';
     
-    // Esconde preço
     const priceBlock = document.getElementById('price-header');
     if (priceBlock) priceBlock.style.visibility = 'hidden';
 
@@ -275,125 +279,182 @@ function resetDashboard() {
 
     const qualityBars = document.querySelectorAll('.quality-bar');
     if (qualityBars) qualityBars.forEach(el => el.className = 'quality-bar');
+
+    if (dividendChart) {
+      dividendChart.destroy();
+      dividendChart = null;
+    }
 }
 
 async function loadFundamentals(ticker) {
-    // UI Start
     showLoading();
     const tickerDisplay = document.getElementById('display_ticker');
     if (tickerDisplay) tickerDisplay.innerText = ticker.toUpperCase();
     
     try {
         const response = await fetch(`/api/fundamentos?ticker=${ticker}`);
-        
-        if (!response.ok) {
-            throw new Error(`Erro API: ${response.status}`);
-        }
-        
+        if (!response.ok) throw new Error(`Erro API: ${response.status}`);
         const data = await response.json();
         renderDashboard(data, ticker);
-
     } catch (error) {
         console.error("Erro Fatal:", error);
-        alert(`Falha ao carregar dados para ${ticker}. Verifique se o ativo existe na CVM.`);
-        resetDashboard(); // Volta ao estado limpo em erro
+        alert(`Falha ao carregar dados para ${ticker}. Verifique se o ativo existe.`);
+        resetDashboard();
     } finally {
-        // Delay curto para evitar flicker muito rápido se for cacheado
-        setTimeout(() => {
-            hideLoading();
-        }, 300);
+        setTimeout(() => hideLoading(), 300);
     }
 }
 
 function renderDashboard(data, requestedTicker = null) {
     console.log("Dados Recebidos:", data);
 
-    // --- Header Update (Hero Section) ---
-    const tickerEl = document.getElementById('display_ticker');
+    // --- Header ---
     const nameEl = document.getElementById('display_name');
     const logoImg = document.getElementById('asset_logo');
     const logoPlaceholder = document.getElementById('asset_icon_placeholder');
+    
+    if (nameEl) nameEl.innerText = toTitleCase(data.meta.empresa);
 
-    if (data.meta && data.meta.empresa_cvm) {
-        if (tickerEl) tickerEl.innerText = requestedTicker ? requestedTicker.toUpperCase() : "---";
-        if (nameEl) nameEl.innerText = toTitleCase(data.meta.empresa_cvm);
+    // Setor e Indústria
+    const badges = document.getElementById('asset_badges_container');
+    if (badges) {
+      badges.style.display = 'flex';
+      document.getElementById('display_sector').innerText = data.meta.setor || 'N/A';
+      document.getElementById('display_industry').innerText = data.meta.industria || 'N/A';
     }
 
-    // Logo Logic
+    // Logo Logic HD
     if (logoImg && requestedTicker) {
         const fullTicker = requestedTicker.toUpperCase();
-        const cleanTicker = fullTicker.split(".")[0];
-        
-        // 1. Check if we have a direct mapping
+        let logoUrl = null;
+
+        // 1. Direct Mapping
         if (ASSET_LOGOS[fullTicker]) {
-            logoImg.src = ASSET_LOGOS[fullTicker];
+            logoUrl = ASSET_LOGOS[fullTicker];
         } 
-        // 2. Fallback to B3 repository if it's a Brazilian stock
-        else {
-            logoImg.src = `https://raw.githubusercontent.com/thefintz/icones-b3/main/icones/${cleanTicker}.png`;
+        // 2. Clearbit via Website
+        else if (data.meta.website && data.meta.website !== 'N/A') {
+            try {
+              const domain = new URL(data.meta.website).hostname.replace('www.', '');
+              logoUrl = `https://logo.clearbit.com/${domain}`;
+            } catch(e) {}
+        }
+        
+        // 3. Fallback B3
+        if (!logoUrl) {
+            const cleanTicker = fullTicker.split(".")[0];
+            logoUrl = `https://raw.githubusercontent.com/thefintz/icones-b3/main/icones/${cleanTicker}.png`;
         }
 
+        logoImg.src = logoUrl;
         logoImg.onload = () => {
           logoImg.style.display = "block";
           if (logoPlaceholder) logoPlaceholder.style.display = "none";
         };
         logoImg.onerror = () => {
-          logoImg.style.display = "none";
-          if (logoPlaceholder) logoPlaceholder.style.display = "block";
+          // Final Fallback: Google Favicon
+          if (data.meta.website && data.meta.website !== 'N/A') {
+             logoImg.src = `https://www.google.com/s2/favicons?domain=${data.meta.website}&sz=128`;
+          } else {
+             logoImg.style.display = "none";
+             if (logoPlaceholder) logoPlaceholder.style.display = "block";
+          }
         };
     }
     
-    // Mostra o bloco de preço (estava oculto)
     const priceBlock = document.getElementById('price-header');
     if (priceBlock) priceBlock.style.visibility = 'visible';
     
-
-    
-    // Atualiza Preço na Hero Section
-    // Agora o backend retorna 'price' explicitamente.
-    let currentPrice = data.price;
-    
-    // Fallback apenas se não vier do backend (ex: cache antigo)
-    if (!currentPrice && data.valuation && data.valuation['LPA'] && data.valuation['P/L']) {
-        currentPrice = data.valuation['LPA'] * data.valuation['P/L'];
-    }
-    
-    if (currentPrice !== undefined && currentPrice !== null) {
+    const currentPrice = data.price;
+    if (currentPrice) {
         const priceEl = document.querySelector('.current-price');
-        // Formatar BRL corretamente
         if (priceEl) priceEl.innerText = currentPrice.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     }
     
-    // --- Preencher Cards ---
+    // --- Metric Cards ---
     updateCard('P/L', data.valuation['P/L'], false);
     updateCard('P/VP', data.valuation['P/VP'], false);
     updateCard('EV/EBITDA', data.valuation['EV_Ebitda'], false);
     updateCard('LPA', data.valuation['LPA'], false);
     updateCard('VPA', data.valuation['VPA'], false);
-    
-    // Div Yield não vem no JSON atual do backend (precisaria de dividendos). 
-    // Vamos deixar placeholder ou calcular se tiver dados. Backend não mandou. Deixar '-'
     updateCard('Div. Yield', data.valuation['Div_Yield'], true); 
+
+    // Mercado e Risco
+    document.getElementById('val_beta').innerText = data.valuation.beta || '-';
+    document.getElementById('val_peg').innerText = data.valuation.peg_ratio || '-';
+    document.getElementById('val_max_52').innerText = data.valuation.max_52sem ? `R$ ${data.valuation.max_52sem}` : '-';
+    document.getElementById('val_min_52').innerText = data.valuation.min_52sem ? `R$ ${data.valuation.min_52sem}` : '-';
 
     updateCard('Dív. Liq / EBITDA', data.endividamento['DivLiq_Ebitda'], false);
     updateCard('Liquidez Corr.', data.endividamento['Liq_Corrente'], false);
-    
     updateCard('Dívida Bruta', data.endividamento['Div_Bruta'], false, true);
     updateCard('Disponibilidades', data.raw.disponibilidades, false, true);
     
     updateCard('Margem Bruta', data.eficiencia['Margem_Bruta'], true);
     updateCard('Margem Líquida', data.eficiencia['Margem_Liquida'], true);
     updateCard('ROE', data.eficiencia['ROE'], true);
-    
     updateCard('ROIC', data.eficiencia['ROIC'], true);
 
-    // --- Heatmap (Bordas Coloridas) ---
+    // Sumário
+    const descEl = document.getElementById('display_description');
+    if (descEl) descEl.innerText = data.meta.descricao || "Descrição não disponível.";
+    
+    const webEl = document.getElementById('display_website');
+    if (webEl && data.meta.website && data.meta.website !== 'N/A') {
+        webEl.href = data.meta.website;
+        webEl.style.display = 'inline-block';
+    }
+
+    // --- Heatmap ---
     applyHeatmapRules(data);
+
+    // --- Charts ---
+    renderDividendChart(data.proventos);
+}
+
+function renderDividendChart(proventos) {
+    if (!proventos || proventos.length === 0) return;
+
+    const options = {
+        series: [{
+            name: 'Dividendos Pagos',
+            data: proventos.map(i => i.total_pago)
+        }],
+        chart: {
+            type: 'bar',
+            height: '100%',
+            toolbar: { show: false },
+            background: 'transparent'
+        },
+        colors: ['#00E396'],
+        plotOptions: {
+            bar: {
+                borderRadius: 4,
+                columnWidth: '50%',
+            }
+        },
+        dataLabels: { enabled: false },
+        xaxis: {
+            categories: proventos.map(i => i.ano),
+            axisBorder: { show: false },
+            labels: { style: { colors: '#a1a1aa' } }
+        },
+        yaxis: {
+            labels: { style: { colors: '#a1a1aa' }, formatter: (v) => `R$ ${v.toFixed(2)}` }
+        },
+        grid: { borderColor: '#27272a', strokeDashArray: 4 },
+        tooltip: {
+            theme: 'dark',
+            y: { formatter: (v) => `R$ ${v.toFixed(2)}` }
+        }
+    };
+
+    if (dividendChart) dividendChart.destroy();
+    dividendChart = new ApexCharts(document.querySelector("#chart-proventos"), options);
+    dividendChart.render();
 }
 
 function updateCard(label, value, isPercent, isCurrency = false) {
-    // Acha o card pelo label (meio frágil, melhor seria IDs, mas o HTML não tem IDs nos cards)
-    // Vamos iterar
     const cards = Array.from(document.querySelectorAll('.metric-card'));
     const target = cards.find(c => {
         const text = c.querySelector('.metric-label').innerText.toUpperCase();
@@ -402,13 +463,18 @@ function updateCard(label, value, isPercent, isCurrency = false) {
     
     if (target) {
         const valEl = target.querySelector('.metric-value');
-        if (value === '-' || value === undefined) {
-            valEl.innerText = '-';
-            return;
+        if (value === '-' || value === undefined || value === 0) {
+            // Se for 0 em moeda/perc, pode ser dado real, mas se for '-' é nulo
+            if (value === 0 && (isPercent || isCurrency)) {
+               // keep going
+            } else if (value !== 0) {
+               valEl.innerText = '-';
+               return;
+            }
         }
         
         if (isCurrency && typeof value === 'number') {
-            valEl.innerText = formatCurrency(value); // R$ Bilhões
+            valEl.innerText = formatCurrency(value);
         } else if (isPercent) {
             valEl.innerHTML = `${value}<span class="metric-unit">%</span>`;
         } else {
@@ -420,23 +486,19 @@ function updateCard(label, value, isPercent, isCurrency = false) {
 function formatCurrency(val) {
     if (val > 1000000000) return `R$ ${(val/1000000000).toFixed(1)}B`;
     if (val > 1000000) return `R$ ${(val/1000000).toFixed(1)}M`;
-    return `R$ ${val}`;
+    return `R$ ${val.toLocaleString('pt-BR')}`;
 }
 
 function applyHeatmapRules(data) {
-    // Define helper para colorir
     const colorize = (label, conditionGood, conditionBad) => {
         const cards = Array.from(document.querySelectorAll('.metric-card'));
         const target = cards.find(c => c.querySelector('.metric-label').innerText.includes(label.toUpperCase()));
         if (!target) return;
         
         const bar = target.querySelector('.quality-bar');
-        bar.className = 'quality-bar'; // reset
+        bar.className = 'quality-bar';
         
-        // Pega valor numérico do DOM se possível ou do data source
-        // Vamos usar o data source mapping manual
         let val = null;
-        
         if (label === 'P/L') val = data.valuation['P/L'];
         if (label === 'ROE') val = data.eficiencia['ROE'];
         if (label === 'Margem Líquida') val = data.eficiencia['Margem_Liquida'];
@@ -455,13 +517,7 @@ function applyHeatmapRules(data) {
     colorize('Dív. Liq / EBITDA', v => v < 2.5, v => v > 3.5);
 }
 
-
-
 function toTitleCase(str) {
-    return str.replace(
-        /\w\S*/g,
-        function(txt) {
-            return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-        }
-    );
+    if (!str) return '';
+    return str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
 }

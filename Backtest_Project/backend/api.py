@@ -12,7 +12,7 @@ from datetime import datetime
 from groq import Groq  # Import Groq
 
 import backtest  # Agora no mesmo diretório
-import cvm_fundamentalista
+import fundamentalista
 
 app = Flask(__name__, static_folder='../frontend', static_url_path='')
 
@@ -420,8 +420,8 @@ def get_fundamentos():
     try:
         ticker = request.args.get('ticker', 'PETR4.SA')
         
-        # O módulo cvm_fundamentalista agora gerencia cache, nomes e cálculos
-        resultado = cvm_fundamentalista.processar_ativo(ticker)
+        # O módulo fundamentalista agora gerencia cache, nomes e cálculos
+        resultado = fundamentalista.processar_ativo(ticker)
         
         if "error" in resultado:
             return jsonify(resultado), 500

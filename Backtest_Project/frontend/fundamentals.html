@@ -335,6 +335,49 @@
             color: var(--neon-green);
         }
 
+        /* Description & Badges Block */
+        .company-summary {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2.5rem;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+
+        .summary-text {
+            max-height: 120px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .summary-text::-webkit-scrollbar {
+            width: 4px;
+        }
+        .summary-text::-webkit-scrollbar-thumb {
+            background: var(--border-light);
+            border-radius: 10px;
+        }
+
+        .asset-badges {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .badge-outline {
+            background: transparent;
+            border: 1px solid var(--border-light);
+            color: var(--text-secondary);
+            font-size: 0.65rem;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 100px;
+            text-transform: uppercase;
+        }
+
         .status-icon {
             color: #2fb344;
             animation: pulse-fast 1.5s infinite;
@@ -545,7 +588,7 @@
      <!-- Top Navbar (VECTRA Style) -->
       <header class="navbar navbar-expand-md d-print-none">
         <div class="container-xl">
-          <a href="." class="brand-wrapper">
+          <a href="index.html" class="brand-wrapper">
               <svg class="brand-icon-svg" width="36" height="36" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M16 2L16 6" stroke="#00E396" stroke-width="2" stroke-linecap="round"/>
                   <path d="M16 26L16 30" stroke="#00E396" stroke-width="2" stroke-linecap="round"/>
@@ -564,7 +607,7 @@
                   </div>
           </a>
           <div class="navbar-nav flex-row order-md-last d-none d-md-flex align-items-center gap-3">
-              <a href="." class="btn btn-neon-outline btn-sm" style="padding: 0.4rem 1rem; border-width: 1px; font-size: 0.8rem;">
+              <a href="index.html" class="btn btn-neon-outline btn-sm" style="padding: 0.4rem 1rem; border-width: 1px; font-size: 0.8rem;">
                 <i class="ri-dashboard-line me-2"></i>Dashboard
               </a>
               <div class="nav-item">
@@ -588,7 +631,11 @@
                     </div>
                     <div class="asset-details-text">
                         <h1 id="display_ticker">---</h1>
-                        <p id="display_name">Selecione um Ativo</p>
+                        <p id="display_name" class="mb-0">Selecione um Ativo</p>
+                        <div class="asset-badges" id="asset_badges_container" style="display: none;">
+                            <span class="badge-outline" id="display_sector">---</span>
+                            <span class="badge-outline" id="display_industry">---</span>
+                        </div>
                         <div class="price-row-hero" id="price-header" style="visibility: hidden;">
                             <span class="current-price">R$ 0,00</span>
                             <span class="badge bg-green-lt">Live TTM</span>
@@ -647,6 +694,31 @@
                 <div class="quality-bar"></div>
             </div>
         </div>
+ 
+        <!-- Mercado e Risco -->
+        <h3 class="section-title">Mercado e Risco</h3>
+        <div class="grid-container">
+            <div class="metric-card">
+                <span class="metric-label">Beta (5Y)</span>
+                <span class="metric-value" id="val_beta">-</span>
+                <div class="quality-bar qb-neutral"></div>
+            </div>
+            <div class="metric-card">
+                <span class="metric-label">PEG Ratio</span>
+                <span class="metric-value" id="val_peg">-</span>
+                <div class="quality-bar qb-neutral"></div>
+            </div>
+            <div class="metric-card">
+                <span class="metric-label">Máx. 52 Sem.</span>
+                <span class="metric-value" id="val_max_52">R$ 0,00</span>
+                <div class="quality-bar qb-neutral"></div>
+            </div>
+            <div class="metric-card">
+                <span class="metric-label">Min. 52 Sem.</span>
+                <span class="metric-value" id="val_min_52">R$ 0,00</span>
+                <div class="quality-bar qb-neutral"></div>
+            </div>
+        </div>
 
         <!-- Endividamento -->
         <h3 class="section-title">Endividamento e Liquidez</h3>
@@ -700,6 +772,29 @@
 
 
 
+        <div class="row mt-4">
+            <div class="col-md-7">
+                <!-- Dividends Chart -->
+                <h3 class="section-title">Evolução de Proventos (Anual)</h3>
+                <div class="chart-container" style="height: 350px;">
+                    <div id="chart-proventos" style="height: 100%;"></div>
+                </div>
+            </div>
+            <div class="col-md-5">
+                <!-- Sumário/Sobre -->
+                <h3 class="section-title">Sobre a Empresa</h3>
+                <div class="company-summary">
+                    <div class="summary-text" id="display_description">
+                        Selecione um ativo para ver o sumário do modelo de negócio.
+                    </div>
+                    <div class="mt-3">
+                        <a href="#" id="display_website" target="_blank" class="text-green small text-decoration-none" style="display: none;">
+                            <i class="ri-external-link-line me-1"></i>Visitar Website Oficial
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Loading Overlay -->
