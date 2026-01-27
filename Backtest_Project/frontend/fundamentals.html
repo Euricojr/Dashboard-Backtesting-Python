@@ -408,43 +408,65 @@
         }
 
         .metric-card {
-            background-color: var(--bg-card);
+            background: linear-gradient(135deg, #18181b 0%, #09090b 100%);
             border: 1px solid var(--border-color);
             border-radius: 12px;
             padding: 1.5rem 1.25rem;
             position: relative;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            gap: 0.75rem;
+            gap: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
 
         .metric-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-            border-color: #3f3f46;
+            transform: translateY(-4px);
+            border-color: var(--border-light);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Variações de Glow Neon */
+        .metric-card.positive {
+            border: 1px solid rgba(0, 227, 150, 0.4);
+            box-shadow: 0 4px 15px -5px rgba(0, 227, 150, 0.2);
+        }
+        .metric-card.positive:hover {
+            box-shadow: 0 8px 25px -5px rgba(0, 227, 150, 0.4);
+        }
+
+        .metric-card.negative {
+            border: 1px solid rgba(255, 69, 96, 0.4);
+            box-shadow: 0 4px 15px -5px rgba(255, 69, 96, 0.2);
+        }
+        .metric-card.negative:hover {
+            box-shadow: 0 8px 25px -5px rgba(255, 69, 96, 0.4);
         }
 
         .metric-label {
-            font-size: 0.75rem;
+            font-size: 0.85rem;
             color: var(--text-secondary);
-            font-weight: 500;
+            font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .metric-label i {
+            font-size: 1.1rem;
+            color: var(--accent-neon);
+            opacity: 0.8;
         }
 
         .metric-value {
-            font-size: 1.25rem;
-            font-weight: 700;
+            font-size: 1.6rem;
+            font-weight: 800;
             color: #fff;
-            letter-spacing: -0.5px;
-        }
-
-        .metric-unit {
-            font-size: 0.7rem;
-            color: #52525b;
-            margin-left: 2px;
+            letter-spacing: -1px;
+            font-family: var(--font-brand);
         }
 
         .quality-bar {
@@ -764,38 +786,38 @@
         <!-- Valuation -->
         <h3 class="section-title">Valuation</h3>
         <div class="grid-container">
-            <div class="metric-card">
-                <span class="metric-label">P/L</span>
+            <div class="metric-card" id="card-pl">
+                <span class="metric-label"><i class="ri-money-dollar-circle-line"></i> P/L</span>
                 <span class="metric-value">-</span>
                 <div class="quality-bar"></div>
             </div>
-            <div class="metric-card">
-                <span class="metric-label">P/VP</span>
+            <div class="metric-card" id="card-pvp">
+                <span class="metric-label"><i class="ri-building-line"></i> P/VP</span>
                 <span class="metric-value">-</span>
                 <div class="quality-bar"></div>
             </div>
-            <div class="metric-card">
-                <span class="metric-label">EV/EBITDA</span>
+            <div class="metric-card" id="card-evebitda">
+                <span class="metric-label"><i class="ri-line-chart-line"></i> EV/EBITDA</span>
                 <span class="metric-value">-</span>
                 <div class="quality-bar"></div>
             </div>
-            <div class="metric-card">
-                <span class="metric-label">LPA</span>
+            <div class="metric-card" id="card-lpa">
+                <span class="metric-label"><i class="ri-funds-box-line"></i> LPA</span>
                 <span class="metric-value">-</span>
                 <div class="quality-bar"></div>
             </div>
-            <div class="metric-card">
-                <span class="metric-label">VPA</span>
+            <div class="metric-card" id="card-vpa">
+                <span class="metric-label"><i class="ri-book-3-line"></i> VPA</span>
                 <span class="metric-value">-</span>
                 <div class="quality-bar"></div>
             </div>
-            <div class="metric-card">
-                <span class="metric-label">Beta (5Y)</span>
+            <div class="metric-card" id="card-beta">
+                <span class="metric-label"><i class="ri-pulse-line"></i> Beta (5Y)</span>
                 <span class="metric-value" id="val_beta">-</span>
                 <div class="quality-bar qb-neutral"></div>
             </div>
-            <div class="metric-card">
-                <span class="metric-label">PEG Ratio</span>
+            <div class="metric-card" id="card-peg">
+                <span class="metric-label"><i class="ri-pie-chart-line"></i> PEG Ratio</span>
                 <span class="metric-value" id="val_peg">-</span>
                 <div class="quality-bar qb-neutral"></div>
             </div>
@@ -804,23 +826,23 @@
         <!-- Endividamento -->
         <h3 class="section-title">Endividamento e Liquidez</h3>
         <div class="grid-container">
-            <div class="metric-card">
-                <span class="metric-label">Dív. Liq / EBITDA</span>
+            <div class="metric-card" id="card-divliq-ebitda">
+                <span class="metric-label"><i class="ri-scales-3-line"></i> Dív. Liq / EBITDA</span>
                 <span class="metric-value">-</span>
                 <div class="quality-bar"></div>
             </div>
-            <div class="metric-card">
-                <span class="metric-label">Liquidez Corr.</span>
+            <div class="metric-card" id="card-liq-corr">
+                <span class="metric-label"><i class="ri-hand-coin-line"></i> Liquidez Corr.</span>
                 <span class="metric-value">-</span>
                 <div class="quality-bar"></div>
             </div>
-            <div class="metric-card">
-                <span class="metric-label">Dívida Bruta</span>
+            <div class="metric-card" id="card-div-bruta">
+                <span class="metric-label"><i class="ri-bank-card-line"></i> Dívida Bruta</span>
                 <span class="metric-value">-</span>
                 <div class="quality-bar"></div>
             </div>
-            <div class="metric-card">
-                <span class="metric-label">Disponibilidades</span>
+            <div class="metric-card" id="card-disponibilidades">
+                <span class="metric-label"><i class="ri-wallet-3-line"></i> Disponibilidades</span>
                 <span class="metric-value">-</span>
                 <div class="quality-bar"></div>
             </div>
@@ -829,23 +851,23 @@
         <!-- Eficiência -->
         <h3 class="section-title">Eficiência e Rentabilidade</h3>
         <div class="grid-container">
-            <div class="metric-card">
-                <span class="metric-label">Margem Bruta</span>
+            <div class="metric-card" id="card-margem-bruta">
+                <span class="metric-label"><i class="ri-percent-line"></i> Margem Bruta</span>
                 <span class="metric-value">-</span>
                 <div class="quality-bar"></div>
             </div>
-            <div class="metric-card">
-                <span class="metric-label">Margem Líquida</span>
+            <div class="metric-card" id="card-margem-liquida">
+                <span class="metric-label"><i class="ri-drop-line"></i> Margem Líquida</span>
                 <span class="metric-value">-</span>
                 <div class="quality-bar"></div>
             </div>
-            <div class="metric-card">
-                <span class="metric-label">ROE</span>
+            <div class="metric-card" id="card-roe">
+                <span class="metric-label"><i class="ri-rocket-2-line"></i> ROE</span>
                 <span class="metric-value">-</span>
                 <div class="quality-bar"></div>
             </div>
-            <div class="metric-card">
-                <span class="metric-label">ROIC</span>
+            <div class="metric-card" id="card-roic">
+                <span class="metric-label"><i class="ri-flashlight-line"></i> ROIC</span>
                 <span class="metric-value">-</span>
                 <div class="quality-bar"></div>
             </div>

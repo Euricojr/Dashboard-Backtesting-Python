@@ -533,11 +533,12 @@ function formatCurrency(val) {
 function applyHeatmapRules(data) {
     const colorize = (label, conditionGood, conditionBad) => {
         const cards = Array.from(document.querySelectorAll('.metric-card'));
-        const target = cards.find(c => c.querySelector('.metric-label').innerText.includes(label.toUpperCase()));
+        const target = cards.find(c => c.querySelector('.metric-label').innerText.toUpperCase().includes(label.toUpperCase()));
         if (!target) return;
         
         const bar = target.querySelector('.quality-bar');
         bar.className = 'quality-bar';
+        target.classList.remove('positive', 'negative');
         
         let val = null;
         if (label === 'P/L') val = data.valuation['P/L'];
@@ -545,10 +546,16 @@ function applyHeatmapRules(data) {
         if (label === 'Margem Líquida') val = data.eficiencia['Margem_Liquida'];
         if (label === 'Dív. Liq / EBITDA') val = data.endividamento['DivLiq_Ebitda'];
 
-        if (val !== null) {
-             if (conditionGood(val)) bar.classList.add('qb-good');
-             else if (conditionBad(val)) bar.classList.add('qb-bad');
-             else bar.classList.add('qb-neutral');
+        if (val !== null && val !== undefined && val !== '-') {
+             if (conditionGood(val)) {
+                 bar.classList.add('qb-good');
+                 target.classList.add('positive');
+             } else if (conditionBad(val)) {
+                 bar.classList.add('qb-bad');
+                 target.classList.add('negative');
+             } else {
+                 bar.classList.add('qb-neutral');
+             }
         }
     };
 
