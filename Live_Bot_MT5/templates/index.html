@@ -14,7 +14,10 @@
       href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/css/tabler.min.css"
     />
     <!-- RemixIcon -->
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link
+      href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css"
+      rel="stylesheet"
+    />
     <!-- Fonts -->
     <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
     <style>
@@ -72,10 +75,12 @@
 
       /* Navbar */
       /* Navbar (Fixed: Remove Blue Line) */
-      header, .navbar, .page-header {
-          border-bottom: 1px solid rgba(0, 227, 150, 0.4) !important;
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
-          background-color: #18181b !important;
+      header,
+      .navbar,
+      .page-header {
+        border-bottom: 1px solid rgba(0, 227, 150, 0.4) !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+        background-color: #18181b !important;
       }
 
       /* Price Display */
@@ -103,73 +108,72 @@
         background-color: var(--bg-color);
         border: 1px solid rgba(0, 227, 150, 0.4) !important; /* Green Border */
       }
-      
 
       /* --- NEW SEARCH WRAPPER (INDESTRUCTIBLE NEON) --- */
       .neon-search-wrapper {
-          display: flex;
-          align-items: center;
-          background-color: #09090b !important; /* Mantém fundo ultra dark */
-          border: 1px solid rgba(0, 227, 150, 1) !important; /* Borda verde constante */
-          border-radius: 8px !important;
-          overflow: hidden;
-          transition: all 0.3s ease;
-          box-shadow: 0 0 8px rgba(0, 227, 150, 0.2) !important;
-          margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        background-color: #09090b !important; /* Mantém fundo ultra dark */
+        border: 1px solid rgba(0, 227, 150, 1) !important; /* Borda verde constante */
+        border-radius: 8px !important;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        box-shadow: 0 0 8px rgba(0, 227, 150, 0.2) !important;
+        margin-bottom: 10px;
       }
-      
+
       .neon-search-wrapper:focus-within {
-          border-color: #00ffaf !important;
-          box-shadow: 0 0 15px rgba(0, 227, 150, 0.5) !important;
-          transform: translateY(-1px);
+        border-color: #00ffaf !important;
+        box-shadow: 0 0 15px rgba(0, 227, 150, 0.5) !important;
+        transform: translateY(-1px);
       }
-      
+
       .clean-input {
-          flex: 1;
-          background: transparent !important;
-          border: none !important;
-          color: white !important;
-          padding: 10px 15px !important;
-          font-size: 1rem !important;
-          font-weight: 600 !important;
-          text-transform: uppercase;
-          outline: none !important;
-          box-shadow: none !important;
-          width: 100%;
-          text-align: center !important; /* Centralizado conforme solicitado */
-          letter-spacing: 0.5px;
+        flex: 1;
+        background: transparent !important;
+        border: none !important;
+        color: white !important;
+        padding: 10px 15px !important;
+        font-size: 1rem !important;
+        font-weight: 600 !important;
+        text-transform: uppercase;
+        outline: none !important;
+        box-shadow: none !important;
+        width: 100%;
+        text-align: center !important; /* Centralizado conforme solicitado */
+        letter-spacing: 0.5px;
       }
-      
+
       /* Remove o azul do Chrome/Edge */
-      .clean-input:focus, 
+      .clean-input:focus,
       .clean-input:active {
-          outline: none !important;
-          box-shadow: none !important;
-          background: transparent !important;
+        outline: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
       }
-      
+
       .clean-btn {
-          background: rgba(0, 227, 150, 0.1) !important;
-          border: none !important;
-          border-left: 1px solid rgba(0, 227, 150, 0.3) !important;
-          color: #00E396 !important;
-          padding: 0 15px !important;
-          height: 44px !important; 
-          cursor: pointer !important;
-          transition: all 0.2s;
-          display: flex;
-          align-items: center;
-          justify-content: center;
+        background: rgba(0, 227, 150, 0.1) !important;
+        border: none !important;
+        border-left: 1px solid rgba(0, 227, 150, 0.3) !important;
+        color: #00e396 !important;
+        padding: 0 15px !important;
+        height: 44px !important;
+        cursor: pointer !important;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
-      
+
       .clean-btn:hover {
-          background: rgba(0, 227, 150, 0.2) !important;
-          color: #00ffaf !important;
+        background: rgba(0, 227, 150, 0.2) !important;
+        color: #00ffaf !important;
       }
-      
+
       .clean-btn:focus {
-          outline: none !important;
-          box-shadow: none !important;
+        outline: none !important;
+        box-shadow: none !important;
       }
 
       .big-chart-container {
@@ -223,7 +227,7 @@
       .form-control:focus,
       .form-select:focus {
         background-color: #18181b !important;
-        border-color: #00E396 !important; /* Green Focus */
+        border-color: #00e396 !important; /* Green Focus */
         box-shadow: 0 0 0 2px rgba(0, 227, 150, 0.25) !important;
         color: white !important;
         z-index: 5; /* Ensure border is above input-group siblings */
@@ -244,12 +248,12 @@
         background: #3f3f46;
         color: #ffffff;
       }
-      
+
       /* Table Hover Neutral */
       .table-hover tbody tr:hover {
-        background-color: #27272a !important; 
+        background-color: #27272a !important;
       }
-      
+
       /* Active List Item Neutral */
       #results-list .list-group-item {
         border: none !important;
@@ -265,29 +269,38 @@
       /* 5. Scrollbar (Universal & Firefox Support) */
       /* Firefox Default */
       * {
-          scrollbar-width: thin;
-          scrollbar-color: #3f3f46 #09090b;
+        scrollbar-width: thin;
+        scrollbar-color: #3f3f46 #09090b;
       }
 
       /* Webkit (Chrome/Edge/Safari) */
-      ::-webkit-scrollbar, *::-webkit-scrollbar {
-          width: 8px;
-          height: 8px;
+      ::-webkit-scrollbar,
+      *::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
       }
-      ::-webkit-scrollbar-track, *::-webkit-scrollbar-track {
-          background: #09090b;
+      ::-webkit-scrollbar-track,
+      *::-webkit-scrollbar-track {
+        background: #09090b;
       }
-      ::-webkit-scrollbar-thumb, *::-webkit-scrollbar-thumb {
-          background: #3f3f46;
-          border-radius: 4px;
+      ::-webkit-scrollbar-thumb,
+      *::-webkit-scrollbar-thumb {
+        background: #3f3f46;
+        border-radius: 4px;
       }
-      ::-webkit-scrollbar-thumb:hover, *::-webkit-scrollbar-thumb:hover {
-          background: #52525b; /* Lighter gray on hover */
+      ::-webkit-scrollbar-thumb:hover,
+      *::-webkit-scrollbar-thumb:hover {
+        background: #52525b; /* Lighter gray on hover */
       }
 
       /* Force neutral primary */
-      .bg-primary { background-color: #27272a !important; color: #f4f4f5 !important; }
-      .progress-bar { background-color: #27272a !important; }
+      .bg-primary {
+        background-color: #27272a !important;
+        color: #f4f4f5 !important;
+      }
+      .progress-bar {
+        background-color: #27272a !important;
+      }
       /* --- AGGRESSIVE COMPONENT OVERRIDES --- */
       .card-header,
       .card-body,
@@ -356,11 +369,11 @@
         box-shadow: 0 0 25px rgba(0, 227, 150, 0.3);
         transform: translateX(-50%) translateY(-2px);
       }
-      
+
       /* Minimalist Toolbar Inputs */
       .toolbar-input {
-        background-color: rgba(0,0,0,0.3) !important;
-        border: 1px solid rgba(255,255,255,0.15) !important;
+        background-color: rgba(0, 0, 0, 0.3) !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
         color: #f4f4f5 !important;
         border-radius: 8px;
         padding: 6px 10px;
@@ -370,7 +383,7 @@
         transition: border-color 0.2s;
       }
       .toolbar-select {
-        background-color: rgba(0,0,0,0.5) !important;
+        background-color: rgba(0, 0, 0, 0.5) !important;
         border: 1px solid rgba(0, 227, 150, 0.4) !important; /* Green Border */
         color: #f4f4f5 !important;
         border-radius: 8px;
@@ -380,12 +393,13 @@
         background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%2300E396' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e") !important;
         background-size: 10px 10px !important;
       }
-      .toolbar-input:focus, .toolbar-select:focus {
+      .toolbar-input:focus,
+      .toolbar-select:focus {
         border-color: var(--profit-color) !important;
         box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2) !important;
         outline: none;
       }
-      
+
       /* Action Buttons */
       .toolbar-btn {
         border: none;
@@ -399,33 +413,33 @@
         transition: all 0.2s;
       }
       .btn-play {
-          background: linear-gradient(135deg, #10b981, #059669);
-          color: white;
-          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
       }
       .btn-play:hover {
-          transform: scale(1.1);
-          box-shadow: 0 6px 16px rgba(16, 185, 129, 0.6);
+        transform: scale(1.1);
+        box-shadow: 0 6px 16px rgba(16, 185, 129, 0.6);
       }
       .btn-scan {
-          background: rgba(0, 227, 150, 0.05);
-          color: #00E396;
-          border: 1px solid rgba(0, 227, 150, 0.5);
-          font-weight: 600;
+        background: rgba(0, 227, 150, 0.05);
+        color: #00e396;
+        border: 1px solid rgba(0, 227, 150, 0.5);
+        font-weight: 600;
       }
       .btn-scan:hover {
-          background: rgba(0, 227, 150, 0.15);
-          color: #00ffaf;
-          border-color: #00E396;
-          box-shadow: 0 0 15px rgba(0, 227, 150, 0.2);
-          transform: translateY(-1px);
+        background: rgba(0, 227, 150, 0.15);
+        color: #00ffaf;
+        border-color: #00e396;
+        box-shadow: 0 0 15px rgba(0, 227, 150, 0.2);
+        transform: translateY(-1px);
       }
 
       /* Separator */
       .toolbar-sep {
         width: 1px;
         height: 20px;
-        background: rgba(255,255,255,0.15);
+        background: rgba(255, 255, 255, 0.15);
         margin: 0 4px;
       }
 
@@ -438,36 +452,36 @@
         text-transform: uppercase;
         letter-spacing: 0.5px;
       }
-      
+
       /* Asset Icon & Placeholder System */
       .asset-icon-wrapper {
-          width: 72px;
-          height: 72px;
-          margin: 0 auto 16px; /* Fixed margins for layout stability */
-          position: relative;
+        width: 72px;
+        height: 72px;
+        margin: 0 auto 16px; /* Fixed margins for layout stability */
+        position: relative;
       }
-      
+
       .asset-icon-img {
-          width: 100%;
-          height: 100%;
-          object-fit: contain;
-          border-radius: 12px;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        border-radius: 12px;
       }
-      
+
       .asset-icon-placeholder {
-          width: 100%;
-          height: 100%;
-          background: linear-gradient(135deg, #27272a, #3f3f46);
-          color: #e4e4e7;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 1.75rem;
-          font-weight: 700;
-          border-radius: 16px;
-          border: 1px solid rgba(255,255,255,0.08);
-          box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-          text-transform: uppercase;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #27272a, #3f3f46);
+        color: #e4e4e7;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.75rem;
+        font-weight: 700;
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        text-transform: uppercase;
       }
 
       /* --- Financial Data Grid (Scanner Table) --- */
@@ -475,7 +489,7 @@
         width: 100%;
         border-collapse: collapse;
       }
-      
+
       .scanner-table th {
         background-color: #1f1f23;
         color: #a1a1aa;
@@ -488,9 +502,9 @@
         top: 0;
         z-index: 10;
         border-bottom: 1px solid #27272a;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2); /* Shadow for depth */
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Shadow for depth */
       }
-      
+
       .scanner-table td {
         padding: 8px 12px;
         font-size: 0.85rem;
@@ -501,11 +515,11 @@
         cursor: pointer;
         transition: background-color 0.15s;
       }
-      
+
       .scanner-table tbody tr:hover td {
         background-color: #27272a;
       }
-      
+
       /* Asset Column Styles */
       .asset-col {
         display: flex;
@@ -513,11 +527,11 @@
         gap: 8px;
         font-weight: 700;
       }
-      
+
       .rank-badge {
         font-size: 0.65rem;
         padding: 2px 5px;
-        background: rgba(255,255,255,0.1);
+        background: rgba(255, 255, 255, 0.1);
         border-radius: 4px;
         color: #a1a1aa;
         min-width: 20px;
@@ -531,7 +545,7 @@
         gap: 16px;
         margin-bottom: 24px;
       }
-      
+
       /* --- Metrics Modern Dashboard (High-End Fintech) --- */
       .metrics-grid {
         display: grid;
@@ -539,16 +553,16 @@
         gap: 16px;
         /* Removed margin-bottom to align nicely with full height card */
       }
-      
+
       @media (max-width: 1400px) {
-         .metrics-grid {
-            grid-template-columns: repeat(2, 1fr);
-         }
+        .metrics-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
       }
 
       .metric-card {
         background: linear-gradient(180deg, #1e1e24 0%, #18181b 100%);
-        border: 1px solid rgba(255,255,255,0.05);
+        border: 1px solid rgba(255, 255, 255, 0.05);
         border-radius: 8px;
         padding: 16px;
         display: flex;
@@ -557,24 +571,34 @@
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         position: relative;
         overflow: hidden;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
         border-left: 4px solid #52525e; /* Default Accent */
       }
 
       .metric-card:hover {
         transform: translateY(-4px);
-        box-shadow: 0 12px 24px rgba(0,0,0,0.4);
-        border-top-color: rgba(255,255,255,0.1);
-        border-right-color: rgba(255,255,255,0.1);
-        border-bottom-color: rgba(255,255,255,0.1);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+        border-top-color: rgba(255, 255, 255, 0.1);
+        border-right-color: rgba(255, 255, 255, 0.1);
+        border-bottom-color: rgba(255, 255, 255, 0.1);
       }
-      
+
       /* Accent Colors (Border) */
-      .accent-green { border-left-color: #00E396 !important; }
-      .accent-red { border-left-color: #FF4560 !important; }
-      .accent-blue { border-left-color: #008FFB !important; }
-      .accent-purple { border-left-color: #775DD0 !important; }
-      .accent-warn { border-left-color: #FEB019 !important; }
+      .accent-green {
+        border-left-color: #00e396 !important;
+      }
+      .accent-red {
+        border-left-color: #ff4560 !important;
+      }
+      .accent-blue {
+        border-left-color: #008ffb !important;
+      }
+      .accent-purple {
+        border-left-color: #775dd0 !important;
+      }
+      .accent-warn {
+        border-left-color: #feb019 !important;
+      }
 
       .metric-label {
         font-size: 0.75rem;
@@ -587,217 +611,243 @@
         align-items: center;
         gap: 6px;
       }
-      
+
       .metric-label i {
-          font-size: 1rem;
-          color: #71717a;
+        font-size: 1rem;
+        color: #71717a;
       }
-      
+
       /* Strategy Card Styles */
       .input-group-disabled {
-          opacity: 0.5;
-          pointer-events: none;
-          filter: grayscale(1);
-          transition: all 0.3s ease;
-          position: relative;
+        opacity: 0.5;
+        pointer-events: none;
+        filter: grayscale(1);
+        transition: all 0.3s ease;
+        position: relative;
       }
-      
+
       /* Apple Style Switch (Custom) */
-        .checkbox-apple {
-          position: relative;
-          width: 50px;
-          height: 25px;
-          user-select: none;
-          margin-left: 10px;
-        }
+      .checkbox-apple {
+        position: relative;
+        width: 50px;
+        height: 25px;
+        user-select: none;
+        margin-left: 10px;
+      }
 
-        .checkbox-apple label {
-          position: absolute;
-          top: 0; left: 0;
-          width: 50px; height: 25px;
-          border-radius: 50px;
-          background: linear-gradient(to bottom, #3f3f46, #27272a); /* Cinza Escuro (OFF) */
-          cursor: pointer;
-          transition: all 0.3s ease;
-        }
+      .checkbox-apple label {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 50px;
+        height: 25px;
+        border-radius: 50px;
+        background: linear-gradient(
+          to bottom,
+          #3f3f46,
+          #27272a
+        ); /* Cinza Escuro (OFF) */
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
 
-        .checkbox-apple label:after {
-          content: '';
-          position: absolute;
-          top: 1px; left: 1px;
-          width: 23px; height: 23px;
-          border-radius: 50%;
-          background-color: #fff;
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-          transition: all 0.3s ease;
-        }
+      .checkbox-apple label:after {
+        content: "";
+        position: absolute;
+        top: 1px;
+        left: 1px;
+        width: 23px;
+        height: 23px;
+        border-radius: 50%;
+        background-color: #fff;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        transition: all 0.3s ease;
+      }
 
-        /* ESTADO LIGADO (ON) - Verde Neon */
-        .checkbox-apple input[type="checkbox"]:checked + label {
-          background: #00E396;
-          box-shadow: 0 0 8px rgba(0, 227, 150, 0.5); /* Glow */
-        }
+      /* ESTADO LIGADO (ON) - Verde Neon */
+      .checkbox-apple input[type="checkbox"]:checked + label {
+        background: #00e396;
+        box-shadow: 0 0 8px rgba(0, 227, 150, 0.5); /* Glow */
+      }
 
-        .checkbox-apple input[type="checkbox"]:checked + label:after {
-          transform: translateX(25px);
-        }
+      .checkbox-apple input[type="checkbox"]:checked + label:after {
+        transform: translateX(25px);
+      }
 
-        .yep {
-          position: absolute;
-          opacity: 0;
-          cursor: pointer;
-          height: 0; width: 0;
-        }
+      .yep {
+        position: absolute;
+        opacity: 0;
+        cursor: pointer;
+        height: 0;
+        width: 0;
+      }
 
       .metric-value {
-        font-family: 'SF Mono', 'Segoe UI Mono', 'Roboto Mono', monospace;
+        font-family: "SF Mono", "Segoe UI Mono", "Roboto Mono", monospace;
         font-size: 1.5rem;
         font-weight: 700;
         color: #f4f4f5;
         line-height: 1.1;
         font-variant-numeric: tabular-nums;
       }
-      
+
       /* Detailed Colors */
-      .val-pos { color: #00E396; text-shadow: 0 0 10px rgba(0, 227, 150, 0.2); }
-      .val-neg { color: #FF4560; text-shadow: 0 0 10px rgba(255, 69, 96, 0.2); }
-      .val-neu { color: #E0E0E0; }
-      .val-warn { color: #FEB019; }
+      .val-pos {
+        color: #00e396;
+        text-shadow: 0 0 10px rgba(0, 227, 150, 0.2);
+      }
+      .val-neg {
+        color: #ff4560;
+        text-shadow: 0 0 10px rgba(255, 69, 96, 0.2);
+      }
+      .val-neu {
+        color: #e0e0e0;
+      }
+      .val-warn {
+        color: #feb019;
+      }
       /* Custom Dropdowns */
       .custom-dropdown {
-          position: relative;
-          display: inline-block;
-          font-family: inherit;
+        position: relative;
+        display: inline-block;
+        font-family: inherit;
       }
 
       .dropdown-selected {
-          background-color: rgba(0,0,0,0.4);
-          border: 1px solid rgba(0, 227, 150, 0.4) !important; /* Green Border internal */
-          color: #f4f4f5;
-          border-radius: 8px;
-          padding: 6px 12px;
-          font-size: 0.85rem;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          min-width: 80px;
-          transition: all 0.2s;
+        background-color: rgba(0, 0, 0, 0.4);
+        border: 1px solid rgba(0, 227, 150, 0.4) !important; /* Green Border internal */
+        color: #f4f4f5;
+        border-radius: 8px;
+        padding: 6px 12px;
+        font-size: 0.85rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-width: 80px;
+        transition: all 0.2s;
       }
 
       .dropdown-selected:hover {
-          border-color: #00ffaf !important;
-          background-color: rgba(0, 227, 150, 0.05);
+        border-color: #00ffaf !important;
+        background-color: rgba(0, 227, 150, 0.05);
       }
-      
+
       /* Green focus state when active/open */
       .custom-dropdown.active .dropdown-selected {
-          border-color: #00E396;
-          box-shadow: 0 0 0 2px rgba(0, 227, 150, 0.25);
+        border-color: #00e396;
+        box-shadow: 0 0 0 2px rgba(0, 227, 150, 0.25);
       }
 
       .dropdown-options {
-          display: none;
-          position: absolute;
-          top: 100%;
-          left: 0;
-          margin-top: 4px;
-          background-color: #18181b;
-          border: 1px solid #27272a;
-          border-radius: 8px;
-          box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-          z-index: 1000;
-          min-width: 100%;
-          overflow: hidden;
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        margin-top: 4px;
+        background-color: #18181b;
+        border: 1px solid #27272a;
+        border-radius: 8px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        min-width: 100%;
+        overflow: hidden;
       }
 
       .custom-dropdown.active .dropdown-options {
-          display: block;
-          animation: fadeIn 0.15s ease-out;
+        display: block;
+        animation: fadeIn 0.15s ease-out;
       }
-      
+
       @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(-5px); }
-          to { opacity: 1; transform: translateY(0); }
+        from {
+          opacity: 0;
+          transform: translateY(-5px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
       }
 
       .dropdown-item {
-          padding: 8px 12px;
-          color: #a1a1aa;
-          cursor: pointer;
-          font-size: 0.85rem;
-          transition: background 0.1s, color 0.1s;
-          white-space: nowrap;
+        padding: 8px 12px;
+        color: #a1a1aa;
+        cursor: pointer;
+        font-size: 0.85rem;
+        transition:
+          background 0.1s,
+          color 0.1s;
+        white-space: nowrap;
       }
 
       .dropdown-item:hover {
-          background-color: #27272a;
-          color: #f4f4f5;
+        background-color: #27272a;
+        color: #f4f4f5;
       }
-      
+
       .dropdown-item.selected {
-          color: #00E396;
-          background-color: rgba(0, 227, 150, 0.1);
+        color: #00e396;
+        background-color: rgba(0, 227, 150, 0.1);
       }
 
       .dropdown-arrow {
-          margin-left: 8px;
-          font-size: 0.8rem;
-          transition: transform 0.2s;
+        margin-left: 8px;
+        font-size: 0.8rem;
+        transition: transform 0.2s;
       }
-      
+
       .custom-dropdown.active .dropdown-arrow {
-          transform: rotate(180deg);
+        transform: rotate(180deg);
       }
 
       /* --- FinSense High-Intensity Branding --- */
       .sidebar-brand-wrapper {
-          display: flex !important;
-          align-items: center !important;
-          gap: 12px !important;
-          text-decoration: none !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px !important;
+        text-decoration: none !important;
       }
 
       .brand-icon-svg {
-          filter: drop-shadow(0 0 8px rgba(0, 227, 150, 0.5));
+        filter: drop-shadow(0 0 8px rgba(0, 227, 150, 0.5));
       }
 
       .brand-text-container {
-          display: flex !important;
-          flex-direction: column !important;
-          line-height: 1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        line-height: 1 !important;
       }
 
       .finsense-logo-sidebar {
-          margin: 0 !important;
-          font-size: 1.4rem !important;
-          letter-spacing: -1px !important;
-          display: flex !important;
-          align-items: center !important;
-          color: white !important; /* Base */
+        margin: 0 !important;
+        font-size: 1.4rem !important;
+        letter-spacing: -1px !important;
+        display: flex !important;
+        align-items: center !important;
+        color: white !important; /* Base */
       }
 
       .finsense-logo-sidebar .text-white-bold {
-          color: #ffffff !important;
-          font-weight: 800 !important;
+        color: #ffffff !important;
+        font-weight: 800 !important;
       }
 
       .finsense-logo-sidebar .text-neon-light {
-          color: #00E396 !important;
-          font-weight: 300 !important;
-          margin-left: 2px !important;
-          text-shadow: 0 0 15px rgba(0, 227, 150, 0.4) !important;
+        color: #00e396 !important;
+        font-weight: 300 !important;
+        margin-left: 2px !important;
+        text-shadow: 0 0 15px rgba(0, 227, 150, 0.4) !important;
       }
 
       .brand-sub-sidebar {
-          font-size: 0.55rem !important;
-          color: #71717a !important;
-          letter-spacing: 2px !important;
-          font-weight: 700 !important;
-          text-transform: uppercase !important;
-          margin-top: 2px !important;
+        font-size: 0.55rem !important;
+        color: #71717a !important;
+        letter-spacing: 2px !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        margin-top: 2px !important;
       }
-
     </style>
     <!-- Lightweight Charts -->
     <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
@@ -808,26 +858,109 @@
       <header class="navbar navbar-expand-md d-print-none">
         <div class="container-xl">
           <div class="sidebar-brand-wrapper-outer pe-0 pe-md-3">
-            <a href="." class="navbar-brand-link" style="text-decoration: none !important; color: white !important;">
-                <div class="sidebar-brand-wrapper">
-                    <svg class="brand-icon-svg" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M16 2L16 6" style="stroke: #00E396 !important;" stroke-width="2" stroke-linecap="round"/>
-                        <path d="M16 26L16 30" style="stroke: #00E396 !important;" stroke-width="2" stroke-linecap="round"/>
-                        <path d="M2 16L6 16" style="stroke: #00E396 !important;" stroke-width="2" stroke-linecap="round"/>
-                        <path d="M26 16L30 16" style="stroke: #00E396 !important;" stroke-width="2" stroke-linecap="round"/>
-                        <circle cx="16" cy="16" r="6" style="stroke: #00E396 !important;" stroke-width="2"/>
-                        <circle cx="16" cy="16" r="2" style="fill: #00E396 !important;">
-                            <animate attributeName="opacity" values="1;0.3;1" dur="2s" repeatCount="indefinite"/>
-                        </circle>
-                    </svg>
-                    
-                    <div class="brand-text-container">
-                        <div class="finsense-logo-sidebar" style="margin: 0; display: flex; align-items: center; line-height: 1;">
-                            <span style="color: #ffffff !important; font-weight: 800 !important; font-size: 1.4rem !important;">FIN</span><span style="color: #00E396 !important; font-weight: 300 !important; font-size: 1.4rem !important; text-shadow: 0 0 15px rgba(0, 227, 150, 0.5) !important; margin-left: 2px !important;">SENSE</span>
-                        </div>
-                        <div class="brand-sub-sidebar" style="font-size: 0.55rem !important; color: #71717a !important; letter-spacing: 2px !important; font-weight: 700 !important; text-transform: uppercase !important; margin-top: 2px !important;">STRATEGY SYSTEM</div>
-                    </div>
+            <a
+              href="."
+              class="navbar-brand-link"
+              style="text-decoration: none !important; color: white !important"
+            >
+              <div class="sidebar-brand-wrapper">
+                <svg
+                  class="brand-icon-svg"
+                  width="32"
+                  height="32"
+                  viewBox="0 0 32 32"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M16 2L16 6"
+                    style="stroke: #00e396 !important"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                  />
+                  <path
+                    d="M16 26L16 30"
+                    style="stroke: #00e396 !important"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                  />
+                  <path
+                    d="M2 16L6 16"
+                    style="stroke: #00e396 !important"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                  />
+                  <path
+                    d="M26 16L30 16"
+                    style="stroke: #00e396 !important"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                  />
+                  <circle
+                    cx="16"
+                    cy="16"
+                    r="6"
+                    style="stroke: #00e396 !important"
+                    stroke-width="2"
+                  />
+                  <circle
+                    cx="16"
+                    cy="16"
+                    r="2"
+                    style="fill: #00e396 !important"
+                  >
+                    <animate
+                      attributeName="opacity"
+                      values="1;0.3;1"
+                      dur="2s"
+                      repeatCount="indefinite"
+                    />
+                  </circle>
+                </svg>
+
+                <div class="brand-text-container">
+                  <div
+                    class="finsense-logo-sidebar"
+                    style="
+                      margin: 0;
+                      display: flex;
+                      align-items: center;
+                      line-height: 1;
+                    "
+                  >
+                    <span
+                      style="
+                        color: #ffffff !important;
+                        font-weight: 800 !important;
+                        font-size: 1.4rem !important;
+                      "
+                      >FIN</span
+                    ><span
+                      style="
+                        color: #00e396 !important;
+                        font-weight: 300 !important;
+                        font-size: 1.4rem !important;
+                        text-shadow: 0 0 15px rgba(0, 227, 150, 0.5) !important;
+                        margin-left: 2px !important;
+                      "
+                      >SENSE</span
+                    >
+                  </div>
+                  <div
+                    class="brand-sub-sidebar"
+                    style="
+                      font-size: 0.55rem !important;
+                      color: #71717a !important;
+                      letter-spacing: 2px !important;
+                      font-weight: 700 !important;
+                      text-transform: uppercase !important;
+                      margin-top: 2px !important;
+                    "
+                  >
+                    STRATEGY SYSTEM
+                  </div>
                 </div>
+              </div>
             </a>
           </div>
           <div class="navbar-nav flex-row order-md-last">
@@ -850,30 +983,40 @@
                 <!-- Ativo & Preço (Mini destaque) -->
                 <div class="card mb-3 flex-shrink-0">
                   <div class="card-body text-center">
-                    <div class="text-secondary text-uppercase small mb-3">Ativo Atual</div>
-                    
+                    <div class="text-secondary text-uppercase small mb-3">
+                      Ativo Atual
+                    </div>
+
                     <!-- Asset Icon Wrapper (Pixel Perfect) -->
                     <div class="asset-icon-wrapper" id="current-asset-wrapper">
-                        <!-- JS injected content -->
+                      <!-- JS injected content -->
                     </div>
 
                     <!-- Input Pesquisável (Refined Wrapper) -->
                     <div class="mb-3">
-                        <div class="neon-search-wrapper">
-                            <input 
-                                type="text" 
-                                id="ticker-input" 
-                                class="clean-input" 
-                                placeholder="Buscar Ativo (ex: WIN)" 
-                                value="WING26"
-                                list="assetsList"
-                                autocomplete="off"
-                            >
-                            
-                            <button class="clean-btn" type="button" id="search-btn" onclick="updateDashboard()">
-                                <i class="ri-search-line" style="font-size: 1.2rem;"></i>
-                            </button>
-                        </div>
+                      <div class="neon-search-wrapper">
+                        <input
+                          type="text"
+                          id="ticker-input"
+                          class="clean-input"
+                          placeholder="Buscar Ativo (ex: WIN)"
+                          value="WING26"
+                          list="assetsList"
+                          autocomplete="off"
+                        />
+
+                        <button
+                          class="clean-btn"
+                          type="button"
+                          id="search-btn"
+                          onclick="updateDashboard()"
+                        >
+                          <i
+                            class="ri-search-line"
+                            style="font-size: 1.2rem"
+                          ></i>
+                        </button>
+                      </div>
                       <datalist id="assetsList">
                         {% for asset in assets %}
                         <option value="{{ asset }}">{% endfor %}</option>
@@ -895,42 +1038,112 @@
                 </div>
 
                 <!-- Sidebar Cards Restored -->
-                
+
                 <!-- Backtest Strategy (Fills remaining height) -->
                 <div class="card flex-fill d-flex flex-column mb-0">
-                  <div class="card-header d-flex justify-content-between align-items-center">
+                  <div
+                    class="card-header d-flex justify-content-between align-items-center"
+                  >
                     <h3 class="card-title">Estratégia (SMA)</h3>
-                    
+
                     <div class="d-flex align-items-center">
-                        <span class="small text-muted me-2 font-weight-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">OTIMIZAÇÃO</span>
-                        <div class="checkbox-apple">
-                            <input class="yep" id="optimizeCheck" type="checkbox" onchange="toggleOptimizeInputs()">
-                            <label for="optimizeCheck"></label>
-                        </div>
+                      <span
+                        class="small text-muted me-2 font-weight-bold"
+                        style="font-size: 0.65rem; letter-spacing: 0.5px"
+                        >OTIMIZAÇÃO</span
+                      >
+                      <div class="checkbox-apple">
+                        <input
+                          class="yep"
+                          id="optimizeCheck"
+                          type="checkbox"
+                          onchange="toggleOptimizeInputs()"
+                        />
+                        <label for="optimizeCheck"></label>
+                      </div>
                     </div>
                   </div>
-                  <div class="card-body d-flex flex-column justify-content-between">
+                  <div
+                    class="card-body d-flex flex-column justify-content-between"
+                  >
                     <div class="row g-2 mb-3" id="sma-inputs-wrapper">
                       <div class="col-6">
                         <label class="form-label">Curta</label>
-                        <input type="number" id="smaShort" class="form-control" value="20" />
+                        <input
+                          type="number"
+                          id="smaShort"
+                          class="form-control"
+                          value="20"
+                        />
                       </div>
                       <div class="col-6">
                         <label class="form-label">Longa</label>
-                        <input type="number" id="smaLong" class="form-control" value="50" />
+                        <input
+                          type="number"
+                          id="smaLong"
+                          class="form-control"
+                          value="50"
+                        />
                       </div>
                     </div>
 
-                    <div class="mt-auto"> <!-- Push buttons to bottom -->
-                        <button class="btn btn-primary w-100 mb-3" onclick="runBacktest()">
-                          <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-player-play" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M7 4v16l13 -8z"></path></svg>
-                          Executar Backtest
-                        </button>
+                    <div class="mt-auto">
+                      <!-- Push buttons to bottom -->
+                      <button
+                        class="btn btn-primary w-100 mb-3"
+                        onclick="runBacktest()"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          class="icon icon-tabler icon-tabler-player-play"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          stroke-width="2"
+                          stroke="currentColor"
+                          fill="none"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <path
+                            stroke="none"
+                            d="M0 0h24v24H0z"
+                            fill="none"
+                          ></path>
+                          <path d="M7 4v16l13 -8z"></path>
+                        </svg>
+                        Executar Backtest
+                      </button>
 
-                        <button class="btn btn-outline-secondary w-100" onclick="openScanner()">
-                          <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-scan" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M4 7v-1a2 2 0 0 1 2 -2h2"/><path d="M4 17v1a2 2 0 0 0 2 2h2"/><path d="M16 4h2a2 2 0 0 1 2 2v1"/><path d="M16 20h2a2 2 0 0 0 2 -2v-1"/><path d="M5 12l14 0"></path></svg>
-                          Scanner
-                        </button>
+                      <button
+                        class="btn btn-outline-secondary w-100"
+                        onclick="openScanner()"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          class="icon icon-tabler icon-tabler-scan"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          stroke-width="2"
+                          stroke="currentColor"
+                          fill="none"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <path
+                            stroke="none"
+                            d="M0 0h24v24H0z"
+                            fill="none"
+                          ></path>
+                          <path d="M4 7v-1a2 2 0 0 1 2 -2h2" />
+                          <path d="M4 17v1a2 2 0 0 0 2 2h2" />
+                          <path d="M16 4h2a2 2 0 0 1 2 2v1" />
+                          <path d="M16 20h2a2 2 0 0 0 2 -2v-1" />
+                          <path d="M5 12l14 0"></path>
+                        </svg>
+                        Scanner
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -949,52 +1162,140 @@
                     class="modal-dialog modal-dialog-centered"
                     role="document"
                   >
-                    <div class="modal-content" style="background-color: #18181b; border: 1px solid #27272a; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-                      <div class="modal-header border-0 pb-0" style="background-color: #18181b !important;">
-                        <h5 class="modal-title fw-bold text-white text-uppercase tracking-wide" style="font-size: 0.9rem;">Scanner de Mercado</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <div
+                      class="modal-content"
+                      style="
+                        background-color: #18181b;
+                        border: 1px solid #27272a;
+                        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+                      "
+                    >
+                      <div
+                        class="modal-header border-0 pb-0"
+                        style="background-color: #18181b !important"
+                      >
+                        <h5
+                          class="modal-title fw-bold text-white text-uppercase tracking-wide"
+                          style="font-size: 0.9rem"
+                        >
+                          Scanner de Mercado
+                        </h5>
+                        <button
+                          type="button"
+                          class="btn-close"
+                          data-bs-dismiss="modal"
+                          aria-label="Close"
+                        ></button>
                       </div>
                       <div class="modal-body pt-2">
-                         <div class="text-secondary mb-3 small" style="font-size: 0.75rem;">Ranking SMA Strategy</div>
-                         <!-- Loading State with Progress Bar -->
-                         <div id="scanner-loading" class="flex-column align-items-center justify-content-center py-3" style="display: none;">
-                             <h2 class="text-white mb-2" id="scan-status-text" style="font-size: 1.5rem;">0%</h2>
-                             
-                             <div class="progress progress-lg w-100 mb-2 active" style="height: 6px; background: #27272a;">
-                                <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" 
-                                     id="scan-progress-bar" role="progressbar" style="width: 0%"></div>
-                             </div>
-                             
-                             <div class="text-muted small text-uppercase tracking-wide" id="scan-status-detail">
-                                 Iniciando Scanner...
-                             </div>
-                         </div>
-                         
-                         <div id="scanner-results" style="display: none;">
-                             <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
-                                <table class="table table-vcenter card-table table-hover">
-                                  <thead>
-                                    <tr>
-                                      <th>Rank</th>
-                                      <th>Ativo</th>
-                                      <th>Retorno %</th>
-                                      <th>Win Rate</th>
-                                      <th>Trades</th>
-                                      <th></th>
-                                    </tr>
-                                  </thead>
-                                  <tbody id="tbody_scanner">
-                                     <!-- Rows -->
-                                  </tbody>
-                                </table>
-                             </div>
-                         </div>
+                        <div
+                          class="text-secondary mb-3 small"
+                          style="font-size: 0.75rem"
+                        >
+                          Ranking SMA Strategy
+                        </div>
+                        <!-- Loading State with Progress Bar -->
+                        <div
+                          id="scanner-loading"
+                          class="flex-column align-items-center justify-content-center py-3"
+                          style="display: none"
+                        >
+                          <h2
+                            class="text-white mb-2"
+                            id="scan-status-text"
+                            style="font-size: 1.5rem"
+                          >
+                            0%
+                          </h2>
+
+                          <div
+                            class="progress progress-lg w-100 mb-2 active"
+                            style="height: 6px; background: #27272a"
+                          >
+                            <div
+                              class="progress-bar progress-bar-striped progress-bar-animated bg-success"
+                              id="scan-progress-bar"
+                              role="progressbar"
+                              style="width: 0%"
+                            ></div>
+                          </div>
+
+                          <div
+                            class="text-muted small text-uppercase tracking-wide"
+                            id="scan-status-detail"
+                          >
+                            Iniciando Scanner...
+                          </div>
+                        </div>
+
+                        <div id="scanner-results" style="display: none">
+                          <div
+                            class="table-responsive"
+                            style="max-height: 500px; overflow-y: auto"
+                          >
+                            <table
+                              class="table table-vcenter card-table table-hover"
+                            >
+                              <thead>
+                                <tr>
+                                  <th>Rank</th>
+                                  <th>Ativo</th>
+                                  <th>Retorno %</th>
+                                  <th>Win Rate</th>
+                                  <th>Trades</th>
+                                  <th></th>
+                                </tr>
+                              </thead>
+                              <tbody id="tbody_scanner">
+                                <!-- Rows -->
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
                       </div>
-                      <div class="modal-footer border-0 justify-content-center pt-0 pb-4">
-                        <button type="button" class="btn btn-ghost-secondary px-4 me-2" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="button" class="btn btn-success px-4 fw-bold" onclick="runScannerAPI()" style="background-color: var(--profit-color); border: none;">
-                           <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-radar me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M21 12h-8a1 1 0 1 0 -1 1v8a9 9 0 0 0 8 -9"></path><path d="M16 9a5 5 0 1 0 -7 7"></path><path d="M20.486 9a9 9 0 1 0 -11.482 11.495"></path></svg>
-                           Iniciar Escaneamento
+                      <div
+                        class="modal-footer border-0 justify-content-center pt-0 pb-4"
+                      >
+                        <button
+                          type="button"
+                          class="btn btn-ghost-secondary px-4 me-2"
+                          data-bs-dismiss="modal"
+                        >
+                          Cancelar
+                        </button>
+                        <button
+                          type="button"
+                          class="btn btn-success px-4 fw-bold"
+                          onclick="runScannerAPI()"
+                          style="
+                            background-color: var(--profit-color);
+                            border: none;
+                          "
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="icon icon-tabler icon-tabler-radar me-2"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            stroke-width="2"
+                            stroke="currentColor"
+                            fill="none"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          >
+                            <path
+                              stroke="none"
+                              d="M0 0h24v24H0z"
+                              fill="none"
+                            ></path>
+                            <path
+                              d="M21 12h-8a1 1 0 1 0 -1 1v8a9 9 0 0 0 8 -9"
+                            ></path>
+                            <path d="M16 9a5 5 0 1 0 -7 7"></path>
+                            <path d="M20.486 9a9 9 0 1 0 -11.482 11.495"></path>
+                          </svg>
+                          Iniciar Escaneamento
                         </button>
                       </div>
                     </div>
@@ -1007,72 +1308,130 @@
                 <!-- Main Chart Card -->
                 <div class="card h-100 mb-0">
                   <div class="card-body p-0 position-relative">
-                    
                     <!-- New Floating Toolbar (Simplified) -->
                     <!-- New Floating Toolbar (Simplified) -->
                     <div class="floating-toolbar">
-                        <!-- Controls -->
-                        <div class="d-flex align-items-center">
-                            <span class="toolbar-label">TF</span>
-                            <!-- Custom TF Dropdown -->
-                            <div class="custom-dropdown" id="tf-dropdown">
-                                <div class="dropdown-selected" onclick="toggleDropdown('tf-dropdown')">
-                                    <span id="tf-value" data-value="M5">M5</span>
-                                    <i class="ri-arrow-down-s-line dropdown-arrow"></i>
-                                </div>
-                                <div class="dropdown-options" id="tf-options">
-                                    <!-- Populated by JS -->
-                                </div>
-                            </div>
+                      <!-- Controls -->
+                      <div class="d-flex align-items-center">
+                        <span class="toolbar-label">TF</span>
+                        <!-- Custom TF Dropdown -->
+                        <div class="custom-dropdown" id="tf-dropdown">
+                          <div
+                            class="dropdown-selected"
+                            onclick="toggleDropdown('tf-dropdown')"
+                          >
+                            <span id="tf-value" data-value="M5">M5</span>
+                            <i class="ri-arrow-down-s-line dropdown-arrow"></i>
+                          </div>
+                          <div class="dropdown-options" id="tf-options">
+                            <!-- Populated by JS -->
+                          </div>
                         </div>
-                        
-                        <div class="toolbar-sep"></div>
-                        
-                        <div class="d-flex align-items-center">
-                             <!-- Custom Candles Dropdown -->
-                             <div class="custom-dropdown" id="candles-dropdown">
-                                <div class="dropdown-selected" onclick="toggleDropdown('candles-dropdown')">
-                                    <span id="candles-value" data-value="1000">1000 velas</span>
-                                    <i class="ri-arrow-down-s-line dropdown-arrow"></i>
-                                </div>
-                                <div class="dropdown-options">
-                                    <div class="dropdown-item" onclick="selectOption('candles', '100', '100 velas')">100 velas</div>
-                                    <div class="dropdown-item selected" onclick="selectOption('candles', '1000', '1000 velas')">1000 velas</div>
-                                    <div class="dropdown-item" onclick="selectOption('candles', '5000', 'MAX')">MAX</div>
-                                </div>
+                      </div>
+
+                      <div class="toolbar-sep"></div>
+
+                      <div class="d-flex align-items-center">
+                        <!-- Custom Candles Dropdown -->
+                        <div class="custom-dropdown" id="candles-dropdown">
+                          <div
+                            class="dropdown-selected"
+                            onclick="toggleDropdown('candles-dropdown')"
+                          >
+                            <span id="candles-value" data-value="1000"
+                              >1000 velas</span
+                            >
+                            <i class="ri-arrow-down-s-line dropdown-arrow"></i>
+                          </div>
+                          <div class="dropdown-options">
+                            <div
+                              class="dropdown-item"
+                              onclick="
+                                selectOption('candles', '100', '100 velas')
+                              "
+                            >
+                              100 velas
                             </div>
+                            <div
+                              class="dropdown-item selected"
+                              onclick="
+                                selectOption('candles', '1000', '1000 velas')
+                              "
+                            >
+                              1000 velas
+                            </div>
+                            <div
+                              class="dropdown-item"
+                              onclick="selectOption('candles', '5000', 'MAX')"
+                            >
+                              MAX
+                            </div>
+                          </div>
                         </div>
+                      </div>
                     </div>
 
                     <div id="chart" class="big-chart-container"></div>
                   </div>
                 </div>
-
-                
-              </div> <!-- End col-md-9 -->
-            </div> <!-- End Main Top Row -->
+              </div>
+              <!-- End col-md-9 -->
+            </div>
+            <!-- End Main Top Row -->
 
             <!-- Detailed Analysis Section (New Row Below) -->
-            <div class="row g-2 align-items-stretch mt-3" id="analysis-section" style="display: none;">
-              
+            <div
+              class="row g-2 align-items-stretch mt-3"
+              id="analysis-section"
+              style="display: none"
+            >
               <!-- Left: Scanner Results (Matches Sidebar Width) -->
               <div class="col-md-3">
-                <div class="card h-100" style="background: transparent; border: none;">
+                <div
+                  class="card h-100"
+                  style="background: transparent; border: none"
+                >
                   <div class="card-body p-0 h-100">
-                     <div class="table-responsive" style="height: 335px; max-height: 335px; overflow-y: auto; border-radius: 4px; border: 1px solid #27272a; background: #18181b;">
-                        <table class="scanner-table">
-                            <thead style="position: sticky; top: 0; z-index: 20; background: #1f1f23;">
-                                <tr>
-                                    <th style="padding-left: 12px;">Ativo</th>
-                                    <th class="text-end">Retorno</th>
-                                    <th class="text-end" style="padding-right: 12px;">Win%</th>
-                                </tr>
-                            </thead>
-                            <tbody id="results-table-body">
-                                <tr><td colspan='3' class='text-muted text-center py-5 small'>Resultados do Scanner aparecerão aqui.</td></tr>
-                            </tbody>
-                        </table>
-                     </div>
+                    <div
+                      class="table-responsive"
+                      style="
+                        height: 335px;
+                        max-height: 335px;
+                        overflow-y: auto;
+                        border-radius: 4px;
+                        border: 1px solid #27272a;
+                        background: #18181b;
+                      "
+                    >
+                      <table class="scanner-table">
+                        <thead
+                          style="
+                            position: sticky;
+                            top: 0;
+                            z-index: 20;
+                            background: #1f1f23;
+                          "
+                        >
+                          <tr>
+                            <th style="padding-left: 12px">Ativo</th>
+                            <th class="text-end">Retorno</th>
+                            <th class="text-end" style="padding-right: 12px">
+                              Win%
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody id="results-table-body">
+                          <tr>
+                            <td
+                              colspan="3"
+                              class="text-muted text-center py-5 small"
+                            >
+                              Resultados do Scanner aparecerão aqui.
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1081,17 +1440,24 @@
               <div class="col-md-9">
                 <div class="card h-100 mb-3">
                   <div class="card-header border-0 pb-0">
-                    <h3 class="card-title text-uppercase text-secondary small font-weight-bold">
+                    <h3
+                      class="card-title text-uppercase text-secondary small font-weight-bold"
+                    >
                       Relatório de Performance
                     </h3>
                   </div>
-                  <div class="card-body d-flex flex-column justify-content-center">
-                      <div id="metrics-grid" class="metrics-grid">
-                           <!-- JS Populated -->
-                           <div class="text-center text-muted p-4 w-100" style="grid-column: 1 / -1;">
-                               Execute o Backtest para visualizar os dados.
-                           </div>
+                  <div
+                    class="card-body d-flex flex-column justify-content-center"
+                  >
+                    <div id="metrics-grid" class="metrics-grid">
+                      <!-- JS Populated -->
+                      <div
+                        class="text-center text-muted p-4 w-100"
+                        style="grid-column: 1 / -1"
+                      >
+                        Execute o Backtest para visualizar os dados.
                       </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1165,7 +1531,7 @@
 
       function logStatus(msg, type = "neutral") {
         console.log(`[${type}] ${msg}`);
-        
+
         // Show critical errors to user
         if (type === "error") {
           let errorBox = document.getElementById("error-alert");
@@ -1204,14 +1570,10 @@
 
       function updateDashboard() {
         SYMBOL = document.getElementById("ticker-input").value;
-        
+
         // Update Logo
-        const logoEl = document.getElementById("current-asset-logo");
-        if(logoEl) {
-            logoEl.style.display = 'block'; // Reset visibility before loading new
-            logoEl.src = `https://raw.githubusercontent.com/thefintz/icones-b3/main/icones/${SYMBOL}.png`;
-        }
-        
+        updateAssetIcon(SYMBOL);
+
         loadHistory();
       }
 
@@ -1221,8 +1583,9 @@
           const timeframes = await res.json();
           // Legacy select population removed.
           // Custom dropdowns are initialized via DOMContentLoaded.
-          
+
           loadHistory();
+          updateAssetIcon(document.getElementById("ticker-input").value);
 
           loadHistory();
         } catch (e) {
@@ -1244,8 +1607,8 @@
         smaLongSeries.setData([]);
 
         // Clear Grid
-        document.getElementById("metrics-grid").innerHTML = 
-            '<div class="text-center text-muted col-12 py-4" style="grid-column: 1 / -1;">Carregando métricas...</div>';
+        document.getElementById("metrics-grid").innerHTML =
+          '<div class="text-center text-muted col-12 py-4" style="grid-column: 1 / -1;">Carregando métricas...</div>';
 
         logStatus(`Baixando ${count} velas de ${SYMBOL}...`);
 
@@ -1260,30 +1623,29 @@
             return;
           }
 
-
           // 1. HARD RESET: Remove old series
           // 1. HARD RESET: Remove ALL series to fix Z-Order (Candles -> SMAs)
           if (candleSeries) chart.removeSeries(candleSeries);
           if (smaShortSeries) chart.removeSeries(smaShortSeries);
           if (smaLongSeries) chart.removeSeries(smaLongSeries);
-          
+
           // 2. Recreate Series (Order Matters: Last added = Top Layer)
           // 2.1 Candles (Background Layer)
           candleSeries = chart.addCandlestickSeries({
-              upColor: '#00E396',
-              downColor: '#FF4560',
-              borderVisible: false,
-              wickUpColor: '#00E396',
-              wickDownColor: '#FF4560'
+            upColor: "#00E396",
+            downColor: "#FF4560",
+            borderVisible: false,
+            wickUpColor: "#00E396",
+            wickDownColor: "#FF4560",
           });
-          
+
           // 2.2 SMAs (Overlay Layer)
           smaShortSeries = chart.addLineSeries({
             color: "#FFFF00", // Yellow
             lineWidth: 2,
             title: "SMA Short",
           });
-          
+
           smaLongSeries = chart.addLineSeries({
             color: "#D500F9", // Purple
             lineWidth: 2,
@@ -1292,21 +1654,21 @@
 
           // 3. Set Data
           candleSeries.setData(data);
-          
+
           // 4. Force Scale Reset (Critical)
-          chart.priceScale('right').applyOptions({
-              autoScale: true,
-              scaleMargins: { top: 0.1, bottom: 0.2 },
+          chart.priceScale("right").applyOptions({
+            autoScale: true,
+            scaleMargins: { top: 0.1, bottom: 0.2 },
           });
           // 4.1 ZOOM FIX: Show only last N candles (Strategic Zoom)
           const totalCandles = data.length;
-          const visibleRange = INITIAL_ZOOM_CANDLES; 
-          
-          if(totalCandles > 0) {
-              chart.timeScale().setVisibleLogicalRange({
-                  from: totalCandles - visibleRange,
-                  to: totalCandles
-              });
+          const visibleRange = INITIAL_ZOOM_CANDLES;
+
+          if (totalCandles > 0) {
+            chart.timeScale().setVisibleLogicalRange({
+              from: totalCandles - visibleRange,
+              to: totalCandles,
+            });
           }
           chart.timeScale().applyOptions({ rightOffset: 5 });
 
@@ -1329,7 +1691,8 @@
         const long = document.getElementById("smaLong").value;
         const optimize = document.getElementById("optimizeCheck").checked;
 
-        if (optimize) logStatus("Otimizando parâmetros (isso pode demorar)...", "neutral");
+        if (optimize)
+          logStatus("Otimizando parâmetros (isso pode demorar)...", "neutral");
         else logStatus("Executando Backtest...", "neutral");
 
         try {
@@ -1344,74 +1707,77 @@
           }
 
           // Critical: Update Chart Candles if backtest returned fresh data (Syncs Scale)
-          if(data.candles) {
-             const candleData = data.candles.map(c => ({
-                 time: new Date(c.time).getTime() / 1000,
-                 open: c.open,
-                 high: c.high,
-                 low: c.low,
-                 close: c.close
-             }));
-             // 1. HARD RESET ALL (Fix Z-Order & Scaling)
-             if (candleSeries) chart.removeSeries(candleSeries);
-             if (smaShortSeries) chart.removeSeries(smaShortSeries);
-             if (smaLongSeries) chart.removeSeries(smaLongSeries);
-             
-             // 2. Recreate Series
-             candleSeries = chart.addCandlestickSeries({
-                 upColor: '#00E396',
-                 downColor: '#FF4560',
-                 borderVisible: false,
-                 wickUpColor: '#00E396',
-                 wickDownColor: '#FF4560'
-             });
-             
-             smaShortSeries = chart.addLineSeries({
-               color: "#FFFF00", 
-               lineWidth: 2,
-               title: "SMA Short",
-             });
-             
-             smaLongSeries = chart.addLineSeries({
-               color: "#D500F9", 
-               lineWidth: 2,
-               title: "SMA Long",
-             });
-             
-             // 3. Set Data
-             candleSeries.setData(candleData);
-             
-             // CRITICAL FIX: Flat Line Bug (Backtest)
-             chart.priceScale('right').applyOptions({
-                 autoScale: true,
-                 scaleMargins: { top: 0.1, bottom: 0.1 },
-             });
-             // 4.1 ZOOM FIX: Show only last N candles
-             const totalCandles = candleData.length;
-             const visibleRange = INITIAL_ZOOM_CANDLES; 
-             
-             chart.timeScale().setVisibleLogicalRange({
-                 from: totalCandles - visibleRange,
-                 to: totalCandles
-             });
-             chart.timeScale().applyOptions({ rightOffset: 5 });
+          if (data.candles) {
+            const candleData = data.candles.map((c) => ({
+              time: new Date(c.time).getTime() / 1000,
+              open: c.open,
+              high: c.high,
+              low: c.low,
+              close: c.close,
+            }));
+            // 1. HARD RESET ALL (Fix Z-Order & Scaling)
+            if (candleSeries) chart.removeSeries(candleSeries);
+            if (smaShortSeries) chart.removeSeries(smaShortSeries);
+            if (smaLongSeries) chart.removeSeries(smaLongSeries);
+
+            // 2. Recreate Series
+            candleSeries = chart.addCandlestickSeries({
+              upColor: "#00E396",
+              downColor: "#FF4560",
+              borderVisible: false,
+              wickUpColor: "#00E396",
+              wickDownColor: "#FF4560",
+            });
+
+            smaShortSeries = chart.addLineSeries({
+              color: "#FFFF00",
+              lineWidth: 2,
+              title: "SMA Short",
+            });
+
+            smaLongSeries = chart.addLineSeries({
+              color: "#D500F9",
+              lineWidth: 2,
+              title: "SMA Long",
+            });
+
+            // 3. Set Data
+            candleSeries.setData(candleData);
+
+            // CRITICAL FIX: Flat Line Bug (Backtest)
+            chart.priceScale("right").applyOptions({
+              autoScale: true,
+              scaleMargins: { top: 0.1, bottom: 0.1 },
+            });
+            // 4.1 ZOOM FIX: Show only last N candles
+            const totalCandles = candleData.length;
+            const visibleRange = INITIAL_ZOOM_CANDLES;
+
+            chart.timeScale().setVisibleLogicalRange({
+              from: totalCandles - visibleRange,
+              to: totalCandles,
+            });
+            chart.timeScale().applyOptions({ rightOffset: 5 });
           }
 
           candleSeries.setMarkers(data.markers);
           smaShortSeries.setData(data.sma_short);
           smaLongSeries.setData(data.sma_long);
-          
+
           if (data.best_params) {
-               document.getElementById("smaShort").value = data.best_params.short;
-               document.getElementById("smaLong").value = data.best_params.long;
-               logStatus(`Otimização Sucesso! Melhores: ${data.best_params.short} x ${data.best_params.long}`, "success");
+            document.getElementById("smaShort").value = data.best_params.short;
+            document.getElementById("smaLong").value = data.best_params.long;
+            logStatus(
+              `Otimização Sucesso! Melhores: ${data.best_params.short} x ${data.best_params.long}`,
+              "success",
+            );
           } else {
-               logStatus("Backtest Concluído com Sucesso!", "success");
+            logStatus("Backtest Concluído com Sucesso!", "success");
           }
 
           // Show Analysis Section (Metrics + Scanner placeholder if visible)
           document.getElementById("analysis-section").style.display = "flex";
-          
+
           renderMetrics(data); // Pass full data object
         } catch (e) {
           console.error(e);
@@ -1420,15 +1786,15 @@
       }
 
       function toggleOptimizeInputs() {
-          const isChecked = document.getElementById("optimizeCheck").checked;
-          const wrapper = document.getElementById("sma-inputs-wrapper");
-          
-          if(isChecked) {
-              wrapper.classList.add("input-group-disabled");
-              // Opcional: Adicionar texto "Auto" nos inputs ou deixa-los como estão
-          } else {
-              wrapper.classList.remove("input-group-disabled");
-          }
+        const isChecked = document.getElementById("optimizeCheck").checked;
+        const wrapper = document.getElementById("sma-inputs-wrapper");
+
+        if (isChecked) {
+          wrapper.classList.add("input-group-disabled");
+          // Opcional: Adicionar texto "Auto" nos inputs ou deixa-los como estão
+        } else {
+          wrapper.classList.remove("input-group-disabled");
+        }
       }
 
       function renderMetrics(data) {
@@ -1437,65 +1803,81 @@
         const grid = document.getElementById("metrics-grid");
 
         const fmtPct = (v) => (v * 100).toFixed(2) + "%";
-        
+
         // --- Tooltips Definitions ---
         const tooltips = {
-            "Retorno Total": "Lucro ou Prejuízo acumulado sobre o capital inicial.",
-            "Win Rate": "Porcentagem de operações que fecharam no positivo.",
-            "Profit Factor": "Razão entre Lucro Bruto e Perda Bruta. > 1.0 indica lucro.",
-            "Total Trades": "Quantidade total de operações realizadas no período.",
-            "Max Drawdown": "A maior queda percentual de capital registrada (Top to Bottom).",
-            "Sharpe Ratio": "Retorno ajustado ao risco. > 1.0 é considerado bom.",
-            "Volatilidade": "Desvio padrão dos retornos (Risco da operação).",
-            "Duração (Dias)": "Tempo médio que cada operação ficou aberta."
+          "Retorno Total":
+            "Lucro ou Prejuízo acumulado sobre o capital inicial.",
+          "Win Rate": "Porcentagem de operações que fecharam no positivo.",
+          "Profit Factor":
+            "Razão entre Lucro Bruto e Perda Bruta. > 1.0 indica lucro.",
+          "Total Trades":
+            "Quantidade total de operações realizadas no período.",
+          "Max Drawdown":
+            "A maior queda percentual de capital registrada (Top to Bottom).",
+          "Sharpe Ratio": "Retorno ajustado ao risco. > 1.0 é considerado bom.",
+          Volatilidade: "Desvio padrão dos retornos (Risco da operação).",
+          "Duração (Dias)": "Tempo médio que cada operação ficou aberta.",
         };
 
         // --- Card Generator ---
-        const createCard = (label, value, icon, type='neutral') => {
-            let valClass = "val-neu";
-            let accentClass = "accent-blue"; // Default Neutral
-            let displayVal = value;
-            const tooltip = tooltips[label] || "";
-            
-            if(type === 'pct') {
-                displayVal = fmtPct(value);
-                if(value > 0) { valClass = "val-pos"; accentClass = "accent-green"; }
-                else if(value < 0) { valClass = "val-neg"; accentClass = "accent-red"; }
-            }
-            else if(type === 'diff') {
-                 displayVal = (value >= 0 ? "+" : "") + fmtPct(value);
-                 if(value > 0) { valClass = "val-pos"; accentClass = "accent-green"; }
-                 else if(value < 0) { valClass = "val-neg"; accentClass = "accent-red"; }
-            }
-            else if(type === 'pf') {
-                displayVal = value.toFixed(2);
-                if(value >= 1.5) { valClass = "val-pos"; accentClass = "accent-green"; }
-                else if(value >= 1.0) { valClass = "val-warn"; accentClass = "accent-warn"; }
-                else { valClass = "val-neg"; accentClass = "accent-red"; }
-            }
-            else if(type === 'neutral') {
-                if(typeof value === 'number') displayVal = value.toFixed(2);
-                accentClass = "accent-purple";
-            }
-            else if(type === 'int') {
-                displayVal = Math.round(value);
-                valClass = "val-neu";
-                accentClass = "accent-blue";
-            }
-            else if(type === 'drawdown') {
-                displayVal = fmtPct(value); // Values usually negative
-                valClass = "val-neg";
-                accentClass = "accent-red";
-            }
+        const createCard = (label, value, icon, type = "neutral") => {
+          let valClass = "val-neu";
+          let accentClass = "accent-blue"; // Default Neutral
+          let displayVal = value;
+          const tooltip = tooltips[label] || "";
 
-            return `
+          if (type === "pct") {
+            displayVal = fmtPct(value);
+            if (value > 0) {
+              valClass = "val-pos";
+              accentClass = "accent-green";
+            } else if (value < 0) {
+              valClass = "val-neg";
+              accentClass = "accent-red";
+            }
+          } else if (type === "diff") {
+            displayVal = (value >= 0 ? "+" : "") + fmtPct(value);
+            if (value > 0) {
+              valClass = "val-pos";
+              accentClass = "accent-green";
+            } else if (value < 0) {
+              valClass = "val-neg";
+              accentClass = "accent-red";
+            }
+          } else if (type === "pf") {
+            displayVal = value.toFixed(2);
+            if (value >= 1.5) {
+              valClass = "val-pos";
+              accentClass = "accent-green";
+            } else if (value >= 1.0) {
+              valClass = "val-warn";
+              accentClass = "accent-warn";
+            } else {
+              valClass = "val-neg";
+              accentClass = "accent-red";
+            }
+          } else if (type === "neutral") {
+            if (typeof value === "number") displayVal = value.toFixed(2);
+            accentClass = "accent-purple";
+          } else if (type === "int") {
+            displayVal = Math.round(value);
+            valClass = "val-neu";
+            accentClass = "accent-blue";
+          } else if (type === "drawdown") {
+            displayVal = fmtPct(value); // Values usually negative
+            valClass = "val-neg";
+            accentClass = "accent-red";
+          }
+
+          return `
                 <div class="metric-card ${accentClass}" title="${tooltip}" style="cursor: help;">
                     <span class="metric-label"><i class="${icon}"></i>${label}</span>
                     <span class="metric-value ${valClass}">${displayVal}</span>
                 </div>
             `;
         };
-        
+
         // --- Build Grid ---
         grid.innerHTML = `
             ${createCard("Retorno Total", m.total_return, "ri-funds-box-line", "diff")}
@@ -1545,17 +1927,17 @@
       // Reset UI when opening modal
       function openScanner() {
         const el = document.getElementById("modal-scanner");
-        
+
         // Reset Logic
         document.getElementById("scanner-loading").style.display = "none";
         document.getElementById("scanner-results").style.display = "none";
         document.getElementById("scan-status-text").innerText = "0%";
         document.getElementById("scan-progress-bar").style.width = "0%";
-        
+
         // Show Start Button again
         const startBtn = document.querySelector("#modal-scanner .btn-success");
-        if(startBtn) startBtn.style.display = "inline-block";
-        
+        if (startBtn) startBtn.style.display = "inline-block";
+
         if (!scannerModalInstance) {
           scannerModalInstance = new bootstrap.Modal(el);
         }
@@ -1563,37 +1945,20 @@
       }
 
       // Helper: Asset Icon Logic
-      function updateAssetIcon(symbol) {
-          const wrapper = document.getElementById("current-asset-wrapper");
-          const url = `https://raw.githubusercontent.com/thefintz/icones-b3/main/icones/${symbol}.png`;
-          const initial = symbol.substring(0, 1) + symbol.substring(symbol.length-1); // First+Last char (ex: W6) or just W
-          
-          // Cleaner approach: Try loading image, on error replace with placeholder html
-          const img = new Image();
-          img.src = url;
-          img.className = "asset-icon-img";
-          
-          wrapper.innerHTML = ""; // Clear
-          wrapper.appendChild(img);
-          
-          img.onerror = () => {
-              wrapper.innerHTML = `<div class="asset-icon-placeholder">${symbol.substring(0,2)}</div>`;
-          };
-      }
 
       // Helper: Asset Icon Logic
       function updateAssetIcon(symbol) {
-          const wrapper = document.getElementById("current-asset-wrapper");
-          const url = `https://raw.githubusercontent.com/thefintz/icones-b3/main/icones/${symbol}.png`;
-          
-          // Generate Placeholder content (First 2 chars or First+Last depending on taste)
-          // For WING26 -> WI
-          const label = symbol ? symbol.substring(0, 2).toUpperCase() : "??";
-          
-          // Prepare HTML for both states (Image and Placeholder), toggle visibility via onerror
-          // We put the image first.
-          
-          wrapper.innerHTML = `
+        const wrapper = document.getElementById("current-asset-wrapper");
+        const url = `https://raw.githubusercontent.com/thefintz/icones-b3/main/icones/${symbol}.png`;
+
+        // Generate Placeholder content (First 2 chars or First+Last depending on taste)
+        // For WING26 -> WI
+        const label = symbol ? symbol.substring(0, 2).toUpperCase() : "??";
+
+        // Prepare HTML for both states (Image and Placeholder), toggle visibility via onerror
+        // We put the image first.
+
+        wrapper.innerHTML = `
              <img src="${url}" class="asset-icon-img" onload="this.style.display='block'; this.nextElementSibling.style.display='none'" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
              <div class="asset-icon-placeholder" style="display:none">${label}</div>
           `;
@@ -1616,7 +1981,7 @@
           "Aguardando servidor...";
 
         const btn = document.querySelector("#modal-scanner .btn-success"); // Updated class
-        if(btn) btn.disabled = true;
+        if (btn) btn.disabled = true;
 
         try {
           const response = await fetch("/api/batch_backtest", {
@@ -1627,11 +1992,11 @@
               candles: count,
               sma_short: short,
               sma_long: long,
-              optimize: optimize
+              optimize: optimize,
             }),
           });
-          
-          if(!response.ok) throw new Error("Status " + response.status);
+
+          if (!response.ok) throw new Error("Status " + response.status);
 
           const reader = response.body.getReader();
           const decoder = new TextDecoder("utf-8");
@@ -1661,22 +2026,27 @@
                     msg.text;
                 } else if (msg.type === "result") {
                   // Hide loading immediately
-                  document.getElementById("scanner-loading").style.display = "none";
-                  
+                  document.getElementById("scanner-loading").style.display =
+                    "none";
+
                   // Hide Start Button
-                  const startBtn = document.querySelector("#modal-scanner .btn-success");
-                  if(startBtn) startBtn.style.display = "none";
-                  
+                  const startBtn = document.querySelector(
+                    "#modal-scanner .btn-success",
+                  );
+                  if (startBtn) startBtn.style.display = "none";
+
                   // Cache & Render Sidebar
                   cachedScanResults = msg.data;
                   renderSidebarResults(msg.data);
-                  
+
                   // Hide Modal & Show First Result
-                  if(scannerModalInstance) scannerModalInstance.hide();
-                  document.getElementById("card-scanner-results").style.display = "block";
-                  
-                  if(msg.data.length > 0) {
-                      selectScannedAsset(msg.data[0].symbol);
+                  if (scannerModalInstance) scannerModalInstance.hide();
+                  document.getElementById(
+                    "card-scanner-results",
+                  ).style.display = "block";
+
+                  if (msg.data.length > 0) {
+                    selectScannedAsset(msg.data[0].symbol);
                   }
                 }
               } catch (e) {
@@ -1687,74 +2057,84 @@
 
           // Process remaining buffer after stream end
           if (buffer.trim()) {
-              try {
-                  const msg = JSON.parse(buffer);
-                  if (msg.type === "result") {
-                      // ... Copy Result Logic ...
-                      document.getElementById("scanner-loading").style.display = "none";
-                      const startBtn = document.querySelector("#modal-scanner .btn-success");
-                      if(startBtn) startBtn.style.display = "none";
-                      
-                      cachedScanResults = msg.data;
-                      renderSidebarResults(msg.data);
-                      
-                      if(scannerModalInstance) scannerModalInstance.hide();
-                      document.getElementById("card-scanner-results").style.display = "block";
-                      
-                      if(msg.data.length > 0) {
-                          selectScannedAsset(msg.data[0].symbol);
-                      }
-                  }
-              } catch(e) { console.error("Final Buffer Parse Error", e); }
+            try {
+              const msg = JSON.parse(buffer);
+              if (msg.type === "result") {
+                // ... Copy Result Logic ...
+                document.getElementById("scanner-loading").style.display =
+                  "none";
+                const startBtn = document.querySelector(
+                  "#modal-scanner .btn-success",
+                );
+                if (startBtn) startBtn.style.display = "none";
+
+                cachedScanResults = msg.data;
+                renderSidebarResults(msg.data);
+
+                if (scannerModalInstance) scannerModalInstance.hide();
+                document.getElementById("card-scanner-results").style.display =
+                  "block";
+
+                if (msg.data.length > 0) {
+                  selectScannedAsset(msg.data[0].symbol);
+                }
+              }
+            } catch (e) {
+              console.error("Final Buffer Parse Error", e);
+            }
           }
         } catch (e) {
           document.getElementById("scan-status-text").innerText = "ERRO";
-          document.getElementById("scan-status-detail").innerText = "Falha: " + e.message;
-          document.getElementById("scan-status-detail").classList.add("text-danger");
+          document.getElementById("scan-status-detail").innerText =
+            "Falha: " + e.message;
+          document
+            .getElementById("scan-status-detail")
+            .classList.add("text-danger");
           console.error(e);
         } finally {
-           if(btn) btn.disabled = false;
+          if (btn) btn.disabled = false;
         }
       }
 
       function renderScannerResults(data) {
         // Keep legacy modal render just in case, or for debugging
         const tbody = document.getElementById("tbody_scanner");
-        if(tbody) tbody.innerHTML = "";
+        if (tbody) tbody.innerHTML = "";
         // ... (simplified or left empty if unused)
       }
 
       var cachedScanResults = []; // Store results globally to access params later
 
       function renderSidebarResults(data) {
-          cachedScanResults = data; // Cache data
-          const tbody = document.getElementById("results-table-body");
-          tbody.innerHTML = "";
-          
-          // Ensure visibility of the SECTION
-          document.getElementById("analysis-section").style.display = "flex";
-          
-          if(!data || data.length === 0) {
-              tbody.innerHTML = "<tr><td colspan='3' class='text-muted text-center py-3'>Nenhum resultado.</td></tr>";
-              return;
-          }
-          
-          data.forEach((row, i) => {
-              const isWin = row.total_return > 0;
-              const colorClass = isWin ? "text-green" : "text-red";
-              const retPct = (row.total_return * 100).toFixed(2) + "%";
-              
-              const tr = document.createElement("tr");
-              // Passa os parametros otimizados para a funcao de selecao
-              tr.onclick = () => selectScannedAsset(row.symbol, row.params);
-              
-              // Logo Logic
-              const logoUrl = `https://raw.githubusercontent.com/thefintz/icones-b3/main/icones/${row.symbol}.png`;
-              
-              tr.innerHTML = `
+        cachedScanResults = data; // Cache data
+        const tbody = document.getElementById("results-table-body");
+        tbody.innerHTML = "";
+
+        // Ensure visibility of the SECTION
+        document.getElementById("analysis-section").style.display = "flex";
+
+        if (!data || data.length === 0) {
+          tbody.innerHTML =
+            "<tr><td colspan='3' class='text-muted text-center py-3'>Nenhum resultado.</td></tr>";
+          return;
+        }
+
+        data.forEach((row, i) => {
+          const isWin = row.total_return > 0;
+          const colorClass = isWin ? "text-green" : "text-red";
+          const retPct = (row.total_return * 100).toFixed(2) + "%";
+
+          const tr = document.createElement("tr");
+          // Passa os parametros otimizados para a funcao de selecao
+          tr.onclick = () => selectScannedAsset(row.symbol, row.params);
+
+          // Logo Logic
+          const logoUrl = `https://raw.githubusercontent.com/thefintz/icones-b3/main/icones/${row.symbol}.png`;
+
+          tr.innerHTML = `
                   <td style="padding-left: 12px;">
                       <div class="asset-col">
-                          <span class="rank-badge">${i+1}</span>
+                          <span class="rank-badge">${i + 1}</span>
                           <img 
                               src="${logoUrl}" 
                               alt="${row.symbol}" 
@@ -1769,185 +2149,191 @@
                       <span class="${colorClass} fw-bold">${retPct}</span>
                   </td>
                   <td class="text-end" style="padding-right: 12px;">
-                      <span class="text-secondary small">${(row.win_rate*100).toFixed(0)}%</span>
+                      <span class="text-secondary small">${(row.win_rate * 100).toFixed(0)}%</span>
                   </td>
               `;
-              tbody.appendChild(tr);
-          });
+          tbody.appendChild(tr);
+        });
 
-          
-          // Auto-Select First Result (Champion)
-          if(data.length > 0) {
-              selectScannedAsset(data[0].symbol, data[0].params);
-          }
+        // Auto-Select First Result (Champion)
+        if (data.length > 0) {
+          selectScannedAsset(data[0].symbol, data[0].params);
+        }
       }
 
-      function selectScannedAsset(symbol, params=null) {
+      function selectScannedAsset(symbol, params = null) {
         // Close modal if open
         if (scannerModalInstance) scannerModalInstance.hide();
-        
+
         // 1. Update Input
-        document.getElementById("symbolSelect").value = symbol;
+        document.getElementById("ticker-input").value = symbol;
         SYMBOL = symbol;
-        
+
         // 2. Override Params if provided (Fix Discrepancy)
         if (params) {
-            // Se veio do scanner, usamos os parâmetros QUE GERARAM aquele resultado.
-            document.getElementById("smaShort").value = params.short;
-            document.getElementById("smaLong").value = params.long;
-            
-            // Importante: Desativamos a otimização automática para rodar com ESSES parâmetros fixos
-            // Caso contrário, o backtest rodaria a otimização de novo e poderia achar outros valores.
-            document.getElementById("optimizeCheck").checked = false;
-            toggleOptimizeInputs(); // Visual update
-            logStatus(`Carregando ${symbol} com parâmetros Otimizados (${params.short}/${params.long})...`);
+          // Se veio do scanner, usamos os parâmetros QUE GERARAM aquele resultado.
+          document.getElementById("smaShort").value = params.short;
+          document.getElementById("smaLong").value = params.long;
+
+          // Importante: Desativamos a otimização automática para rodar com ESSES parâmetros fixos
+          // Caso contrário, o backtest rodaria a otimização de novo e poderia achar outros valores.
+          document.getElementById("optimizeCheck").checked = false;
+          toggleOptimizeInputs(); // Visual update
+          logStatus(
+            `Carregando ${symbol} com parâmetros Otimizados (${params.short}/${params.long})...`,
+          );
         } else {
-            // Se não tem parametros (clique normal), mantem o estado atual
-            logStatus(`Carregando ${symbol}...`);
+          // Se não tem parametros (clique normal), mantem o estado atual
+          logStatus(`Carregando ${symbol}...`);
         }
 
         // 3. Trigger Change Logic
         changeSymbol();
-        
+
         // 4. Force Run Backtest immediately
-        setTimeout(runBacktest, 500); 
+        setTimeout(runBacktest, 500);
       }
 
       function changeSymbol() {
-        SYMBOL = document.getElementById("symbolSelect").value;
-        
+        SYMBOL = document.getElementById("ticker-input").value;
+
         // Update Icon System
         updateAssetIcon(SYMBOL);
-        
+
         // Reset Logic
-        candleSeries.setMarkers([]); 
-        
+        candleSeries.setMarkers([]);
+
         // Trigger Reload
         loadHistory();
       }
-      
+
       // Bind Enter Key to Search
-      document.addEventListener("DOMContentLoaded", function() {
-          const input = document.getElementById("symbolSelect");
-          if(input) {
-              input.addEventListener("keypress", function(event) {
-                  if (event.key === "Enter") {
-                      event.preventDefault();
-                      document.getElementById("search-btn").click();
-                  }
-              });
-          }
+      document.addEventListener("DOMContentLoaded", function () {
+        const input = document.getElementById("ticker-input");
+        if (input) {
+          input.addEventListener("keypress", function (event) {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              document.getElementById("search-btn").click();
+            }
+          });
+        }
       });
-      
+
       // Auto-run scanner sidebar rendering if cache exists (on page logic if needed, but cache is volatile)
 
       window.onload = init;
     </script>
     <script>
       /* --- Custom Dropdown Logic --- */
-      
+
       // Toggle dropdown visibility
       function toggleDropdown(id) {
-          // Close all other dropdowns first
-          const allDropdowns = document.querySelectorAll('.custom-dropdown');
-          allDropdowns.forEach(dd => {
-              if (dd.id !== id) dd.classList.remove('active');
-          });
-          
-          const dropdown = document.getElementById(id);
-          dropdown.classList.toggle('active');
+        // Close all other dropdowns first
+        const allDropdowns = document.querySelectorAll(".custom-dropdown");
+        allDropdowns.forEach((dd) => {
+          if (dd.id !== id) dd.classList.remove("active");
+        });
+
+        const dropdown = document.getElementById(id);
+        dropdown.classList.toggle("active");
       }
 
       // Handle option selection
       function selectOption(type, value, label) {
-          if (type === 'tf') {
-              document.getElementById('tf-value').textContent = label || value;
-              document.getElementById('tf-value').setAttribute('data-value', value);
-              
-              // Validate TF options styling
-              document.querySelectorAll('#tf-options .dropdown-item').forEach(item => {
-                 item.classList.remove('selected');
-                 if(item.textContent === (label || value)) item.classList.add('selected');
-              });
+        if (type === "tf") {
+          document.getElementById("tf-value").textContent = label || value;
+          document.getElementById("tf-value").setAttribute("data-value", value);
 
-              // Trigger Update
-              changeTimeframe(value); 
-              
-          } else if (type === 'candles') {
-              document.getElementById('candles-value').textContent = label;
-              document.getElementById('candles-value').setAttribute('data-value', value);
-              
-              document.querySelectorAll('#candles-dropdown .dropdown-item').forEach(item => {
-                 item.classList.remove('selected');
-                 if(item.textContent === label) item.classList.add('selected');
-              });
+          // Validate TF options styling
+          document
+            .querySelectorAll("#tf-options .dropdown-item")
+            .forEach((item) => {
+              item.classList.remove("selected");
+              if (item.textContent === (label || value))
+                item.classList.add("selected");
+            });
 
-              // Trigger Update
-              changeCandleCount(value);
-          }
-          
-          // Close dropdown
-          const parentId = type === 'tf' ? 'tf-dropdown' : 'candles-dropdown';
-          document.getElementById(parentId).classList.remove('active');
+          // Trigger Update
+          changeTimeframe(value);
+        } else if (type === "candles") {
+          document.getElementById("candles-value").textContent = label;
+          document
+            .getElementById("candles-value")
+            .setAttribute("data-value", value);
+
+          document
+            .querySelectorAll("#candles-dropdown .dropdown-item")
+            .forEach((item) => {
+              item.classList.remove("selected");
+              if (item.textContent === label) item.classList.add("selected");
+            });
+
+          // Trigger Update
+          changeCandleCount(value);
+        }
+
+        // Close dropdown
+        const parentId = type === "tf" ? "tf-dropdown" : "candles-dropdown";
+        document.getElementById(parentId).classList.remove("active");
       }
 
       // Close dropdowns when clicking outside
-      window.addEventListener('click', function(e) {
-          if (!e.target.closest('.custom-dropdown')) {
-              document.querySelectorAll('.custom-dropdown').forEach(dd => {
-                  dd.classList.remove('active');
-              });
-          }
+      window.addEventListener("click", function (e) {
+        if (!e.target.closest(".custom-dropdown")) {
+          document.querySelectorAll(".custom-dropdown").forEach((dd) => {
+            dd.classList.remove("active");
+          });
+        }
       });
-      
+
       // Populate Timeframes (Override existing populate)
       // We will perform this ON LOADER or Initialization
       function populateCustomTimeframes() {
-          const timeframes = ["M1", "M5", "M15", "M30", "H1", "H4", "D1"];
-          const container = document.getElementById('tf-options');
-          container.innerHTML = ''; // Clear
-          
-          timeframes.forEach(tf => {
-              const item = document.createElement('div');
-              item.className = 'dropdown-item';
-              if (tf === 'M5') item.classList.add('selected'); // Default
-              item.textContent = tf;
-              item.onclick = () => selectOption('tf', tf, tf);
-              container.appendChild(item);
-          });
+        const timeframes = ["M1", "M5", "M15", "M30", "H1", "H4", "D1"];
+        const container = document.getElementById("tf-options");
+        container.innerHTML = ""; // Clear
+
+        timeframes.forEach((tf) => {
+          const item = document.createElement("div");
+          item.className = "dropdown-item";
+          if (tf === "M5") item.classList.add("selected"); // Default
+          item.textContent = tf;
+          item.onclick = () => selectOption("tf", tf, tf);
+          container.appendChild(item);
+        });
       }
-      
+
       // Initialize Dropdowns
-      document.addEventListener('DOMContentLoaded', () => {
-          populateCustomTimeframes();
+      document.addEventListener("DOMContentLoaded", () => {
+        populateCustomTimeframes();
       });
 
       // ADAPT EXISTING FUNCTIONS to use new values
       // Override the old getters if necessary, or just update the handlers.
       // Since we changed the HTML, `document.getElementById('timeframeSelect').value` will fail in existing code if we don't fix it.
       // Let's create helper functions that act as the old selectors
-      
+
       function getTimeframeValue() {
-          const el = document.getElementById('tf-value');
-          return el ? el.getAttribute('data-value') : 'M5'; 
+        const el = document.getElementById("tf-value");
+        return el ? el.getAttribute("data-value") : "M5";
       }
-      
+
       function getCandleValue() {
-          const el = document.getElementById('candles-value');
-          return el ? el.getAttribute('data-value') : '1000';
+        const el = document.getElementById("candles-value");
+        return el ? el.getAttribute("data-value") : "1000";
       }
 
       // BRIDGE FUNCTIONS
       function changeTimeframe(val) {
-          console.log("Timeframe changed to:", val);
-          loadHistory(); // Trigger Full Reload
+        console.log("Timeframe changed to:", val);
+        loadHistory(); // Trigger Full Reload
       }
 
       function changeCandleCount(val) {
-          console.log("Candle count changed to:", val);
-          loadHistory(); // Trigger Full Reload
+        console.log("Candle count changed to:", val);
+        loadHistory(); // Trigger Full Reload
       }
-
     </script>
   </body>
 </html>
