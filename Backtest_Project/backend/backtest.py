@@ -81,6 +81,8 @@ def calculate_trade_stats(df_result):
         stats_trades.append({
             "entry_date": en_date,
             "exit_date": ex_date,
+            "entry_price": en_price,   # Adicionado
+            "exit_price": ex_price,     # Adicionado
             "return": ret,
             "duration": duration
         })
@@ -92,7 +94,8 @@ def calculate_trade_stats(df_result):
             "win_rate": 0.0,
             "avg_return": 0.0,
             "avg_duration": 0.0,
-            "profit_factor": 0.0
+            "profit_factor": 0.0,
+            "trades_list": [] # Lista vazia
         }
         
     df_trades = pd.DataFrame(stats_trades)
@@ -108,12 +111,19 @@ def calculate_trade_stats(df_result):
     gross_loss = abs(losses['return'].sum())
     profit_factor = gross_profit / gross_loss if gross_loss != 0 else 999.0
     
+    # Converter datas para string para JSON serializable se necessário,
+    # mas o backend api.py já deve tratar isso com o clean_for_json ou similar se converter para dict
+    # Vamos manter como datetime aqui e deixar o api.py lidar ou converter para str no loop
+    
+    # Adicionando a lista de trades detalhada no retorno
+    
     return {
         "total_trades": len(df_trades),
         "win_rate": win_rate,
         "avg_return": avg_return,
         "avg_duration": avg_duration,
-        "profit_factor": profit_factor
+        "profit_factor": profit_factor,
+        "trades_list": stats_trades # Retorna a lista detalhada
     }
 
 def calculate_metrics(daily_returns):

@@ -430,6 +430,51 @@ function renderMetrics(data) {
     `;
 }
 
+function renderTradeHistory(trades) {
+  const tbody = document.getElementById("trade_history_body");
+  if (!tbody) return;
+
+  tbody.innerHTML = "";
+
+  if (!trades || trades.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" class="text-center text-secondary p-4">Nenhum trade realizado neste período.</td></tr>`;
+    return;
+  }
+
+  // Reverse order (newest first)
+  const sortedTrades = [...trades].sort((a, b) => new Date(b.entry_date) - new Date(a.entry_date));
+
+  sortedTrades.forEach(trade => {
+    const tr = document.createElement("tr");
+
+    // Format dates
+    const entryDate = new Date(trade.entry_date).toLocaleDateString("pt-BR");
+    const exitDate = new Date(trade.exit_date).toLocaleDateString("pt-BR");
+    
+    // Values
+    const retPct = (trade.return * 100).toFixed(2) + "%";
+    const duration = trade.duration + " dias";
+
+    // Styling based on result
+    const isWin = trade.return > 0;
+    const valClass = isWin ? "val-pos" : "val-neg";
+    const statusBadge = isWin 
+        ? `<span class="badge bg-green-lt">GAIN</span>` 
+        : `<span class="badge bg-red-lt">LOSS</span>`;
+
+    tr.innerHTML = `
+        <td class="text-secondary">${entryDate}</td>
+        <td>${parseFloat(trade.entry_price).toFixed(2)}</td>
+        <td class="text-secondary">${exitDate}</td>
+        <td>${parseFloat(trade.exit_price).toFixed(2)}</td>
+        <td class="text-secondary">${duration}</td>
+        <td class="text-end fw-bold ${valClass}">${retPct}</td>
+        <td class="text-end">${statusBadge}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
 async function runBacktest() {
   const ticker = document.getElementById("selected_ticker").value;
   const start = document.getElementById("start_date").value;
@@ -486,6 +531,7 @@ async function runBacktest() {
     }
 
     renderMetrics(data);
+    renderTradeHistory(data.trade_stats.trades_list);
 
     const aiBox = document.getElementById("ai_analysis");
     if (aiBox) {
