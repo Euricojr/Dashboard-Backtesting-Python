@@ -643,12 +643,20 @@ async function initBatchFeature() {
       }
 
       tableBody.innerHTML = "";
+      const sidebarTableBody = document.getElementById("sidebar_table_body");
+      const sidebarWidget = document.getElementById("sidebar_ranking_widget");
+      const sidebarLabel = document.getElementById("sidebar_category_label");
+      
+      if (sidebarTableBody) sidebarTableBody.innerHTML = "";
+      if (sidebarLabel) sidebarLabel.innerText = select.options[select.selectedIndex].text.replace("⭐ ", "").replace("🇧🇷 ", "").replace("🇺🇸 ", "").replace("₿ ", "").replace("📊 ", "");
+
       data.forEach((item, index) => {
-        const tr = document.createElement("tr");
         const isPositive = item.total_return > 0;
         const logoUrl = getAssetLogo(item.ticker);
 
-        tr.innerHTML = `
+        // 1. Render Modal Row (Detailed)
+        const trModal = document.createElement("tr");
+        trModal.innerHTML = `
                     <td>
                         <div class="avatar avatar-sm" style="background-image: url('${logoUrl}'); background-color: transparent; background-size: contain; background-position: center; background-repeat: no-repeat;"></div>
                     </td>
@@ -658,14 +666,38 @@ async function initBatchFeature() {
                     <td class="text-end fw-bold">${item.sharpe.toFixed(2)}</td>
                     <td class="text-end val-loss">${(item.max_drawdown * 100).toFixed(2)}%</td>
                     <td class="text-end">
-                       <button class="btn btn-sm btn-neon-outline" onclick="loadFromBatch('${item.ticker}', '${item.name}')">Ver</button>
+                       <button class="btn btn-sm btn-neon-outline" onclick="loadFromBatch('${item.ticker}', '${item.name}', this)">Ver</button>
                     </td>
                 `;
-        tableBody.appendChild(tr);
+        tableBody.appendChild(trModal);
+
+        // 2. Render Sidebar Row (Compact)
+        if (sidebarTableBody) {
+             const trSidebar = document.createElement("tr");
+             trSidebar.innerHTML = `
+                <td class="p-1" style="width: 30px;">
+                    <div class="avatar avatar-xs" style="background-image: url('${logoUrl}'); background-color: transparent; background-size: contain; background-position: center; background-repeat: no-repeat; width: 24px; height: 24px;"></div>
+                </td>
+                <td class="p-1">
+                    <div class="font-weight-medium small">${item.ticker}</div>
+                </td>
+                <td class="text-end fw-bold p-1 ${isPositive ? "val-profit" : "val-loss"}" style="font-size: 0.75rem;">${(item.total_return * 100).toFixed(1)}%</td>
+                <td class="text-end p-1" style="width: 30px;">
+                   <button class="btn btn-ghost-secondary btn-icon btn-sm" onclick="loadFromBatch('${item.ticker}', '${item.name}', this)" title="Visualizar">
+                      <i class="ri-eye-line" style="font-size: 0.8rem;"></i>
+                   </button>
+                </td>
+            `;
+            sidebarTableBody.appendChild(trSidebar);
+        }
       });
 
       loading.style.display = "none";
       resultsArea.style.display = "block";
+      
+      // Show Sidebar Widget
+      if (sidebarWidget) sidebarWidget.style.display = "block";
+
     } catch (err) {
       console.error(err);
       alert("Erro ao executar varredura batch!");
@@ -676,10 +708,18 @@ async function initBatchFeature() {
   });
 }
 
-window.loadFromBatch = function (ticker, name) {
+window.loadFromBatch = async function (ticker, name, btnElement) {
   const modalEl = document.getElementById("modal_batch");
   const modal = bootstrap.Modal.getInstance(modalEl);
   if (modal) modal.hide();
+
+  // Show Loading on Button
+  let originalContent = "";
+  if (btnElement) {
+      originalContent = btnElement.innerHTML;
+      btnElement.disabled = true;
+      btnElement.innerHTML = '<div class="spinner-border spinner-border-sm text-neon" role="status"></div>';
+  }
 
   // 1. Atualizar Ticker Selecionado (Trigger + Hidden Input)
   document.getElementById("selected_ticker").value = ticker;
@@ -689,8 +729,14 @@ window.loadFromBatch = function (ticker, name) {
   selectAsset(ticker, name);
 
   // 3. Executar o Backtest automaticamente
-  runBacktest();
+  await runBacktest();
+  
+  // Restore Button
+  if (btnElement) {
+      btnElement.innerHTML = originalContent;
+      btnElement.disabled = false;
+  }
 
-  // 4. Garantir que a área de resultados esteja visível
-  document.getElementById("results_area").style.display = "flex";
+  // Scroll to top of results
+  document.getElementById("metrics-grid").scrollIntoView({ behavior: "smooth" });
 };

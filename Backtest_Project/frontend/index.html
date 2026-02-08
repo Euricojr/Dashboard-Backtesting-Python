@@ -526,6 +526,22 @@
                       <button id="open_batch_btn" class="btn btn-link w-100 text-secondary text-decoration-none" data-bs-toggle="modal" data-bs-target="#modal_batch">
                          <i class="ri-layout-grid-line me-2"></i>Ranking de Ativos
                       </button>
+                      
+                       <!-- Ranking de Ativos (Sidebar Widget - Persistent) -->
+                       <div class="mt-4" id="sidebar_ranking_widget" style="display: none;">
+                          <div class="d-flex justify-content-between align-items-center mb-2">
+                              <label class="form-label m-0">Top Assets</label>
+                              <span class="badge bg-green-lt" id="sidebar_category_label">---</span>
+                          </div>
+
+                          <div class="card" style="max-height: 400px; overflow-y: auto; border: 1px solid var(--border-color); background: rgba(0,0,0,0.2);">
+                              <table class="table table-sm table-vcenter mb-0" style="font-size: 0.75rem;">
+                                  <tbody id="sidebar_table_body">
+                                      <!-- Populated by JS -->
+                                  </tbody>
+                              </table>
+                          </div>
+                      </div>
                     </div>
 
                   </div>
@@ -677,8 +693,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Search Modal (VECTRA Style) -->
     <div id="search_modal" class="search-modal">
       <div class="search-content">
         <div class="search-header">
