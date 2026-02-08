@@ -657,17 +657,17 @@
               <p class="text-secondary">Processando dados do mercado... Aguarde.</p>
             </div>
 
-            <div class="table-responsive card" id="batch_results_area" style="display: none; max-height: 500px; border-radius: 8px;">
+            <div class="table-responsive card" id="batch_results_area" style="display: none; max-height: 500px; border-radius: 8px; overflow-y: auto;">
               <table class="table table-vcenter">
                 <thead>
                   <tr>
-                    <th>Pos</th>
+                    <th class="w-1"></th>
                     <th>Ticker</th>
                     <th>Ativo</th>
                     <th class="text-end">Retorno</th>
                     <th class="text-end">Sharpe</th>
                     <th class="text-end">Max DD</th>
-                    <th></th>
+                    <th class="w-1"></th>
                   </tr>
                 </thead>
                 <tbody id="batch_table_body"></tbody>

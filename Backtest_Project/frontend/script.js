@@ -234,6 +234,20 @@ const ASSET_LOGOS = {
   "^TWII": "https://upload.wikimedia.org/wikipedia/commons/5/55/Taiwan_Stock_Exchange_logo.svg",
 };
 
+function getAssetLogo(ticker) {
+    if (!ticker) return "";
+    const cleanTicker = ticker.split(".")[0];
+    
+    // 1. Check if we have a direct mapping for this ticker
+    if (ASSET_LOGOS[ticker]) {
+        return ASSET_LOGOS[ticker];
+    } 
+    // 2. Fallback to B3 repository if it's a Brazilian stock
+    else {
+        return `https://raw.githubusercontent.com/thefintz/icones-b3/main/icones/${cleanTicker}.png`;
+    }
+}
+
 function selectAsset(ticker, name) {
   const label = document.getElementById("trigger_label");
   const hidden = document.getElementById("selected_ticker");
@@ -255,16 +269,8 @@ function selectAsset(ticker, name) {
 
   // Logo Logic
   if (logoImg) {
-    const cleanTicker = ticker.split(".")[0];
-    
-    // 1. Check if we have a direct mapping for this ticker
-    if (ASSET_LOGOS[ticker]) {
-        logoImg.src = ASSET_LOGOS[ticker];
-    } 
-    // 2. Fallback to B3 repository if it's a Brazilian stock
-    else {
-        logoImg.src = `https://raw.githubusercontent.com/thefintz/icones-b3/main/icones/${cleanTicker}.png`;
-    }
+    const logoUrl = getAssetLogo(ticker);
+    logoImg.src = logoUrl;
 
     logoImg.onload = () => {
       logoImg.style.display = "block";
@@ -640,9 +646,12 @@ async function initBatchFeature() {
       data.forEach((item, index) => {
         const tr = document.createElement("tr");
         const isPositive = item.total_return > 0;
+        const logoUrl = getAssetLogo(item.ticker);
 
         tr.innerHTML = `
-                    <td><span class="badge ${index < 3 ? "bg-yellow text-dark" : "bg-dark text-secondary"}">#${index + 1}</span></td>
+                    <td>
+                        <div class="avatar avatar-sm" style="background-image: url('${logoUrl}'); background-color: transparent; background-size: contain; background-position: center; background-repeat: no-repeat;"></div>
+                    </td>
                     <td class="fw-bold">${item.ticker}</td>
                     <td class="text-secondary small">${item.name}</td>
                     <td class="text-end fw-bold ${isPositive ? "val-profit" : "val-loss"}">${(item.total_return * 100).toFixed(2)}%</td>
