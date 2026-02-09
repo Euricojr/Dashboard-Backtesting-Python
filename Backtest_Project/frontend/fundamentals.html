@@ -413,36 +413,94 @@
             border-radius: 12px;
             padding: 1.5rem 1.25rem;
             position: relative;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Spring-like transition */
             overflow: hidden;
             display: flex;
             flex-direction: column;
             gap: 1rem;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            cursor: default;
         }
 
         .metric-card:hover {
-            transform: translateY(-4px);
-            border-color: var(--border-light);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+            transform: translateY(-5px) scale(1.02);
+            border-color: rgba(0, 227, 150, 0.5); /* Green glow border */
+            box-shadow: 0 10px 30px -10px rgba(0, 227, 150, 0.3); /* Green glow shadow */
+        }
+        
+        .metric-card:hover .metric-label i:first-child {
+             transform: scale(1.2) rotate(5deg);
+             transition: transform 0.3s ease;
+             text-shadow: 0 0 8px var(--accent-neon);
         }
 
-        /* Variações de Glow Neon */
-        .metric-card.positive {
-            border: 1px solid rgba(0, 227, 150, 0.4);
-            box-shadow: 0 4px 15px -5px rgba(0, 227, 150, 0.2);
-        }
-        .metric-card.positive:hover {
-            box-shadow: 0 8px 25px -5px rgba(0, 227, 150, 0.4);
+        /* Help Icon & Tooltip */
+        .help-icon {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            opacity: 0.5;
+            cursor: help;
+            transition: all 0.3s ease;
+            margin-left: auto; /* Push to right if we want, or just gap */
         }
 
-        .metric-card.negative {
-            border: 1px solid rgba(255, 69, 96, 0.4);
-            box-shadow: 0 4px 15px -5px rgba(255, 69, 96, 0.2);
+        .help-icon:hover {
+            opacity: 1;
+            color: var(--accent-neon);
+            transform: scale(1.1);
         }
-        .metric-card.negative:hover {
-            box-shadow: 0 8px 25px -5px rgba(255, 69, 96, 0.4);
+
+        .help-icon::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%) translateY(10px);
+            background: rgba(0,0,0,0.95);
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            line-height: 1.4;
+            white-space: normal; /* Allow wrap */
+            width: max-content;
+            max-width: 250px;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-color);
+            z-index: 100;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            text-shadow: none;
+            font-weight: 500;
+            text-align: center;
         }
+
+        .help-icon:hover::after {
+            opacity: 1;
+            transform: translateX(-50%) translateY(-10px);
+        }
+
+        /* Animation for loading */
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .grid-container .metric-card {
+            animation: fadeInScale 0.5s ease-out forwards;
+            opacity: 0; /* Init hidden */
+        }
+
+        /* Stagger animations */
+        .grid-container .metric-card:nth-child(1) { animation-delay: 0.1s; }
+        .grid-container .metric-card:nth-child(2) { animation-delay: 0.2s; }
+        .grid-container .metric-card:nth-child(3) { animation-delay: 0.3s; }
+        .grid-container .metric-card:nth-child(4) { animation-delay: 0.4s; }
+        .grid-container .metric-card:nth-child(5) { animation-delay: 0.5s; }
+        .grid-container .metric-card:nth-child(6) { animation-delay: 0.6s; }
+        .grid-container .metric-card:nth-child(7) { animation-delay: 0.7s; }
+        .grid-container .metric-card:nth-child(8) { animation-delay: 0.8s; }
 
         .metric-label {
             font-size: 0.85rem;
@@ -452,7 +510,19 @@
             letter-spacing: 1px;
             display: flex;
             align-items: center;
+            justify-content: space-between; /* Space between label+icon and help icon */
+            width: 100%;
+            transition: color 0.3s;
+        }
+        
+        .metric-label span {
+            display: flex;
+            align-items: center;
             gap: 8px;
+        }
+        
+        .metric-card:hover .metric-label {
+            color: #fff;
         }
 
         .metric-label i {
@@ -854,37 +924,58 @@
         <h3 class="section-title">Valuation</h3>
         <div class="grid-container">
             <div class="metric-card" id="card-pl">
-                <span class="metric-label"><i class="ri-money-dollar-circle-line"></i> P/L</span>
+                <span class="metric-label">
+                    <span><i class="ri-money-dollar-circle-line"></i> P/L</span>
+                    <i class="ri-question-line help-icon" data-tooltip="Preço sobre Lucro: Quanto o mercado paga por R$1 de lucro."></i>
+                </span>
                 <span class="metric-value">-</span>
                 <div class="quality-bar"></div>
             </div>
             <div class="metric-card" id="card-pvp">
-                <span class="metric-label"><i class="ri-building-line"></i> P/VP</span>
+                <span class="metric-label">
+                    <span><i class="ri-building-line"></i> P/VP</span>
+                    <i class="ri-question-line help-icon" data-tooltip="Preço sobre Valor Patrimonial: Relação entre preço da ação e valor contábil."></i>
+                </span>
                 <span class="metric-value">-</span>
                 <div class="quality-bar"></div>
             </div>
             <div class="metric-card" id="card-evebitda">
-                <span class="metric-label"><i class="ri-line-chart-line"></i> EV/EBITDA</span>
+                <span class="metric-label">
+                    <span><i class="ri-line-chart-line"></i> EV/EBITDA</span>
+                    <i class="ri-question-line help-icon" data-tooltip="Enterprise Value / EBITDA: Custo da empresa sobre geração de caixa."></i>
+                </span>
                 <span class="metric-value">-</span>
                 <div class="quality-bar"></div>
             </div>
             <div class="metric-card" id="card-lpa">
-                <span class="metric-label"><i class="ri-pie-chart-line"></i> LPA</span>
+                <span class="metric-label">
+                    <span><i class="ri-pie-chart-line"></i> LPA</span>
+                    <i class="ri-question-line help-icon" data-tooltip="Lucro Por Ação: Lucro líquido dividido pelo número de ações."></i>
+                </span>
                 <span class="metric-value">-</span>
                 <div class="quality-bar"></div>
             </div>
             <div class="metric-card" id="card-vpa">
-                <span class="metric-label"><i class="ri-book-mark-line"></i> VPA</span>
+                <span class="metric-label">
+                    <span><i class="ri-book-mark-line"></i> VPA</span>
+                    <i class="ri-question-line help-icon" data-tooltip="Valor Patrimonial Por Ação: Patrimônio líquido dividido pelo número de ações."></i>
+                </span>
                 <span class="metric-value">-</span>
                 <div class="quality-bar"></div>
             </div>
              <div class="metric-card" id="card-peg-ratio">
-                <span class="metric-label"><i class="ri-percent-line"></i> PEG Ratio</span>
+                <span class="metric-label">
+                    <span><i class="ri-percent-line"></i> PEG Ratio</span>
+                    <i class="ri-question-line help-icon" data-tooltip="Price/Earnings to Growth: P/L dividido pela taxa de crescimento do lucro."></i>
+                </span>
                 <span class="metric-value">-</span>
                 <div class="quality-bar"></div>
             </div>
             <div class="metric-card" id="card-beta-5y">
-                <span class="metric-label"><i class="ri-activity-line"></i> Beta (5Y)</span>
+                <span class="metric-label">
+                    <span><i class="ri-activity-line"></i> Beta (5Y)</span>
+                    <i class="ri-question-line help-icon" data-tooltip="Volatilidade do ativo em relação ao índice de mercado (5 anos)."></i>
+                </span>
                 <span class="metric-value">-</span>
                 <div class="quality-bar"></div>
             </div>
@@ -896,22 +987,34 @@
         <h3 class="section-title">Endividamento e Liquidez</h3>
         <div class="grid-container">
             <div class="metric-card" id="card-divliq-ebitda">
-                <span class="metric-label"><i class="ri-scales-3-line"></i> Dív. Liq / EBITDA</span>
+                <span class="metric-label">
+                     <span><i class="ri-scales-3-line"></i> Dív. Liq / EBITDA</span>
+                     <i class="ri-question-line help-icon" data-tooltip="Tempo necessário para pagar a dívida líquida com a geração de caixa atual."></i>
+                </span>
                 <span class="metric-value">-</span>
                 <div class="quality-bar"></div>
             </div>
             <div class="metric-card" id="card-liq-corr">
-                <span class="metric-label"><i class="ri-hand-coin-line"></i> Liquidez Corr.</span>
+                <span class="metric-label">
+                    <span><i class="ri-hand-coin-line"></i> Liquidez Corr.</span>
+                    <i class="ri-question-line help-icon" data-tooltip="Capacidade da empresa pagar obrigações de curto prazo."></i>
+                </span>
                 <span class="metric-value">-</span>
                 <div class="quality-bar"></div>
             </div>
             <div class="metric-card" id="card-div-bruta">
-                <span class="metric-label"><i class="ri-bank-card-line"></i> Dívida Bruta</span>
+                <span class="metric-label">
+                    <span><i class="ri-bank-card-line"></i> Dívida Bruta</span>
+                    <i class="ri-question-line help-icon" data-tooltip="Total de dívidas da empresa (curto e longo prazo)."></i>
+                </span>
                 <span class="metric-value">-</span>
                 <div class="quality-bar"></div>
             </div>
-            <div class="metric-card" id="card-disponibilidades">
-                <span class="metric-label"><i class="ri-wallet-3-line"></i> Disponibilidades</span>
+            <div class="metric-card" id="card-patrimonio">
+                <span class="metric-label">
+                    <span><i class="ri-safe-line"></i> Disponibilidades</span>
+                    <i class="ri-question-line help-icon" data-tooltip="Recursos disponíveis imediatamente (Caixa e equivalentes)."></i>
+                </span>
                 <span class="metric-value">-</span>
                 <div class="quality-bar"></div>
             </div>
@@ -921,22 +1024,34 @@
         <h3 class="section-title">Eficiência e Rentabilidade</h3>
         <div class="grid-container">
             <div class="metric-card" id="card-margem-bruta">
-                <span class="metric-label"><i class="ri-percent-line"></i> Margem Bruta</span>
+                <span class="metric-label">
+                    <span><i class="ri-percent-line"></i> Margem Bruta</span>
+                     <i class="ri-question-line help-icon" data-tooltip="Lucro bruto dividido pela receita líquida. Eficiência produtiva."></i>
+                </span>
                 <span class="metric-value">-</span>
                 <div class="quality-bar"></div>
             </div>
             <div class="metric-card" id="card-margem-liquida">
-                <span class="metric-label"><i class="ri-drop-line"></i> Margem Líquida</span>
+                <span class="metric-label">
+                    <span><i class="ri-drop-line"></i> Margem Líquida</span>
+                    <i class="ri-question-line help-icon" data-tooltip="Lucro líquido dividido pela receita líquida. Rentabilidade final."></i>
+                </span>
                 <span class="metric-value">-</span>
                 <div class="quality-bar"></div>
             </div>
             <div class="metric-card" id="card-roe">
-                <span class="metric-label"><i class="ri-rocket-2-line"></i> ROE</span>
+                <span class="metric-label">
+                    <span><i class="ri-rocket-line"></i> ROE</span>
+                    <i class="ri-question-line help-icon" data-tooltip="Retorno sobre o Patrimônio Líquido. Capacidade de gerar valor aos sócios."></i>
+                </span>
                 <span class="metric-value">-</span>
                 <div class="quality-bar"></div>
             </div>
-            <div class="metric-card" id="card-roic">
-                <span class="metric-label"><i class="ri-flashlight-line"></i> ROIC</span>
+             <div class="metric-card" id="card-roic">
+                <span class="metric-label">
+                    <span><i class="ri-flashlight-line"></i> ROIC</span>
+                    <i class="ri-question-line help-icon" data-tooltip="Retorno sobre o Capital Investido (sócios + dívida)."></i>
+                </span>
                 <span class="metric-value">-</span>
                 <div class="quality-bar"></div>
             </div>
