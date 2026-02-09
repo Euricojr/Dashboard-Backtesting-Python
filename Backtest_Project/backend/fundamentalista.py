@@ -20,6 +20,85 @@ def obter_historico_dividendos(ticker_sa):
         print(f"Erro ao obter dividendos: {e}")
         return []
 
+def _obter_noticias(ticker_symbol):
+    """
+    Busca as 3-4 notícias mais recentes usando yfinance.
+    Retorna uma lista de dicionários formatados.
+    """
+    try:
+        stock = yf.Ticker(ticker_symbol)
+        news = stock.news
+        if not news:
+            return []
+            
+        formatted_news = []
+        for item in news[:4]: # Pega as 4 mais recentes
+            try:
+                # O objeto pode ser direto ou aninhado em 'content'
+                content = item.get('content', item)
+                
+                # Title
+                title = content.get('title', 'Sem Título')
+                
+                # Link
+                link = '#'
+                if 'clickThroughUrl' in content and content['clickThroughUrl']:
+                    link = content['clickThroughUrl'].get('url', '#')
+                elif 'link' in content:
+                    link = content['link']
+                
+                # Publisher
+                publisher = 'Desconhecido'
+                if 'provider' in content and content['provider']:
+                    publisher = content['provider'].get('displayName', 'Desconhecido')
+                
+                # Date
+                pub_date = "Recentemente"
+                date_str = content.get('pubDate', content.get('providerPublishTime'))
+                if date_str:
+                    try:
+                        # Tenta parsear string ISO
+                        if isinstance(date_str, str):
+                            dt = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+                        else:
+                            dt = datetime.fromtimestamp(date_str)
+                            
+                        now = datetime.now(dt.tzinfo)
+                        diff = now - dt
+                        
+                        if diff.days == 0:
+                            pub_date = f"Hoje, {dt.strftime('%H:%M')}"
+                        elif diff.days == 1:
+                            pub_date = f"Ontem, {dt.strftime('%H:%M')}"
+                        else:
+                            pub_date = dt.strftime('%d/%m/%Y')
+                    except: pass
+
+                # Thumbnail
+                thumb = "https://placehold.co/600x400/1e1e24/FFF?text=News"
+                if 'thumbnail' in content and content['thumbnail']:
+                    thumbs = content['thumbnail'].get('resolutions', [])
+                    if thumbs:
+                        # Pega a segunda maior (geralmente melhor balanço qualidade/peso) ou a última (orig)
+                        # O array costuma vir ordnenado. Vamos pegar o ultimo available
+                        thumb = thumbs[-1]['url']
+                
+                formatted_news.append({
+                    'title': title,
+                    'publisher': publisher,
+                    'link': link,
+                    'thumbnail': thumb,
+                    'published': pub_date
+                })
+            except Exception as e:
+                print(f"Erro ao processar item de notícia: {e}")
+                continue
+            
+        return formatted_news
+    except Exception as e:
+        print(f"Erro ao buscar notícias para {ticker_symbol}: {e}")
+        return []
+
 def processar_ativo(ticker):
     """
     Busca dados fundamentalistas usando yfinance com reconciliação Status Invest.
@@ -127,6 +206,9 @@ def processar_ativo(ticker):
     ebitda = get_val('ebitda', 0)
     div_ebitda = ((total_debt - total_cash) / ebitda) if ebitda != 0 else 0
 
+    # Chama a função de notícias usando o symbol correto (ex: PETR4.SA)
+    noticias = _obter_noticias(symbol)
+
     return {
         'meta': {
             'ticker': ticker, 'empresa': info.get('longName', ticker), 'ano_base': 'TTM',
@@ -158,6 +240,7 @@ def processar_ativo(ticker):
             'Div_Bruta': total_debt
         },
         'proventos': obter_historico_dividendos(symbol),
+        'news': noticias,
         'raw': {
             'receita_liquida': get_val('totalRevenue', 0), 'ebitda': ebitda,
             'lucro_liquido': lucro, 'patrimonio_liquido': vpa * shares if shares > 0 else 0,

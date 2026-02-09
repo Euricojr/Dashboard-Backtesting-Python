@@ -676,6 +676,68 @@
           font-weight: 700;
           margin-top: 2px;
       }
+
+        /* News Card */
+        .news-card {
+            background: linear-gradient(135deg, #18181b 0%, #09090b 100%);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .news-card:hover {
+            border-color: var(--neon-green);
+            transform: translateY(-4px);
+            box-shadow: 0 4px 20px -5px rgba(0, 227, 150, 0.2);
+        }
+
+        .news-thumb {
+            height: 140px;
+            width: 100%;
+            object-fit: cover;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .news-content {
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            gap: 0.5rem;
+        }
+
+        .news-meta {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .news-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #fff;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            flex-grow: 1;
+        }
+
+        .news-publisher {
+            color: var(--neon-green);
+        }
     </style>
 </head>
 <body class="layout-fluid">
@@ -783,6 +845,11 @@
     <!-- 3. Main Content (Grid) -->
     <div class="container-xl main-content" style="padding-top: 3rem; padding-bottom: 5rem;">
         
+        <!-- News Section -->
+        <h4 class="section-title" id="news-section-title" style="display: none; justify-content: flex-start; gap: 10px;"><i class="ri-newspaper-line"></i> Últimas Notícias</h4>
+        <div class="row row-cards mb-5" id="news-container" style="display: none;">
+        </div>
+
         <!-- Valuation -->
         <h3 class="section-title">Valuation</h3>
         <div class="grid-container">
@@ -802,26 +869,28 @@
                 <div class="quality-bar"></div>
             </div>
             <div class="metric-card" id="card-lpa">
-                <span class="metric-label"><i class="ri-funds-box-line"></i> LPA</span>
+                <span class="metric-label"><i class="ri-pie-chart-line"></i> LPA</span>
                 <span class="metric-value">-</span>
                 <div class="quality-bar"></div>
             </div>
             <div class="metric-card" id="card-vpa">
-                <span class="metric-label"><i class="ri-book-3-line"></i> VPA</span>
+                <span class="metric-label"><i class="ri-book-mark-line"></i> VPA</span>
                 <span class="metric-value">-</span>
                 <div class="quality-bar"></div>
             </div>
-            <div class="metric-card" id="card-beta">
-                <span class="metric-label"><i class="ri-pulse-line"></i> Beta (5Y)</span>
-                <span class="metric-value" id="val_beta">-</span>
-                <div class="quality-bar qb-neutral"></div>
+             <div class="metric-card" id="card-peg-ratio">
+                <span class="metric-label"><i class="ri-percent-line"></i> PEG Ratio</span>
+                <span class="metric-value">-</span>
+                <div class="quality-bar"></div>
             </div>
-            <div class="metric-card" id="card-peg">
-                <span class="metric-label"><i class="ri-pie-chart-line"></i> PEG Ratio</span>
-                <span class="metric-value" id="val_peg">-</span>
-                <div class="quality-bar qb-neutral"></div>
+            <div class="metric-card" id="card-beta-5y">
+                <span class="metric-label"><i class="ri-activity-line"></i> Beta (5Y)</span>
+                <span class="metric-value">-</span>
+                <div class="quality-bar"></div>
             </div>
         </div>
+
+
 
         <!-- Endividamento -->
         <h3 class="section-title">Endividamento e Liquidez</h3>

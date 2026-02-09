@@ -287,6 +287,14 @@ function resetDashboard() {
 
     const marketStrip = document.getElementById('market_strip');
     if (marketStrip) marketStrip.style.display = 'none';
+
+    const newsContainer = document.getElementById('news-container');
+    const newsTitle = document.getElementById('news-section-title');
+    if (newsContainer) {
+        newsContainer.innerHTML = '';
+        newsContainer.style.display = 'none';
+    }
+    if (newsTitle) newsTitle.style.display = 'none';
 }
 
 async function loadFundamentals(ticker) {
@@ -451,6 +459,43 @@ function renderDashboard(data, requestedTicker = null) {
 
     // --- Charts ---
     renderDividendChart(data.proventos);
+
+    // --- News ---
+    const newsContainer = document.getElementById('news-container');
+    const newsTitle = document.getElementById('news-section-title');
+    
+    if (newsContainer && newsTitle) {
+        newsContainer.innerHTML = ''; // Clear previous
+        
+        if (data.news && data.news.length > 0) {
+            newsTitle.style.display = 'flex';
+            newsContainer.style.display = 'flex'; // row-cards is usually flex or grid
+
+            data.news.forEach(item => {
+                const col = document.createElement('div');
+                col.className = 'col-sm-6 col-md-3'; // 4 cards per row on large screens
+                
+                col.innerHTML = `
+                    <a href="${item.link}" target="_blank" class="news-card">
+                        <img src="${item.thumbnail}" class="news-thumb" alt="News Image" onerror="this.src='https://placehold.co/600x400/1e1e24/FFF?text=No+Image'">
+                        <div class="news-content">
+                            <div class="news-meta">
+                                <span class="news-publisher">${item.publisher}</span>
+                                <span>${item.published}</span>
+                            </div>
+                            <h5 class="news-title">${item.title}</h5>
+                        </div>
+                    </a>
+                `;
+                newsContainer.appendChild(col);
+            });
+        } else {
+            // Show discrete message if no news
+            newsTitle.style.display = 'flex';
+            newsContainer.style.display = 'block';
+            newsContainer.innerHTML = '<div class="text-secondary small fst-italic mt-2">Nenhuma notícia recente encontrada para este ativo.</div>';
+        }
+    }
 }
 
 function renderDividendChart(proventos) {
