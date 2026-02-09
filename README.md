@@ -55,6 +55,7 @@ pip install -r requirements.txt
 ```
 
 Este comando instala as seguintes bibliotecas principais:
+
 - **pandas** e **numpy**: Manipulação e análise de dados
 - **MetaTrader5**: Integração com o terminal MT5
 - **yfinance**: Download de dados históricos do Yahoo Finance
@@ -172,15 +173,18 @@ python api.py
 ```
 
 Após executar o comando:
+
 1. O servidor iniciará em `http://localhost:5000`
 2. Abra seu navegador e acesse `http://localhost:5000`
 3. Você terá acesso aos gráficos de backtest, métricas de desempenho e análises técnicas
 
 **Funcionalidades Disponíveis:**
-- Testes de estratégias com dados históricos
-- Cálculo de métricas (Sharpe Ratio, Sortino, Max Drawdown, CAGR)
-- Comparação com Buy & Hold
-- Análise de portfólios múltiplos
+
+- **Dashboard Interativo:** Interface moderna com efeitos Glassmorphism, hover 3D e animações.
+- **Análise Fundamentalista:** Cards detalhados de Valuation, Endividamento e Eficiência com explicações didáticas (Modais).
+- **Notícias Recentes:** Seção automática de notícias relacionadas ao ativo pesquisado.
+- **Backtesting Visual:** Gráficos interativos (Candlestick + Indicadores) e curvas de equity.
+- **Métricas de Risco:** Sharpe Ratio, Sortino, Drawdown e Volatilidade calculados automaticamente.
 
 ### Executando o Live_Bot_MT5 (Execução em Tempo Real)
 
@@ -194,11 +198,13 @@ python app.py
 ```
 
 Após executar o comando:
+
 1. O servidor iniciará em `http://localhost:5002`
 2. Abra seu navegador e acesse `http://localhost:5002`
 3. Você terá acesso ao dashboard de operações em tempo real
 
 **Funcionalidades Disponíveis:**
+
 - Monitoramento em tempo real do mercado
 - Execução automática de ordens
 - Scanner de múltiplos ativos
@@ -216,7 +222,7 @@ Após executar o comando:
 | **Fonte de Dados** | Yahoo Finance (dados históricos)    | MetaTrader 5 (dados intraday)       |
 | **Ambiente**       | Offline / Estático                  | Online / Dinâmico                   |
 | **Latência**       | N/A                                 | Ultra-baixa                         |
-| **Pergunta-Chave** | "Isso funcionou antes?"              | "O mercado está dando sinal agora?" |
+| **Pergunta-Chave** | "Isso funcionou antes?"             | "O mercado está dando sinal agora?" |
 
 ---
 
@@ -282,4 +288,4 @@ Desenvolvido por **Eurico Júnior**.
 _Plataforma focada na convergência entre Data Science, Análise Técnica e Execução Automatizada de Estratégias de Trading._
 
 **Versão:** 1.0  
-**Última atualização:** Janeiro 2026
+**Última atualização:** Fevereiro 2026
