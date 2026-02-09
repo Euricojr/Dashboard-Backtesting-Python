@@ -165,7 +165,62 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('trigger-label').innerText = ticker.toUpperCase();
         await loadFundamentals(ticker);
     }
+    
+    // Help Icon Click Handler (Mobile/Desktop) -> Open Modal
+    document.addEventListener('click', (e) => {
+        const icon = e.target.closest('.help-icon');
+        
+        if (icon) {
+            e.stopPropagation();
+            e.preventDefault();
+            
+            // Get content
+            const tooltipText = icon.getAttribute('data-tooltip');
+            // Title is strictly the text inside the metric label span
+            let titleText = 'Indicador';
+            try {
+                // The icon is inside .metric-label, which has a span with the text
+                const labelSpan = icon.closest('.metric-label').querySelector('span');
+                if (labelSpan) titleText = labelSpan.textContent.trim();
+            } catch (err) {
+                console.warn("Could not extract title", err);
+            }
+
+            openMetricModal(titleText, tooltipText);
+        }
+        
+        // Close modal on outside click
+        const modal = document.getElementById('metric-info-modal');
+        if (modal && e.target === modal) {
+            closeMetricModal();
+        }
+    });
+
 });
+
+function openMetricModal(title, description) {
+    const modal = document.getElementById('metric-info-modal');
+    const titleEl = document.getElementById('metric-modal-title');
+    const descEl = document.getElementById('metric-modal-desc');
+    
+    if (modal && titleEl && descEl) {
+        titleEl.innerText = title;
+        descEl.innerText = description;
+        modal.style.display = 'flex';
+        // Add minimal animation class if desired
+        setTimeout(() => modal.classList.add('show'), 10);
+    }
+}
+
+function closeMetricModal() {
+    const modal = document.getElementById('metric-info-modal');
+    if (modal) {
+        modal.classList.remove('show');
+        setTimeout(() => {
+            modal.style.display = 'none';
+        }, 300); // Wait for transition
+    }
+}
 
 async function loadAssets() {
     try {

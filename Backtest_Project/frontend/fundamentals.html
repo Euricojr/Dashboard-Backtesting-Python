@@ -414,18 +414,20 @@
             padding: 1.5rem 1.25rem;
             position: relative;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Spring-like transition */
-            overflow: hidden;
+            /* overflow: hidden;  <-- REMOVED TO ALLOW TOOLTIPS */
             display: flex;
             flex-direction: column;
             gap: 1rem;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             cursor: default;
+            z-index: 1; /* Ensure base z-index */
         }
 
         .metric-card:hover {
             transform: translateY(-5px) scale(1.02);
             border-color: rgba(0, 227, 150, 0.5); /* Green glow border */
             box-shadow: 0 10px 30px -10px rgba(0, 227, 150, 0.3); /* Green glow shadow */
+            z-index: 10; /* Ensure card and tooltip are above siblings */
         }
         
         .metric-card:hover .metric-label i:first-child {
@@ -474,11 +476,14 @@
             text-shadow: none;
             font-weight: 500;
             text-align: center;
+            visibility: hidden; /* Prevent blocking clicks when hidden */
         }
 
-        .help-icon:hover::after {
+        .help-icon:hover::after,
+        .help-icon.active::after {
             opacity: 1;
             transform: translateX(-50%) translateY(-10px);
+            visibility: visible;
         }
 
         /* Animation for loading */
@@ -545,6 +550,8 @@
             left: 0;
             width: 100%;
             height: 3px;
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
         }
 
         /* Market Strip (Clean & Integrated) */
@@ -807,6 +814,99 @@
 
         .news-publisher {
             color: var(--neon-green);
+        }
+
+        /* Metric Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+        
+        .modal-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .metric-modal-content {
+            background: #18181b;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 400px;
+            position: relative;
+            transform: translateY(20px);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+
+        .modal-overlay.show .metric-modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        
+        .modal-close-btn:hover {
+            color: #fff;
+        }
+
+        .metric-modal-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .metric-modal-header i {
+            font-size: 3rem;
+            color: var(--accent-neon);
+            margin-bottom: 1rem;
+            display: block;
+            filter: drop-shadow(0 0 10px rgba(0, 227, 150, 0.4));
+        }
+
+        .metric-modal-header h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #fff;
+            margin: 0;
+        }
+
+        .metric-modal-body p {
+            color: #a1a1aa;
+            font-size: 1rem;
+            line-height: 1.6;
+            margin: 0;
+        }
+        
+        .metric-modal-footer {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            color: #52525b;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
     </style>
 </head>
@@ -1108,6 +1208,23 @@
             <div id="modal_results" class="search-modal-results"></div>
             <div class="p-3 border-top border-secondary-subtle opacity-30 text-center small text-secondary">
                 ESC para sair | SETAS para navegar | ENTER para selecionar
+            </div>
+        </div>
+    </div>
+
+    <!-- Metric Info Modal -->
+    <div id="metric-info-modal" class="modal-overlay" style="display: none;">
+        <div class="metric-modal-content">
+            <button class="modal-close-btn" onclick="closeMetricModal()"><i class="ri-close-line"></i></button>
+            <div class="metric-modal-header">
+                <i id="metric-modal-icon" class="ri-information-line"></i>
+                <h3 id="metric-modal-title">Título do Indicador</h3>
+            </div>
+            <div class="metric-modal-body">
+                <p id="metric-modal-desc">Descrição detalhada do indicador vai aqui.</p>
+            </div>
+            <div class="metric-modal-footer">
+                <small>FinSense Education</small>
             </div>
         </div>
     </div>
