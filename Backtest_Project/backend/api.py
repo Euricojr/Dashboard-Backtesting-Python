@@ -380,9 +380,31 @@ def run_batch_backtest():
 
         print(f"Iniciando Batch para {len(tickers_map)} ativos.")
         
+        tickers_list = list(tickers_map.keys())
+        print(f"Iniciando Download em Batch para {len(tickers_list)} ativos...")
+        
+        try:
+            # Download otimizado: todos de uma vez (evita rate limit)
+            data = yf.download(tickers_list, start=start_date, end=end_date, group_by='ticker', progress=False, threads=True)
+        except Exception as e:
+            print(f"Erro crítico no download em massa: {e}")
+            return jsonify({"error": "Falha no download de dados do Yahoo Finance."}), 500
+            
         for ticker, name in tickers_map.items():
             try:
-                df = yf.download(ticker, start=start_date, end=end_date, progress=False)
+                # Extração do DataFrame específico
+                if len(tickers_list) == 1:
+                    df = data.copy()
+                else:
+                    # Se o ticker não veio no download (ex: falha ou delisted), pula
+                    try:
+                        df = data[ticker].copy()
+                    except KeyError:
+                        continue
+                
+                # Limpeza básica (remove linhas onde tudo é NaN)
+                df = df.dropna(how='all')
+                
                 if df.empty or len(df) < 20: 
                     continue
                 
@@ -405,7 +427,7 @@ def run_batch_backtest():
                 })
                 
             except Exception as e:
-                print(f"Pulo em {ticker} por erro técnico.")
+                print(f"Pulo em {ticker} por erro técnico: {e}")
                 continue
         
         results.sort(key=lambda x: x.get('total_return', 0), reverse=True)
