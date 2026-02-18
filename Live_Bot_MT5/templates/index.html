@@ -1528,6 +1528,7 @@
 
       let SYMBOL = document.getElementById("ticker-input").value;
       let updateInterval = null;
+      let isStrategyActive = false; // Controls SMA visibility
 
       function logStatus(msg, type = "neutral") {
         console.log(`[${type}] ${msg}`);
@@ -1595,6 +1596,9 @@
 
       async function loadHistory() {
         if (updateInterval) clearInterval(updateInterval);
+        
+        // Reset Strategy State on Reload/Symbol Change
+        isStrategyActive = false;
 
         const tf = getTimeframeValue();
         const count = getCandleValue();
@@ -1763,6 +1767,9 @@
           candleSeries.setMarkers(data.markers);
           smaShortSeries.setData(data.sma_short);
           smaLongSeries.setData(data.sma_long);
+          
+          // Enable Live Updates for SMA
+          isStrategyActive = true;
 
           if (data.best_params) {
             document.getElementById("smaShort").value = data.best_params.short;
@@ -1894,16 +1901,36 @@
 
       async function updateLive() {
         const tf = getTimeframeValue();
+        const short = document.getElementById("smaShort").value;
+        const long = document.getElementById("smaLong").value;
+
         try {
           const res = await fetch(
-            `/api/candle?symbol=${SYMBOL}&timeframe=${tf}`,
+            `/api/candle?symbol=${SYMBOL}&timeframe=${tf}&short=${short}&long=${long}`,
           );
-          const candle = await res.json();
-          if (candle.error) return;
+          const data = await res.json();
+          if (data.error) return;
 
+          // data agora vem como { candle: {...}, sma: {...} }
+          const candle = data.candle;
+          const sma = data.sma;
+
+          // 1. Atualiza Candle (Preço em Tempo Real)
           candleSeries.update(candle);
           updateDisplay(candle);
-        } catch (err) {}
+
+          // 2. Atualiza SMAs (Apenas dado consolidado do candle anterior e SE ativo)
+          if (isStrategyActive) {
+              if (sma && sma.short !== null) {
+                smaShortSeries.update({ time: sma.time, value: sma.short });
+              }
+              if (sma && sma.long !== null) {
+                smaLongSeries.update({ time: sma.time, value: sma.long });
+              }
+          }
+        } catch (err) {
+          console.error(err);
+        }
       }
 
       function updateDisplay(candle) {

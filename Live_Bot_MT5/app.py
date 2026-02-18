@@ -113,6 +113,10 @@ def get_candle():
     symbol = request.args.get('symbol', 'WING26')
     tf_str = request.args.get('timeframe', 'M5')
     
+    # Parametros SMA (se nao vier, usa padrao mas nao retorna erro)
+    short_window = int(request.args.get('short', 20))
+    long_window = int(request.args.get('long', 50))
+    
     # 0. Check connection
     connected, err = ensure_mt5_connected()
     if not connected:
@@ -120,16 +124,46 @@ def get_candle():
 
     timeframe = TIMEFRAMES.get(tf_str, mt5.TIMEFRAME_M5)
     
-    # Pega apenas a ultima vela (1) do timeframe escolhido
-    rates = mt5.copy_rates_from_pos(symbol, timeframe, 0, 1)
+    # Precisa de historico suficiente para calcular a SMA Longa
+    # Pega Long + Buffer (ex: +10 velas)
+    count = long_window + 10
+    
+    rates = mt5.copy_rates_from_pos(symbol, timeframe, 0, count)
     
     if rates is None or len(rates) == 0:
         return jsonify({"error": "Sem dados"}), 404
         
-    data = format_rates(rates)
+    df = pd.DataFrame(rates)
+    df['time'] = pd.to_datetime(df['time'], unit='s')
     
-    # Retorna objeto único para o update
-    return jsonify(data[0])
+    # Calculate SMA
+    df['SMA_Short'] = df['close'].rolling(window=short_window).mean()
+    df['SMA_Long'] = df['close'].rolling(window=long_window).mean()
+    
+    # Pega ultima vela (LIVE) para o grafico de precos
+    last_row = df.iloc[-1]
+    candle_data = {
+        "time": int(last_row['time'].timestamp()),
+        "open": float(last_row['open']),
+        "high": float(last_row['high']),
+        "low": float(last_row['low']),
+        "close": float(last_row['close'])
+    }
+    
+    # Pega penultima vela (FECHADA) para a SMA
+    # Se o usuario quer "apenas na passagem", o dado mais confiavel eh o da vela anterior fechada
+    prev_row = df.iloc[-2] if len(df) > 1 else last_row
+    
+    sma_data = {
+        "time": int(prev_row['time'].timestamp()),
+        "short": float(prev_row['SMA_Short']) if not pd.isna(prev_row['SMA_Short']) else None,
+        "long": float(prev_row['SMA_Long']) if not pd.isna(prev_row['SMA_Long']) else None
+    }
+    
+    return jsonify({
+        "candle": candle_data,
+        "sma": sma_data
+    })
 
 @app.route('/api/timeframes')
 def get_timeframes():
