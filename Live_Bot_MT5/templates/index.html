@@ -1903,20 +1903,26 @@
         const tf = getTimeframeValue();
         const short = document.getElementById("smaShort").value;
         const long = document.getElementById("smaLong").value;
+        const now = new Date().getTime(); // Anti-cache
 
         try {
           const res = await fetch(
-            `/api/candle?symbol=${SYMBOL}&timeframe=${tf}&short=${short}&long=${long}`,
+            `/api/candle?symbol=${SYMBOL}&timeframe=${tf}&short=${short}&long=${long}&_=${now}`,
           );
           const data = await res.json();
           if (data.error) return;
+
+          // LOG PARA DEBUG
+          console.log("Tick recebido: ", data.candle);
 
           // data agora vem como { candle: {...}, sma: {...} }
           const candle = data.candle;
           const sma = data.sma;
 
           // 1. Atualiza Candle (Preço em Tempo Real)
-          candleSeries.update(candle);
+          if (candleSeries) {
+               candleSeries.update(candle);
+          }
           updateDisplay(candle);
 
           // 2. Atualiza SMAs (Apenas dado consolidado do candle anterior e SE ativo)
@@ -1937,7 +1943,12 @@
         const priceEl = document.getElementById("price");
         const oldPrice = parseFloat(priceEl.innerText.replace("--.--", "0"));
 
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString();
         priceEl.innerText = `${candle.close.toFixed(2)}`;
+        
+        // Debug Title
+        document.title = `FinSense | ${candle.close.toFixed(2)}`;
 
         // Color animation based on tick
         if (candle.close > oldPrice) {

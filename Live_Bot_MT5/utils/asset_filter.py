@@ -5,7 +5,7 @@ def load_clean_assets():
     """
     whitelist = [
         # --- FUTUROS E INDICES ---
-        "WING26", "WDOG26", "BOVA11", "SMAL11", "IVVB11",
+        "WING26", "WINJ26", "WDOG26", "BOVA11", "SMAL11", "IVVB11",
         
         # --- AÇÕES (LISTA COMPLETA) ---
         "ABEV3", "AESB3", "ALOS3", "ALUP11", "ARZZ3", "ASAI3", "AURE3", "AZUL4",

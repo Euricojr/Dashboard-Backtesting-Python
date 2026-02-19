@@ -1,18 +1,143 @@
+import threading
+import time
 from flask import Flask, render_template, jsonify, request
 import MetaTrader5 as mt5
 from datetime import datetime
 import pandas as pd
+from utils.telegram_notifier import TelegramNotifier
+import os
 
 app = Flask(__name__)
+
+# --- GLOBAL CONFIG & STATE ---
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+MONITOR_SYMBOL = "WING26" # Default monitored symbol (Deprecated in favor of full list)
+MONITOR_TIMEFRAME = "M5" # Timeframe do Monitoramento (M1, M5, H1, etc)
+LAST_SIGNAL_STATE = {} # Dict para guardar estado de cada ativo: { "WING26": 1, ... }
+
+def run_telegram_monitor():
+    """
+    Função que roda em thread separada para monitorar cruzamento de médias
+    e enviar alertas no Telegram.
+    """
+    global LAST_SIGNAL_STATE
+    
+    # Carrega lista de ativos
+    from utils.asset_filter import load_clean_assets
+    
+    print(f"🚀 [Monitor] Iniciando Thread de Monitoramento para TODOS os ativos...")
+    print(f"⏰ Timeframe: {MONITOR_TIMEFRAME} | Delay entre ativos: 0.1s | Ciclo: 60s")
+    
+    notifier = TelegramNotifier(token=TELEGRAM_TOKEN, chat_id=TELEGRAM_CHAT_ID)
+    
+    # Aguarda conexão MT5 (feita no main thread ou aqui)
+    while True:
+        if mt5.terminal_info() is not None:
+            break
+        time.sleep(1)
+
+    while True:
+        # Recarrega lista a cada ciclo (caso mude)
+        assets_data = load_clean_assets()
+        # Flatten se for dict
+        if isinstance(assets_data, dict):
+            assets = assets_data.get("Indices", []) + assets_data.get("Acoes", [])
+        else:
+            assets = assets_data
+
+        print(f"🔎 [Monitor] Iniciando ciclo de verificação em {len(assets)} ativos...")
+        
+        for symbol in assets:
+            try:
+                # 1. Pega dados
+                # Define Timeframe (Default M5 se não achar)
+                mt5_tf = TIMEFRAMES.get(MONITOR_TIMEFRAME, mt5.TIMEFRAME_M5)
+                
+                rates = mt5.copy_rates_from_pos(symbol, mt5_tf, 0, 100)
+                if rates is None or len(rates) < 55: # Precisa de pelo menos 50 + buffer
+                    continue
+
+                df = pd.DataFrame(rates)
+                df['time'] = pd.to_datetime(df['time'], unit='s')
+                
+                # 2. Calcula SMA 20 e 50
+                df['SMA_Short'] = df['close'].rolling(window=20).mean()
+                df['SMA_Long'] = df['close'].rolling(window=50).mean()
+                
+                # 3. Verifica Cruzamento
+                current = df.iloc[-1]
+                prev = df.iloc[-2]
+                
+                c_short = current['SMA_Short']
+                c_long = current['SMA_Long']
+                p_short = prev['SMA_Short']
+                p_long = prev['SMA_Long']
+                
+                if not (pd.isna(c_short) or pd.isna(c_long) or pd.isna(p_short) or pd.isna(p_long)):
+                    signal_text = None
+                    
+                    # Recupera estado anterior deste ativo especifico
+                    last_state = LAST_SIGNAL_STATE.get(symbol, 0)
+                    new_state = last_state
+                    
+                    # Golden Cross
+                    if p_short <= p_long and c_short > c_long:
+                        if last_state != 1:
+                            signal_text = "COMPRA (Golden Cross)"
+                            new_state = 1
+                    # Death Cross
+                    elif p_short >= p_long and c_short < c_long:
+                        if last_state != -1:
+                            signal_text = "VENDA (Death Cross)"
+                            new_state = -1
+                            
+                    if signal_text:
+                        LAST_SIGNAL_STATE[symbol] = new_state
+                        msg = (
+                            f"🚀 **ALERTA FINSENSE** 🚀\n"
+                            f"Ativo: {symbol}\n"
+                            f"Sinal: {signal_text}\n"
+                            f"Preço: {current['close']:.2f}\n"
+                            f"Horário: {current['time'].strftime('%H:%M')}\n"
+                            f"TF: {MONITOR_TIMEFRAME}"
+                        )
+                        print(f"\n⚡ [Monitor] ALERTA ENVIADO para {symbol}: {signal_text}")
+                        notifier.enviar_mensagem(msg)
+
+            except Exception as e:
+                # Silencia erros individuais para nao flodar o log, ou imprime so o simbolo
+                # print(f"❌ [Monitor] Erro em {symbol}: {e}")
+                pass
+            
+            # Pequeno delay entre ativos para não travar CPU/MT5
+            time.sleep(0.1)
+
+        # Aguarda fim do ciclo
+        print(f"💤 [Monitor] Ciclo finalizado. Aguardando 60s...")
+        time.sleep(60)
+
+# Inicia a thread de monitoramento apenas se não for o reloader do Flask (para não duplicar)
+if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+    monitor_thread = threading.Thread(target=run_telegram_monitor, daemon=True)
+    monitor_thread.start()
+
+
 
 # Helper para garantir conexão com MT5
 def ensure_mt5_connected():
     # Verifica se já está inicializado e com terminal rodando
-    if mt5.terminal_info() is None:
-        if not mt5.initialize():
-            err = mt5.last_error()
-            return False, err
-    return True, None
+    try:
+        if mt5.terminal_info() is None:
+            print("🔄 Tentando inicializar MT5...")
+            if not mt5.initialize():
+                err = mt5.last_error()
+                print(f"❌ Erro MT5 Initialize: {err}")
+                return False, err
+        return True, None
+    except Exception as e:
+        print(f"❌ Exception MT5: {e}")
+        return False, str(e)
 
 # Se conecta ao MT5 ao iniciar
 connected, start_err = ensure_mt5_connected()
@@ -160,10 +285,18 @@ def get_candle():
         "long": float(prev_row['SMA_Long']) if not pd.isna(prev_row['SMA_Long']) else None
     }
     
-    return jsonify({
+    response = jsonify({
         "candle": candle_data,
         "sma": sma_data
     })
+    response.headers.add("Cache-Control", "no-cache, no-store, must-revalidate")
+    response.headers.add("Pragma", "no-cache")
+    response.headers.add("Expires", "0")
+    
+    # Debug print to confirm request
+    print(f"[{datetime.now().strftime('%H:%M:%S')}] Enviando tick: {candle_data['close']}")
+    
+    return response
 
 @app.route('/api/timeframes')
 def get_timeframes():
