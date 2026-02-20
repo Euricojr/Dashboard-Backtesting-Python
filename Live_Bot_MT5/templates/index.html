@@ -177,10 +177,18 @@
       }
 
       .big-chart-container {
-        height: 75vh;
+        /* Expand the chart to better fill the card while remaining responsive */
+        height: calc(100vh - 6rem);
+        min-height: 75vh;
         width: 100%;
         border-radius: 4px;
         overflow: hidden;
+        position: relative;
+      }
+
+      /* Ensure chart library canvas/div fills the container height */
+      #chart, #chart > canvas, #chart > div {
+        height: 100% !important;
       }
 
       /* Table Styles */
