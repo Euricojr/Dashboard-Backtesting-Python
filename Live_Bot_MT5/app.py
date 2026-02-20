@@ -12,110 +12,138 @@ app = Flask(__name__)
 # --- GLOBAL CONFIG & STATE ---
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
-MONITOR_SYMBOL = "WING26" # Default monitored symbol (Deprecated in favor of full list)
+MONITOR_SYMBOL = "WINJ26" # Default monitored symbol (Deprecated in favor of full list)
 MONITOR_TIMEFRAME = "M5" # Timeframe do Monitoramento (M1, M5, H1, etc)
-LAST_SIGNAL_STATE = {} # Dict para guardar estado de cada ativo: { "WING26": 1, ... }
+LAST_SIGNAL_STATE = {} # Dict para guardar estado de cada ativo: { "WINJ26": 1, ... }
+# Controle On/Off do bot de alertas Telegram
+BOT_RUNNING = False
 
 def run_telegram_monitor():
     """
     Função que roda em thread separada para monitorar cruzamento de médias
     e enviar alertas no Telegram.
     """
-    global LAST_SIGNAL_STATE
+    global LAST_SIGNAL_STATE, BOT_RUNNING
     
     # Carrega lista de ativos
     from utils.asset_filter import load_clean_assets
     
-    print(f"🚀 [Monitor] Iniciando Thread de Monitoramento para TODOS os ativos...")
-    print(f"⏰ Timeframe: {MONITOR_TIMEFRAME} | Delay entre ativos: 0.1s | Ciclo: 60s")
+    # Nota: não imprime nada enquanto o bot estiver desligado.
     
-    notifier = TelegramNotifier(token=TELEGRAM_TOKEN, chat_id=TELEGRAM_CHAT_ID)
-    
-    # Aguarda conexão MT5 (feita no main thread ou aqui)
+    # Aguarda até o usuário ligar o BOT via API antes de conectar/monitorar
     while True:
-        if mt5.terminal_info() is not None:
-            break
-        time.sleep(1)
+        # Espera o botão ligar
+        while not BOT_RUNNING:
+            time.sleep(1)
 
-    while True:
-        # Recarrega lista a cada ciclo (caso mude)
-        assets_data = load_clean_assets()
-        # Flatten se for dict
-        if isinstance(assets_data, dict):
-            assets = assets_data.get("Indices", []) + assets_data.get("Acoes", [])
-        else:
-            assets = assets_data
+        # Quando o BOT for ligado, tenta garantir conexão com MT5
+        connected, err = ensure_mt5_connected()
+        if not connected:
+            print(f"⚠️ [Monitor] MT5 não conectado: {err}. Tentando novamente em 5s...")
+            time.sleep(5)
+            continue
 
-        print(f"🔎 [Monitor] Iniciando ciclo de verificação em {len(assets)} ativos...")
-        
-        for symbol in assets:
-            try:
-                # 1. Pega dados
-                # Define Timeframe (Default M5 se não achar)
-                mt5_tf = TIMEFRAMES.get(MONITOR_TIMEFRAME, mt5.TIMEFRAME_M5)
-                
-                rates = mt5.copy_rates_from_pos(symbol, mt5_tf, 0, 100)
-                if rates is None or len(rates) < 55: # Precisa de pelo menos 50 + buffer
-                    continue
+        # Cria o notifier somente quando for realmente iniciar o monitor
+        notifier = TelegramNotifier(token=TELEGRAM_TOKEN, chat_id=TELEGRAM_CHAT_ID)
+        print(f"🚀 [Monitor] Iniciando Thread de Monitoramento para TODOS os ativos...")
+        print(f"⏰ Timeframe: {MONITOR_TIMEFRAME} | Delay entre ativos: 0.1s | Ciclo: 60s")
 
-                df = pd.DataFrame(rates)
-                df['time'] = pd.to_datetime(df['time'], unit='s')
-                
-                # 2. Calcula SMA 20 e 50
-                df['SMA_Short'] = df['close'].rolling(window=20).mean()
-                df['SMA_Long'] = df['close'].rolling(window=50).mean()
-                
-                # 3. Verifica Cruzamento
-                current = df.iloc[-1]
-                prev = df.iloc[-2]
-                
-                c_short = current['SMA_Short']
-                c_long = current['SMA_Long']
-                p_short = prev['SMA_Short']
-                p_long = prev['SMA_Long']
-                
-                if not (pd.isna(c_short) or pd.isna(c_long) or pd.isna(p_short) or pd.isna(p_long)):
-                    signal_text = None
-                    
-                    # Recupera estado anterior deste ativo especifico
-                    last_state = LAST_SIGNAL_STATE.get(symbol, 0)
-                    new_state = last_state
-                    
-                    # Golden Cross
-                    if p_short <= p_long and c_short > c_long:
-                        if last_state != 1:
-                            signal_text = "COMPRA (Golden Cross)"
-                            new_state = 1
-                    # Death Cross
-                    elif p_short >= p_long and c_short < c_long:
-                        if last_state != -1:
-                            signal_text = "VENDA (Death Cross)"
-                            new_state = -1
-                            
-                    if signal_text:
-                        LAST_SIGNAL_STATE[symbol] = new_state
-                        msg = (
-                            f"🚀 **ALERTA FINSENSE** 🚀\n"
-                            f"Ativo: {symbol}\n"
-                            f"Sinal: {signal_text}\n"
-                            f"Preço: {current['close']:.2f}\n"
-                            f"Horário: {current['time'].strftime('%H:%M')}\n"
-                            f"TF: {MONITOR_TIMEFRAME}"
-                        )
-                        print(f"\n⚡ [Monitor] ALERTA ENVIADO para {symbol}: {signal_text}")
-                        notifier.enviar_mensagem(msg)
+        # Inicia ciclo de monitoramento enquanto BOT_RUNNING for True
+        while BOT_RUNNING:
 
-            except Exception as e:
-                # Silencia erros individuais para nao flodar o log, ou imprime so o simbolo
-                # print(f"❌ [Monitor] Erro em {symbol}: {e}")
-                pass
+            # Recarrega lista a cada ciclo (caso mude)
+            assets_data = load_clean_assets()
+            # Flatten se for dict
+            if isinstance(assets_data, dict):
+                assets = assets_data.get("Indices", []) + assets_data.get("Acoes", [])
+            else:
+                assets = assets_data
+
+            print(f"🔎 [Monitor] Iniciando ciclo de verificação em {len(assets)} ativos...")
             
-            # Pequeno delay entre ativos para não travar CPU/MT5
-            time.sleep(0.1)
+            for symbol in assets:
+                # Checa se foi desligado durante o processamento de ativos
+                if not BOT_RUNNING:
+                    print("💤 [Monitor] Interrompendo ciclo: BOT_RUNNING=False")
+                    break
 
-        # Aguarda fim do ciclo
-        print(f"💤 [Monitor] Ciclo finalizado. Aguardando 60s...")
-        time.sleep(60)
+                try:
+                    # 1. Pega dados
+                    # Define Timeframe (Default M5 se não achar)
+                    mt5_tf = TIMEFRAMES.get(MONITOR_TIMEFRAME, mt5.TIMEFRAME_M5)
+                    
+                    rates = mt5.copy_rates_from_pos(symbol, mt5_tf, 0, 100)
+                    if rates is None or len(rates) < 55: # Precisa de pelo menos 50 + buffer
+                        continue
+
+                    df = pd.DataFrame(rates)
+                    df['time'] = pd.to_datetime(df['time'], unit='s')
+                    
+                    # 2. Calcula SMA 20 e 50
+                    df['SMA_Short'] = df['close'].rolling(window=20).mean()
+                    df['SMA_Long'] = df['close'].rolling(window=50).mean()
+                    
+                    # 3. Verifica Cruzamento
+                    current = df.iloc[-1]
+                    prev = df.iloc[-2]
+                    
+                    c_short = current['SMA_Short']
+                    c_long = current['SMA_Long']
+                    p_short = prev['SMA_Short']
+                    p_long = prev['SMA_Long']
+                    
+                    if not (pd.isna(c_short) or pd.isna(c_long) or pd.isna(p_short) or pd.isna(p_long)):
+                        signal_text = None
+                        
+                        # Recupera estado anterior deste ativo especifico
+                        last_state = LAST_SIGNAL_STATE.get(symbol, 0)
+                        new_state = last_state
+                        
+                        # Golden Cross
+                        if p_short <= p_long and c_short > c_long:
+                            if last_state != 1:
+                                signal_text = "COMPRA (Golden Cross)"
+                                new_state = 1
+                        # Death Cross
+                        elif p_short >= p_long and c_short < c_long:
+                            if last_state != -1:
+                                signal_text = "VENDA (Death Cross)"
+                                new_state = -1
+                                
+                        if signal_text:
+                            LAST_SIGNAL_STATE[symbol] = new_state
+                            msg = (
+                                f"🚀 **ALERTA FINSENSE** 🚀\n"
+                                f"Ativo: {symbol}\n"
+                                f"Sinal: {signal_text}\n"
+                                f"Preço: {current['close']:.2f}\n"
+                                f"Horário: {current['time'].strftime('%H:%M')}\n"
+                                f"TF: {MONITOR_TIMEFRAME}"
+                            )
+                            print(f"\n⚡ [Monitor] ALERTA ENVIADO para {symbol}: {signal_text}")
+                            notifier.enviar_mensagem(msg)
+
+                except Exception as e:
+                    # Silencia erros individuais para nao flodar o log, ou imprime so o simbolo
+                    # print(f"❌ [Monitor] Erro em {symbol}: {e}")
+                    pass
+                
+                # Pequeno delay entre ativos para não travar CPU/MT5
+                time.sleep(0.1)
+
+                # Checa novamente após pequeno delay para permitir parada imediata
+                if not BOT_RUNNING:
+                    print("💤 [Monitor] Parada solicitada durante o ciclo; saindo imediatamente.")
+                    break
+
+            # Aguarda fim do ciclo
+            print(f"💤 [Monitor] Ciclo finalizado. Aguardando 60s...")
+            sleep_seconds = 60
+            # Durante a espera, permita desligar mais responsivo
+            for _ in range(int(sleep_seconds)):
+                if not BOT_RUNNING:
+                    break
+                time.sleep(1)
 
 # Inicia a thread de monitoramento apenas se não for o reloader do Flask (para não duplicar)
 if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
@@ -139,12 +167,8 @@ def ensure_mt5_connected():
         print(f"❌ Exception MT5: {e}")
         return False, str(e)
 
-# Se conecta ao MT5 ao iniciar
-connected, start_err = ensure_mt5_connected()
-if not connected:
-    print(f"⚠️ Aviso: Servidor iniciado sem conexão ativa com o MT5 ({start_err})")
-else:
-    print("✅ MT5 Conectado com sucesso")
+# Nota: não forçamos conexão com MT5 na inicialização.
+# A conexão será efetuada quando o monitor for ligado via API (/api/bot/start).
 
 from utils.asset_filter import load_clean_assets
 
@@ -205,7 +229,7 @@ TIMEFRAMES = {
 
 @app.route('/api/history')
 def get_history():
-    symbol = request.args.get('symbol', 'WING26')
+    symbol = request.args.get('symbol', 'WINJ26')
     tf_str = request.args.get('timeframe', 'M5')
     count = int(request.args.get('count', 1000))
     
@@ -235,7 +259,7 @@ def get_history():
 
 @app.route('/api/candle')
 def get_candle():
-    symbol = request.args.get('symbol', 'WING26')
+    symbol = request.args.get('symbol', 'WINJ26')
     tf_str = request.args.get('timeframe', 'M5')
     
     # Parametros SMA (se nao vier, usa padrao mas nao retorna erro)
@@ -302,12 +326,39 @@ def get_candle():
 def get_timeframes():
     return jsonify(list(TIMEFRAMES.keys()))
 
+
+# --- BOT CONTROL ROUTES ---
+@app.route('/api/bot/start', methods=['POST'])
+def bot_start():
+    """Ativa o bot de alertas (liga o loop)."""
+    global BOT_RUNNING
+    BOT_RUNNING = True
+    print("🚀 [Monitor] Bot Iniciado via API (BOT_RUNNING=True)")
+    return jsonify({"message": "Bot Iniciado", "running": True})
+
+
+@app.route('/api/bot/stop', methods=['POST'])
+def bot_stop():
+    """Pausa o bot de alertas (desliga o loop)."""
+    global BOT_RUNNING
+    BOT_RUNNING = False
+    print("💤 [Monitor] Bot Pausado via API (BOT_RUNNING=False)")
+    return jsonify({"message": "Bot Pausado", "running": False})
+
+
+@app.route('/api/bot/status')
+def bot_status():
+    """Retorna status atual do bot para o frontend."""
+    return jsonify({"running": bool(BOT_RUNNING)})
+
+# --- BACKTESTING ROUTES ---
+
 # --- BACKTESTING ROUTES ---
 from backtester import strategy_sma_crossover, calculate_metrics_advanced, calculate_trade_stats, optimize_sma
 
 @app.route('/api/backtest')
 def run_backtest():
-    symbol = request.args.get('symbol', 'WING26')
+    symbol = request.args.get('symbol', 'WINJ26')
     tf_str = request.args.get('timeframe', 'M5')
     count = int(request.args.get('count', 1000))
     short_window = int(request.args.get('short', 20))
@@ -529,5 +580,5 @@ def batch_backtest():
     return response
 
 if __name__ == '__main__':
-    print("🚀 Servidor PoC WING26 rodando em http://localhost:5002")
+    print("🚀 Servidor PoC WINJ26 rodando em http://localhost:5002")
     app.run(debug=True, port=5002)

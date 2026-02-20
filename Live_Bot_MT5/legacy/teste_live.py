@@ -29,7 +29,7 @@ def format_rates(rates):
 
 @app.route('/api/history')
 def get_history():
-    symbol = request.args.get('symbol', 'WING26')
+    symbol = request.args.get('symbol', 'WINJ26')
     # Pega 1000 velas de M5 (5 minutos)
     rates = mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_M5, 0, 1000)
     
@@ -44,7 +44,7 @@ def get_history():
 
 @app.route('/api/candle')
 def get_candle():
-    symbol = request.args.get('symbol', 'WING26')
+    symbol = request.args.get('symbol', 'WINJ26')
     
     # Pega apenas a ultima vela (1) de M5
     rates = mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_M5, 0, 1)
@@ -58,5 +58,5 @@ def get_candle():
     return jsonify(data[0])
 
 if __name__ == '__main__':
-    print("🚀 Servidor PoC WING26 rodando em http://localhost:5002")
+    print("🚀 Servidor PoC WINJ26 rodando em http://localhost:5002")
     app.run(debug=True, port=5002)

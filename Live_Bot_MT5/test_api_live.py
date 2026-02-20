@@ -3,7 +3,7 @@ import time
 import sys
 
 # URL da API
-URL = "http://localhost:5002/api/candle?symbol=WING26&timeframe=M5"
+URL = "http://localhost:5002/api/candle?symbol=WINJ26&timeframe=M5"
 
 print(f"📡 Testando endpoint de Candle: {URL}")
 print("Pressione Ctrl+C para parar.")
