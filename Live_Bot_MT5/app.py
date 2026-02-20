@@ -13,7 +13,7 @@ app = Flask(__name__)
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 MONITOR_SYMBOL = "WINJ26" # Default monitored symbol (Deprecated in favor of full list)
-MONITOR_TIMEFRAME = "M5" # Timeframe do Monitoramento (M1, M5, H1, etc)
+MONITOR_TIMEFRAME = "H1" # Timeframe do Monitoramento (M1, M5, H1, etc)
 LAST_SIGNAL_STATE = {} # Dict para guardar estado de cada ativo: { "WINJ26": 1, ... }
 # Controle On/Off do bot de alertas Telegram
 BOT_RUNNING = False

@@ -1537,7 +1537,7 @@
                             class="dropdown-selected"
                             onclick="toggleDropdown('tf-dropdown')"
                           >
-                            <span id="tf-value" data-value="M5">M5</span>
+                            <span id="tf-value" data-value="H1">H1</span>
                             <i class="ri-arrow-down-s-line dropdown-arrow"></i>
                           </div>
                           <div class="dropdown-options" id="tf-options">
@@ -2566,7 +2566,7 @@
         timeframes.forEach((tf) => {
           const item = document.createElement("div");
           item.className = "dropdown-item";
-          if (tf === "M5") item.classList.add("selected"); // Default
+          if (tf === "H1") item.classList.add("selected"); // Default now H1
           item.textContent = tf;
           item.onclick = () => selectOption("tf", tf, tf);
           container.appendChild(item);
@@ -2585,7 +2585,7 @@
 
       function getTimeframeValue() {
         const el = document.getElementById("tf-value");
-        return el ? el.getAttribute("data-value") : "M5";
+        return el ? el.getAttribute("data-value") : "H1";
       }
 
       function getCandleValue() {
