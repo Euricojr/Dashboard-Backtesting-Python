@@ -17,6 +17,7 @@ MONITOR_TIMEFRAME = "H1" # Timeframe do Monitoramento (M1, M5, H1, etc)
 LAST_SIGNAL_STATE = {} # Dict para guardar estado de cada ativo: { "WINJ26": 1, ... }
 # Controle On/Off do bot de alertas Telegram
 BOT_RUNNING = False
+BOT_START_TIME = None
 
 def run_telegram_monitor():
     """
@@ -111,6 +112,19 @@ def run_telegram_monitor():
                                 new_state = -1
                                 
                         if signal_text:
+                            # Filtro Temporal: Só alerta se o cruzamento for MAIS RECENTE que o start do Bot
+                            sinal_time = current['time']
+                            
+                            # MT5 data e datetime.now() vêm como naive datetimes (sem fuso).
+                            # Se precisarmos comparar de forma segura (ignorando timezone offsets):
+                            # sinal_time = sinal_time.replace(tzinfo=None) # Caso o DF tenha trazido com TZ
+                            
+                            if BOT_START_TIME and sinal_time <= BOT_START_TIME:
+                                # Apenas atualiza o estado, mas NÃO envia notificação
+                                LAST_SIGNAL_STATE[symbol] = new_state
+                                print(f"🕒 [Monitor] Ignorando sinal passado de {symbol} em {sinal_time}")
+                                continue
+                                
                             LAST_SIGNAL_STATE[symbol] = new_state
                             
                             icone = "🟢" if signal_text == "COMPRA" else "🔴"
@@ -335,9 +349,19 @@ def get_timeframes():
 @app.route('/api/bot/start', methods=['POST'])
 def bot_start():
     """Ativa o bot de alertas (liga o loop)."""
-    global BOT_RUNNING
+    global BOT_RUNNING, BOT_START_TIME
     BOT_RUNNING = True
-    print("🚀 [Monitor] Bot Iniciado via API (BOT_RUNNING=True)")
+    
+    # Define o Marco Zero respeitando o fechamento da B3 (18:00)
+    # Se o usuário ligar o bot DEPOIS das 18h, voltamos o relógio do start para 17:00
+    # para não ignorar as últimas velas do leilão e fechamento do dia!
+    now = datetime.now()
+    if now.hour >= 18:
+        BOT_START_TIME = now.replace(hour=17, minute=0, second=0, microsecond=0)
+    else:
+        BOT_START_TIME = now
+        
+    print(f"🚀 [Monitor] Bot Iniciado via API (BOT_RUNNING=True, START_TIME={BOT_START_TIME})")
     return jsonify({"message": "Bot Iniciado", "running": True})
 
 
