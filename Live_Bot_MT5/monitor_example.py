@@ -83,7 +83,9 @@ def check_crossover(df):
         return {
             "sinal": signal_text,
             "preco": current['close'],
-            "time": current['time']
+            "time": current['time'],
+            "sma_short_val": current['SMA_Short'],
+            "sma_long_val": current['SMA_Long']
         }
     
     return None
@@ -106,12 +108,16 @@ def main():
                 alert = check_crossover(df)
                 
                 if alert:
+                    icone = "🟢" if alert['sinal'] == "COMPRA" else "🔴"
+                    tipo = "Golden Cross" if alert['sinal'] == "COMPRA" else "Death Cross"
+                    
                     msg = (
-                        f"🚀 **ALERTA FINSENSE** 🚀\n"
-                        f"Ativo: {SYMBOL}\n"
-                        f"Sinal: {alert['sinal']}\n"
-                        f"Preço: {alert['preco']:.3f}\n"
-                        f"Horário: {alert['time'].strftime('%H:%M')}"
+                        f"🚨 **FINSENSE ALERT** 🚨\n"
+                        f"{icone} **SINAL:** {alert['sinal']} ({tipo})\n"
+                        f"🎯 **ATIVO:** {SYMBOL} | ⏱️ **TF:** {TIMEFRAME}\n"
+                        f"💰 **PREÇO ATUAL:** {alert['preco']:.2f}\n"
+                        f"📊 **MÉDIAS:** SMA {SHORT_WINDOW} ({alert['sma_short_val']:.2f}) cruzou SMA {LONG_WINDOW} ({alert['sma_long_val']:.2f})\n"
+                        f"📅 **DATA/HORA:** {alert['time'].strftime('%d/%m/%Y %H:%M:%S')}"
                     )
                     print(f"\n⚡ ALERTA DETECTADO: {msg}")
                     notifier.enviar_mensagem(msg)

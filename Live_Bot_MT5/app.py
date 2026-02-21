@@ -102,23 +102,27 @@ def run_telegram_monitor():
                         # Golden Cross
                         if p_short <= p_long and c_short > c_long:
                             if last_state != 1:
-                                signal_text = "COMPRA (Golden Cross)"
+                                signal_text = "COMPRA"
                                 new_state = 1
                         # Death Cross
                         elif p_short >= p_long and c_short < c_long:
                             if last_state != -1:
-                                signal_text = "VENDA (Death Cross)"
+                                signal_text = "VENDA"
                                 new_state = -1
                                 
                         if signal_text:
                             LAST_SIGNAL_STATE[symbol] = new_state
+                            
+                            icone = "🟢" if signal_text == "COMPRA" else "🔴"
+                            tipo = "Golden Cross" if signal_text == "COMPRA" else "Death Cross"
+                            
                             msg = (
-                                f"🚀 **ALERTA FINSENSE** 🚀\n"
-                                f"Ativo: {symbol}\n"
-                                f"Sinal: {signal_text}\n"
-                                f"Preço: {current['close']:.2f}\n"
-                                f"Horário: {current['time'].strftime('%H:%M')}\n"
-                                f"TF: {MONITOR_TIMEFRAME}"
+                                f"� **FINSENSE ALERT** �\n"
+                                f"{icone} **SINAL:** {signal_text} ({tipo})\n"
+                                f"🎯 **ATIVO:** {symbol} | ⏱️ **TF:** {MONITOR_TIMEFRAME}\n"
+                                f"💰 **PREÇO ATUAL:** {current['close']:.2f}\n"
+                                f"📊 **MÉDIAS:** SMA 20 ({c_short:.2f}) cruzou SMA 50 ({c_long:.2f})\n"
+                                f"📅 **DATA/HORA:** {current['time'].strftime('%d/%m/%Y %H:%M:%S')}"
                             )
                             print(f"\n⚡ [Monitor] ALERTA ENVIADO para {symbol}: {signal_text}")
                             notifier.enviar_mensagem(msg)
