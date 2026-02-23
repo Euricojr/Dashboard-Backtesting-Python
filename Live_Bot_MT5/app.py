@@ -19,6 +19,14 @@ LAST_SIGNAL_STATE = {} # Dict para guardar estado de cada ativo: { "WINJ26": 1, 
 BOT_RUNNING = False
 BOT_START_TIME = None
 
+# Instância global do Notifier para o listener e alertas
+global_notifier = TelegramNotifier(token=TELEGRAM_TOKEN, chat_id=TELEGRAM_CHAT_ID)
+
+# Inicia o Listener de Comandos (/start) apenas no processo principal (não no reloader inicial)
+if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+    global_notifier.start_listener()
+
+
 def run_telegram_monitor():
     """
     Função que roda em thread separada para monitorar cruzamento de médias
@@ -28,8 +36,6 @@ def run_telegram_monitor():
     
     # Carrega lista de ativos
     from utils.asset_filter import load_clean_assets
-    
-    # Nota: não imprime nada enquanto o bot estiver desligado.
     
     # Aguarda até o usuário ligar o BOT via API antes de conectar/monitorar
     while True:
@@ -44,8 +50,6 @@ def run_telegram_monitor():
             time.sleep(5)
             continue
 
-        # Cria o notifier somente quando for realmente iniciar o monitor
-        notifier = TelegramNotifier(token=TELEGRAM_TOKEN, chat_id=TELEGRAM_CHAT_ID)
         print(f"🚀 [Monitor] Iniciando Thread de Monitoramento para TODOS os ativos...")
         print(f"⏰ Timeframe: {MONITOR_TIMEFRAME} | Delay entre ativos: 0.1s | Ciclo: 60s")
 
@@ -139,7 +143,7 @@ def run_telegram_monitor():
                                 f"📅 **DATA/HORA:** {current['time'].strftime('%d/%m/%Y %H:%M:%S')}"
                             )
                             print(f"\n⚡ [Monitor] ALERTA ENVIADO para {symbol}: {signal_text}")
-                            notifier.enviar_mensagem(msg)
+                            global_notifier.enviar_mensagem(msg)
 
                 except Exception as e:
                     # Silencia erros individuais para nao flodar o log, ou imprime so o simbolo
