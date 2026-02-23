@@ -135,13 +135,19 @@ def run_telegram_monitor():
                             tipo = "Golden Cross" if signal_text == "COMPRA" else "Death Cross"
                             
                             msg = (
-                                f"� **FINSENSE ALERT** �\n"
-                                f"{icone} **SINAL:** {signal_text} ({tipo})\n"
-                                f"🎯 **ATIVO:** {symbol} | ⏱️ **TF:** {MONITOR_TIMEFRAME}\n"
-                                f"💰 **PREÇO ATUAL:** {current['close']:.2f}\n"
-                                f"📊 **MÉDIAS:** SMA 20 ({c_short:.2f}) cruzou SMA 50 ({c_long:.2f})\n"
-                                f"📅 **DATA/HORA:** {current['time'].strftime('%d/%m/%Y %H:%M:%S')}"
-                            )
+                                f"🚨 **FINSENSE ALERT** 🚨\n\n"
+        
+                                f"{icone} **SINAL:** {alert['sinal']} ({tipo})\n"
+                                f"🎯 **ATIVO:** {SYMBOL}  |  ⏱️ **TF:** {TIMEFRAME}\n\n"
+        
+                                f"💰 **PREÇO ATUAL:** {alert['preco']:.2f}\n\n"
+        
+                                f"📊 **CRUZAMENTO DAS MÉDIAS:**\n"
+                                f"🔸 SMA {SHORT_WINDOW}: {alert['sma_short_val']:.2f}\n"
+                                f"🔹 SMA {LONG_WINDOW}: {alert['sma_long_val']:.2f}\n\n"
+        
+                                f"📅 **DATA/HORA:** {alert['time'].strftime('%d/%m/%Y às %H:%M:%S')}"
+    )
                             print(f"\n⚡ [Monitor] ALERTA ENVIADO para {symbol}: {signal_text}")
                             global_notifier.enviar_mensagem(msg)
 
