@@ -1,291 +1,187 @@
-# FinSense: Plataforma de Análise Financeira com Python e MetaTrader5
+# 🚀 FinSense: Plataforma Estratégica de Trading Automatizado
 
-Bem-vindo ao **FinSense**, um ecossistema completo de trading quantitativo que centraliza o fluxo de desenvolvimento de estratégias de investimento, desde a pesquisa e backtesting até a execução automatizada em tempo real no MetaTrader 5.
-
-Este projeto integra análise técnica avançada, cálculo de métricas de risco e sistemas de automação para operar no mercado brasileiro (B3) e Forex.
+Bem-vindo ao **FinSense**, um ecossistema completo e avançado de trading quantitativo desenvolvido em Python. A plataforma centraliza todo o fluxo de desenvolvimento de estratégias de investimento, desde a pesquisa, backtesting, e escaneamento do mercado (B3 e Forex), até a execução automatizada em tempo real (Algo Trading) no MetaTrader 5, com direito a monitoramento e alertas na palma da mão via Telegram.
 
 ---
 
-## Configuração do Ambiente
+## 🌟 Funcionalidades Principais
 
-Esta seção detalha o passo a passo para configurar o ambiente de desenvolvimento e preparar seu sistema para executar ambos os módulos da plataforma.
+- **📊 Dashboards Interativos (Web):** Interfaces modernas com design _Glassmorphism_, animações _hover 3D_ e atualizações em tempo real (WebSockets / Polling).
+- **📈 Análise Técnica em Tempo Real:** Cálculo e plotagem dinâmica de indicadores diretamente no gráfico, como as Médias Móveis Simples (SMAs).
+- **🔬 Motor de Backtesting e Análise Fundamentalista:** Ferramentas para validar se uma estratégia funcionou nos últimos anos, checando Métricas de Risco (Profit Factor, Win Rate, Drawdown) e dados de valuation.
+- **🤖 Execução Automática no MetaTrader 5:** Envio e gerenciamento de ordens automatizadas no mercado (B3/Forex).
+- **⚡ Scanner Elite Integrado:** Um script de inteligência de mercado (`scanner_elite.py`) que varre o histórico de mais de 120 ativos da B3 (via `yfinance` em timeframes como 1h ou Diário) buscando configurações otimizadas de cruzamento de médias, selecionando automaticamente os ativos mais lucrativos.
+- **📱 Monitoramento via Telegram Bot:** Receba alertas sobre oportunidades de mercado diretamente no seu celular. O status de funcionamento do Bot pode ser ligado e desligado (On/Off) com apenas um clique pelo painel de controle do Dashboard Web.
 
-### Pré-requisitos
+---
 
-- **Python 3.8+** instalado em seu sistema
-- **Windows** (recomendado para compatibilidade com MetaTrader 5)
-- Acesso a um terminal/prompt de comando
+## 🏗 Arquitetura do Projeto
 
-### Criando o Ambiente Virtual
+O FinSense é dividido em módulos principais, cada um com um propósito específico no ciclo de vida do seu capital algorítmico:
 
-Um ambiente virtual isola as dependências do projeto do seu sistema operacional:
+| Módulo / Ferramenta  | Objetivo Principal                                        | Fonte de Dados                            | Ambiente            | Foco Principal                                              |
+| :------------------- | :-------------------------------------------------------- | :---------------------------------------- | :------------------ | :---------------------------------------------------------- |
+| **Backtest_Project** | Laboratório: Pesquisa, Validação e Avaliação da robustez. | Yahoo Finance (Histórico Diário/Semanal). | Offline / Estático  | _"Esta ideia de trade é lucrativa no longo prazo?"_         |
+| **Live_Bot_MT5**     | Ação: Monitoramento e Execução em Tempo Real das ordens.  | MetaTrader 5 (Tick, M1, M5, H1, etc).     | Online / Dinâmico   | _"O cruzamento das médias aconteceu agora! Executar."_      |
+| **Scanner Elite**    | Peneira: Busca os melhores ativos em um universo amplo.   | Yahoo Finance (Intraday/Diário).          | Offline (Preparo)   | _"Quais dos 120 ativos da B3 têm o melhor Profit Factor?"_  |
+| **Telegram Monitor** | Alerta: Envia os sinais diretos para o celular.           | Sinais do Live_Bot.                       | Online / Background | _"O que o robô está fazendo enquanto estou longe da tela?"_ |
+
+---
+
+## ⚙️ Configuração do Ambiente
+
+Esta seção detalha o passo a passo para configurar e preparar o seu sistema. **Recomendamos o uso de Windows** para compatibilidade com o pacote oficial do `MetaTrader5` via Python.
+
+### 1. Pré-requisitos
+
+- Python 3.8 ou superior instalado.
+- Terminal / Prompt de Comando / PowerShell.
+
+### 2. Criando e Ativando o Ambiente Virtual
 
 ```powershell
+# Criação do ambiente virtual
 python -m venv venv
-```
 
-### Ativando o Ambiente Virtual
-
-Após criar o ambiente, você precisa ativá-lo antes de instalar as dependências.
-
-**No Windows (PowerShell):**
-
-```powershell
+# Ativação no Windows (PowerShell)
 .\venv\Scripts\activate
-```
 
-**No Windows (Command Prompt):**
-
-```cmd
+# (Opcional) Ativação no Windows (CMD)
 venv\Scripts\activate.bat
 ```
 
-**No macOS/Linux:**
+### 3. Instalando as Dependências
 
-```bash
-source venv/bin/activate
-```
-
-### Instalando as Dependências
-
-Com o ambiente virtual ativado, instale todos os pacotes necessários:
+Com o ambiente ativado, instale todos os pacotes:
 
 ```powershell
 pip install -r requirements.txt
 ```
 
-Este comando instala as seguintes bibliotecas principais:
+> **Principais bibliotecas instaladas:** `pandas`, `numpy`, `MetaTrader5`, `yfinance`, `Flask`, `python-telegram-bot`, `python-dotenv`.
 
-- **pandas** e **numpy**: Manipulação e análise de dados
-- **MetaTrader5**: Integração com o terminal MT5
-- **yfinance**: Download de dados históricos do Yahoo Finance
-- **Flask**: Framework web para os dashboards
-- **scipy**: Cálculos estatísticos avançados
+### 4. Configuração das Variáveis de Ambiente (`.env`)
 
----
+Na raiz do projeto (`Strategy/`), crie um arquivo chamado `.env` (ou edite o existente) e preencha com as suas credenciais:
 
-## Guia de Conexão com MetaTrader 5
+```properties
+GROQ_API_KEY=sua_chave_groq_aqui
 
-O **MetaTrader 5** é a plataforma de execução central para trading automatizado. Este guia ensina como obter acesso ao MT5 através do **Banco BTG Pactual** (ou sua corretora de preferência) e configurá-lo para funcionar com a plataforma FinSense.
+TELEGRAM_TOKEN=seu_token_da_api_do_telegram_aqui
+TELEGRAM_CHAT_ID=seu_chat_id_aqui
+```
 
-### Passo 1: Abertura de Conta
-
-1. Acesse o site do **BTG Pactual** ou sua corretora de preferência
-2. Clique em "Abrir Conta" ou "Começar Agora"
-3. Preencha as informações pessoais solicitadas (CPF, dados bancários, etc.)
-4. Complete o processo de validação (geralmente envolve verificação de identidade)
-5. Aguarde a aprovação (pode levar de 1 a 3 dias úteis)
-
-### Passo 2: Contratação da Plataforma MetaTrader 5
-
-1. Após a aprovação, faça login na **área logada do portal** da sua corretora
-2. Navegue até a seção **"Plataformas"** ou **"Produtos"**
-3. Localize a opção **"MetaTrader 5"** na lista de plataformas disponíveis
-4. Clique em **"Contratar"** ou **"Ativar"**
-   - O MetaTrader 5 é geralmente **gratuito** quando você tem uma conta ativa com RLP (Representante de Pessoa Física)
-5. Confirme a contratação
-
-### Passo 3: Obtenção de Credenciais
-
-1. Após a contratação, verifique seu **e-mail cadastrado** no banco
-2. Você receberá um e-mail com as seguintes informações:
-   - **Login**: Número de conta de negociação (ex: 12345678)
-   - **Senha**: Senha específica do MetaTrader 5
-   - **Servidor**: Servidor de negociação da corretora (ex: BTGPactual-Demo ou BTGPactual-Real)
-
-⚠️ **IMPORTANTE:** A senha do MetaTrader 5 é **diferente** da senha de acesso ao portal do banco. Guarde essas credenciais com segurança.
-
-### Passo 4: Instalação do Software MetaTrader 5
-
-1. Acesse o portal da sua corretora ou visite [www.metatrader5.com](https://www.metatrader5.com)
-2. Clique em **"Download"** ou **"Baixar MetaTrader 5"**
-3. Escolha a versão **"Para Windows"** ou **"Executável"**
-4. Abra o arquivo `.exe` baixado
-5. Siga o assistente de instalação (aceite os termos e escolha o diretório de instalação)
-6. Aguarde a conclusão da instalação
-
-### Passo 5: Configuração no MetaTrader 5
-
-Agora você vai conectar o MT5 à sua conta de negociação.
-
-#### 5.1. Abrindo o MetaTrader 5
-
-1. Clique no ícone do MetaTrader 5 na sua área de trabalho (ou inicie via iniciar do Windows)
-2. O software abrirá em poucos segundos
-
-#### 5.2. Fazendo Login na Conta
-
-1. No menu superior, clique em **"Arquivo"**
-2. Selecione **"Login na Conta de Negociação"** (ou **"Open an Account"**)
-3. Uma janela de login aparecerá
-4. Preencha os campos:
-   - **Login**: Insira o número de conta recebido por e-mail
-   - **Senha**: Insira a senha do MetaTrader 5 recebida por e-mail
-   - **Servidor**: Selecione o servidor correto da sua corretora (ex: **BTGPactual-Real** ou **BTGPactual-Demo**)
-5. Clique em **"Login"**
-
-Se os dados estiverem corretos, você verá sua conta conectada no canto inferior direito do terminal MT5.
-
-#### 5.3. Ativando o "Algo Trading" (Negociação Automatizada)
-
-⚠️ **CRÍTICO:** Esta etapa é essencial para permitir que o Python envie ordens automaticamente para o MetaTrader 5.
-
-1. No menu superior do MetaTrader 5, localize a opção **"Ferramentas"** ou **"Tools"**
-2. Procure por **"Opções"** ou **"Settings"**
-3. Na janela de opções, vá para a aba **"Negociação"** ou **"Trading"**
-4. Ative a opção **"Permitir Negociação Automatizada"** ou **"Allow Automated Trading"**
-5. Certifique-se de que o checkbox está **marcado** (✓)
-6. Aplique as mudanças e feche a janela
-
-**Verificação:** Você saberá que o Algo Trading está ativado quando aparecer um ícone de robô (🤖) na barra de ferramentas do MT5 ou quando o status indicar "Automated Trading: Enabled".
+_(Dica: Fale com o `@BotFather` no Telegram para criar um bot e pegar o Token. Fale com o `@userinfobot` para descobrir o seu Chat ID)._
 
 ---
 
-## Arquitetura do Projeto
+## 📉 Guia de Conexão com MetaTrader 5
 
-O projeto é dividido em dois módulos principais, cada um com um propósito específico no ciclo de vida do trading algorítmico:
+O **MetaTrader 5** é essencial para o módulo **Live_Bot_MT5**.
 
-## Diferenças Principais (Resumo)
-
-| Característica     | **Backtest_Project** (O Laboratório)                | **Live_Bot_MT5** (O Executor)                        |
-| :----------------- | :-------------------------------------------------- | :--------------------------------------------------- |
-| **Objetivo**       | Pesquisa, Validação e "Stress Test" de estratégias. | Monitoramento em Tempo Real e Execução de Ordens.    |
-| **Fonte de Dados** | **Yahoo Finance** (Foco em dados Diários/Semanais). | **MetaTrader 5** (Dados Intraday, M1, M5, Tick).     |
-| **Ambiente**       | Offline / Estático (Analisa o passado).             | Online / Dinâmico (Reage ao mercado agora).          |
-| **Foco Visual**    | Gráficos estatísticos, Curvas de Equity, Heatmaps.  | Dashboard Operacional, Glassmorphism, Latência Zero. |
-| **Uso Principal**  | _"Essa ideia funciona nos últimos 10 anos?"_        | _"O mercado está dando sinal agora? Executar!"_      |
-
----
+1. **Abertura e Contratação:** Abra conta na corretora da sua preferência (Ex: BTG Pactual) e contrate/habilite o MetaTrader 5 com RLP ativado.
+2. **Instalação:** Baixe e instale a plataforma no Windows.
+3. **Login:** Faça Login no MT5 inserindo o **número da conta de negociação**, sua **senha do MT5** (enviada por e-mail) e escolha o **Servidor** correto (Real ou Demo).
+4. **Habilitando o Algorithmic Trading (CRÍTICO):**
+   - Vá no Menu Superior ➔ **Ferramentas (Tools)** ➔ **Opções (Options)**.
+   - Acesse a aba **Negociação Automatizada (Expert Advisors / Trading)**.
+   - Marque a caixa de seleção: **"Permitir Negociação Automatizada" (Allow Automated Trading)**.
+   - Clique em Ok. Verifique o ícone indicando que está liberado.
 
 ---
 
-## Executando o Projeto
+## ▶️ Como Executar a Plataforma
 
-O FinSense é dividido em dois aplicativos que você pode executar conforme suas necessidades.
+Aqui estão os comandos para iniciar cada parte do ecossistema. Certifique-se de estar com o ambiente virtual (venv) **ativado**.
 
-### Executando o Backtest_Project (Análise e Pesquisa)
+### A. Para Realizar Mapeamento de Mercado (Scanner Elite)
 
-O módulo de backtest é ideal para validar estratégias com dados históricos antes de colocá-las em operação real.
+Roda um script de varredura que analisa ~120 ativos da B3, efetuando backtest com Estratégia de Cruzamento de Médias Móveis (SMA 20/50).
+
+```powershell
+cd Live_Bot_MT5
+python scanner_elite.py
+```
+
+**Resultado:** Os ativos aprovados (`Profit Factor > 1.20`) são gravados e geram o arquivo de resultados em `data/backtest_results.csv`, pronto para ser utilizado como filtro pelas fases de execução!
+
+### B. Para Análise e Backtesting Web (Backtest_Project)
+
+Dashboard com métricas focadas em análise fundamentalista, notícias e curvas de equity no passado.
 
 ```powershell
 cd Backtest_Project/backend
 python api.py
 ```
 
-Após executar o comando:
+**Acesso:** Abra no navegador através de `http://localhost:5000`
 
-1. O servidor iniciará em `http://localhost:5000`
-2. Abra seu navegador e acesse `http://localhost:5000`
-3. Você terá acesso aos gráficos de backtest, métricas de desempenho e análises técnicas
+### C. Para Executar as Operações Reais / Monitoramento (Live_Bot_MT5)
 
-**Funcionalidades Disponíveis:**
-
-- **Dashboard Interativo:** Interface moderna com efeitos Glassmorphism, hover 3D e animações.
-- **Análise Fundamentalista:** Cards detalhados de Valuation, Endividamento e Eficiência com explicações didáticas (Modais).
-- **Notícias Recentes:** Seção automática de notícias relacionadas ao ativo pesquisado.
-- **Backtesting Visual:** Gráficos interativos (Candlestick + Indicadores) e curvas de equity.
-- **Métricas de Risco:** Sharpe Ratio, Sortino, Drawdown e Volatilidade calculados automaticamente.
-
-### Executando o Live_Bot_MT5 (Execução em Tempo Real)
-
-O módulo Live Bot conecta-se diretamente ao MetaTrader 5 para executar operações automaticamente.
-
-⚠️ **Pré-requisito:** O MetaTrader 5 deve estar **aberto e logado** na sua conta antes de executar este módulo.
+Este é o core da plataforma de execução. Ele se acopla ao seu MT5 logado e, opcionalmente, abre uma thread em background para enviar disparos ao seu Telegram através do `bot_viagem.py` encapsulado.
+⚠️ **Pré-requisito:** O programa MetaTrader 5 deve estar _Aberto_, _Logado_ e com o _Algo Trading Habilitado_.
 
 ```powershell
 cd Live_Bot_MT5
 python app.py
 ```
 
-Após executar o comando:
+**Acesso:** Abra no navegador através de `http://localhost:5002`
 
-1. O servidor iniciará em `http://localhost:5002`
-2. Abra seu navegador e acesse `http://localhost:5002`
-3. Você terá acesso ao dashboard de operações em tempo real
-
-**Funcionalidades Disponíveis:**
-
-- Monitoramento em tempo real do mercado
-- Execução automática de ordens
-- Scanner de múltiplos ativos
-- Dashboard com interface moderna (Glassmorphism)
-- Controle visual para iniciar/pausar robôs
-- Ajuste de parâmetros em tempo real
+- Você terá o painel operacional para pausar/iniciar os robôs da b3.
+- Inclui um botão dinâmico na interface para **Ativar/Desativar o Bot do Telegram**.
 
 ---
 
-## Diferenças entre os Módulos
-
-| Característica     | **Backtest_Project** (Pesquisa)     | **Live_Bot_MT5** (Produção)         |
-| :----------------- | :---------------------------------- | :---------------------------------- |
-| **Objetivo**       | Validação de estratégias no passado | Execução em tempo real no mercado   |
-| **Fonte de Dados** | Yahoo Finance (dados históricos)    | MetaTrader 5 (dados intraday)       |
-| **Ambiente**       | Offline / Estático                  | Online / Dinâmico                   |
-| **Latência**       | N/A                                 | Ultra-baixa                         |
-| **Pergunta-Chave** | "Isso funcionou antes?"             | "O mercado está dando sinal agora?" |
-
----
-
-## Estrutura do Projeto
+## 📂 Estrutura de Diretórios Resumida
 
 ```
 Strategy/
-├── Backtest_Project/          # Módulo de pesquisa e análise
+├── .env                       # Chaves e Tokens de API das aplicações.
+├── Backtest_Project/          # Módulo de pesquisa longo-prazo
 │   ├── backend/
-│   │   ├── api.py             # API Flask para backtest
-│   │   ├── backtest.py        # Motor de backtesting
-│   │   └── fundamentalista.py # Análise fundamentalista
-│   └── frontend/              # Interface web
+│   │   ├── api.py             # Server Flask (porta 5000)
+│   │   ├── backtest.py        # Algoritmos do analisador de histórico
+│   │   └── fundamentalista.py
+│   └── frontend/              # Interface web exploratória
 │
-├── Live_Bot_MT5/              # Módulo de produção
-│   ├── app.py                 # Aplicação principal
-│   ├── backtester.py          # Backtest para dados M1/M5
-│   ├── templates/             # HTML dos dashboards
-│   ├── utils/                 # Funções auxiliares
-│   └── data/                  # Arquivos de dados
+├── Live_Bot_MT5/              # Módulo de produção e ação rápida
+│   ├── app.py                 # Aplicação Central e Server Flask (porta 5002)
+│   ├── scanner_elite.py       # Peneira algorítmica de ativos em Python
+│   ├── bot_viagem.py          # Lógica do Telegram Bot de alertas de mercado
+│   ├── templates/             # HTML (+ Tailwind/Vanilha CSS) do Dashboard Moderno
+│   ├── static/                # ARquivos JS para atualizações em tempo real das SMAs e botões On/Off
+│   └── data/                  # Base de dados (e.g., backtest_results.csv)
 │
-├── requirements.txt           # Dependências Python
-└── README.md                  # Este arquivo
+├── requirements.txt           # Bibliotecas e dependências de todo o projeto
+└── README.md                  # Este arquivo central de documentação
 ```
 
 ---
 
-## Solução de Problemas
+## 🛠 Solução de Problemas Comuns
 
-### MetaTrader 5 não conecta
+- **"MetaTrader5 não foi iniciado" ou Erros de Conexão na API no Console:**
+  Verifique se o Terminal MT5 está, de fato, rodando no Windows e se o login da corretora está correto. Não se esqueça de ativar o "Algo Trading".
 
-- Verifique se o MT5 está aberto e logado
-- Confirme que você inseriu as credenciais corretas (Login, Senha, Servidor)
-- Verifique se o "Algo Trading" está ativado
+- **Erro de Porta Ocupada (Address already in use):**
+  A porta 5000 ou 5002 pode ter ficado presa. Pare o processo usando seu PID:
 
-### Erro "MetaTrader5 não foi iniciado"
+  ```powershell
+  netstat -ano | findstr :5000  # Ou :5002
+  taskkill /PID <NUMERO_PID> /F
+  ```
 
-- Abra manualmente o MetaTrader 5
-- Certifique-se de estar conectado à sua conta
-- Aguarde alguns segundos para que o MT5 sincronize completamente
-
-### Porta já em uso (Address already in use)
-
-Se receber um erro indicando que a porta está em uso:
-
-```powershell
-# Para Backtest_Project (porta 5000):
-netstat -ano | findstr :5000
-# Depois, finalize o processo:
-taskkill /PID <PID> /F
-
-# Para Live_Bot_MT5 (porta 5002):
-netstat -ano | findstr :5002
-taskkill /PID <PID> /F
-```
+- **Telegram Bot não reage ou dá Timeout:**
+  Verifique se as variáveis `TELEGRAM_TOKEN` e `TELEGRAM_CHAT_ID` estão corretas no `.env`. Certifique-se também de ligá-lo clicando no botão no Dashboard Web antes de aguardar msgs.
 
 ---
 
-## Desenvolvedor
+## 👨‍💻 Desenvolvedor
 
 Desenvolvido por **Eurico Júnior**.
 
-_Plataforma focada na convergência entre Data Science, Análise Técnica e Execução Automatizada de Estratégias de Trading._
+_Plataforma focada na convergência entre Data Science, Backend Avançado, Concepção Interfaces (UI/UX) e Execução Automatizada de Estratégias Institucionais._
 
-**Versão:** 1.0  
-**Última atualização:** Fevereiro 2026
+**Versão:** 1.1  
+**Última Atualização:** Fevereiro 2026
