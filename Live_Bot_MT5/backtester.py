@@ -82,15 +82,28 @@ def calculate_trade_stats(df):
         except:
              pass
              
+        # Formata as datas para envio fácil no JSON
+        try:
+            en_time_str = en_row['time'].strftime('%d/%m/%Y %H:%M')
+            ex_time_str = ex_row['time'].strftime('%d/%m/%Y %H:%M')
+        except:
+            en_time_str = str(en_row['time'])
+            ex_time_str = str(ex_row['time'])
+             
         trades.append({
             "return": ret,
-            "duration": duration_val
+            "duration": duration_val,
+            "entry_time": en_time_str,
+            "exit_time": ex_time_str,
+            "entry_price": en_price,
+            "exit_price": ex_price,
+            "type": "COMPRA"
         })
         
     if not trades:
         return {
             "total_trades": 0, "win_rate": 0, "avg_return": 0, 
-            "avg_duration": 0, "profit_factor": 0
+            "avg_duration": 0, "profit_factor": 0, "trades": []
         }
         
     df_trades = pd.DataFrame(trades)
@@ -110,7 +123,8 @@ def calculate_trade_stats(df):
         "win_rate": win_rate,
         "avg_return": avg_return,
         "avg_duration": avg_duration, # em dias
-        "profit_factor": profit_factor
+        "profit_factor": profit_factor,
+        "trades": trades
     }
 
 def strategy_sma_crossover(df, short_window=20, long_window=50):

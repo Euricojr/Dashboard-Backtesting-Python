@@ -187,7 +187,9 @@
       }
 
       /* Ensure chart library canvas/div fills the container height */
-      #chart, #chart > canvas, #chart > div {
+      #chart,
+      #chart > canvas,
+      #chart > div {
         height: 100% !important;
       }
 
@@ -440,8 +442,15 @@
         align-items: center;
         gap: 8px;
       }
-      .telegram-on { background: #ff3860; color: #fff; box-shadow: 0 6px 18px rgba(255,56,96,0.12); }
-      .telegram-off { background: #6c757d; color: #fff; }
+      .telegram-on {
+        background: #ff3860;
+        color: #fff;
+        box-shadow: 0 6px 18px rgba(255, 56, 96, 0.12);
+      }
+      .telegram-off {
+        background: #6c757d;
+        color: #fff;
+      }
 
       /* Monitor toggle active state (make button green when active) */
       #btn-monitor-toggle.active {
@@ -486,10 +495,17 @@
 
       .switch-label:before {
         background: #fff;
-        background: -webkit-radial-gradient(45%, circle, rgb(255, 58, 58) 0%, rgb(255, 113, 113) 100%);
+        background: -webkit-radial-gradient(
+          45%,
+          circle,
+          rgb(255, 58, 58) 0%,
+          rgb(255, 113, 113) 100%
+        );
         border-radius: 10px;
         border: 1px solid #742323;
-        box-shadow: 0 2px 5px rgba(255, 67, 48, 0.6), 0 0 5px rgba(255, 159, 109, 0.5) inset;
+        box-shadow:
+          0 2px 5px rgba(255, 67, 48, 0.6),
+          0 0 5px rgba(255, 159, 109, 0.5) inset;
         content: "";
         display: block;
         height: 8px;
@@ -504,7 +520,12 @@
 
       .switch-label:after {
         background: #fff;
-        background: -moz-radial-gradient(45%, circle, rgba(60, 60, 60, 0.6) 0%, rgba(151, 151, 151, 0.6) 100%);
+        background: -moz-radial-gradient(
+          45%,
+          circle,
+          rgba(60, 60, 60, 0.6) 0%,
+          rgba(151, 151, 151, 0.6) 100%
+        );
         border-radius: 10px;
         border: 1px solid #111;
         box-shadow: 0 2px 5px rgba(20, 20, 20, 0.5);
@@ -524,7 +545,10 @@
         background: linear-gradient(#4f4f4f, #2b2b2b);
         border-radius: 30px;
         border: 1px solid #1a1a1a;
-        box-shadow: 0 0 3px rgba(0, 0, 0, 0.45), 0 1px 1px rgba(255, 255, 255, 0.08) inset, 0 -1px 0 rgba(0, 0, 0, 0.15) inset;
+        box-shadow:
+          0 0 3px rgba(0, 0, 0, 0.45),
+          0 1px 1px rgba(255, 255, 255, 0.08) inset,
+          0 -1px 0 rgba(0, 0, 0, 0.15) inset;
         display: block;
         height: 30px;
         left: 1px;
@@ -540,8 +564,16 @@
 
       .switch-label span:before {
         background: #fff;
-        background: -webkit-linear-gradient(left, rgba(48, 48, 48, 0.4), rgba(34, 34, 34, 0.4));
-        background: linear-gradient(left, rgba(48, 48, 48, 0.4), rgba(34, 34, 34, 0.4));
+        background: -webkit-linear-gradient(
+          left,
+          rgba(48, 48, 48, 0.4),
+          rgba(34, 34, 34, 0.4)
+        );
+        background: linear-gradient(
+          left,
+          rgba(48, 48, 48, 0.4),
+          rgba(34, 34, 34, 0.4)
+        );
         border-radius: 30px 10px 10px 30px;
         box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2) inset;
         content: "";
@@ -556,7 +588,11 @@
 
       .switch-label span:after {
         background: #fff;
-        background: -webkit-linear-gradient(right, rgba(48, 48, 48, 0.4), rgba(34, 34, 34, 0.4));
+        background: -webkit-linear-gradient(
+          right,
+          rgba(48, 48, 48, 0.4),
+          rgba(34, 34, 34, 0.4)
+        );
         border-radius: 10px 30px 30px 10px;
         box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2) inset;
         content: "";
@@ -576,7 +612,7 @@
       /* Monitor button style (pill with small knob + label) */
       .monitor-btn {
         background: #0f1720;
-        border: 1px solid rgba(255,255,255,0.03);
+        border: 1px solid rgba(255, 255, 255, 0.03);
         color: #e6eef0;
         padding: 8px 12px;
         border-radius: 28px;
@@ -590,14 +626,14 @@
       .monitor-btn .monitor-knob {
         width: 44px;
         height: 28px;
-        background: linear-gradient(#2b2b2f,#1f1f22);
+        background: linear-gradient(#2b2b2f, #1f1f22);
         border-radius: 20px;
-        box-shadow: inset 0 2px 6px rgba(0,0,0,0.6);
+        box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6);
         display: inline-block;
         position: relative;
       }
       .monitor-btn .monitor-knob:after {
-        content: '';
+        content: "";
         width: 10px;
         height: 10px;
         border-radius: 50%;
@@ -606,29 +642,45 @@
         right: 6px;
         top: 50%;
         transform: translateY(-50%);
-        box-shadow: 0 0 6px rgba(0,0,0,0.6);
+        box-shadow: 0 0 6px rgba(0, 0, 0, 0.6);
       }
       .monitor-btn.active {
-        box-shadow: 0 0 0 3px rgba(16,185,129,0.06), 0 8px 24px rgba(2,6,23,0.6);
-        border-color: rgba(16,185,129,0.25);
+        box-shadow:
+          0 0 0 3px rgba(16, 185, 129, 0.06),
+          0 8px 24px rgba(2, 6, 23, 0.6);
+        border-color: rgba(16, 185, 129, 0.25);
       }
       .monitor-btn.active .monitor-knob:after {
         background: #10b981; /* green */
-        box-shadow: 0 0 8px rgba(16,185,129,0.6);
+        box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
       }
-      .monitor-btn .monitor-label { font-weight:700; }
+      .monitor-btn .monitor-label {
+        font-weight: 700;
+      }
 
       .switch-check:checked + .switch-label:before {
-        background: -webkit-radial-gradient(45%, circle, rgba(60, 60, 60, 0.6) 0%, rgba(151, 151, 151, 0.6) 100%);
+        background: -webkit-radial-gradient(
+          45%,
+          circle,
+          rgba(60, 60, 60, 0.6) 0%,
+          rgba(151, 151, 151, 0.6) 100%
+        );
         border: 1px solid #111;
         box-shadow: 0 2px 5px rgba(20, 20, 20, 0.5);
         user-select: none;
       }
 
       .switch-check:checked + .switch-label:after {
-        background: -webkit-radial-gradient(45%, circle, lightgreen  0%, lightgreen 100%);
+        background: -webkit-radial-gradient(
+          45%,
+          circle,
+          lightgreen 0%,
+          lightgreen 100%
+        );
         border: 1px solid #004562;
-        box-shadow: 0 2px 5px green, 0 0 5px green inset;
+        box-shadow:
+          0 2px 5px green,
+          0 0 5px green inset;
         user-select: none;
       }
       .btn-scan {
@@ -1255,7 +1307,7 @@
                     class="card-header d-flex justify-content-between align-items-center"
                   >
                     <h3 class="card-title">Estratégia (SMA)</h3>
-                    <div class="d-flex align-items-center" style="gap:10px;">
+                    <div class="d-flex align-items-center" style="gap: 10px">
                       <span
                         class="small text-muted me-2 font-weight-bold"
                         style="font-size: 0.65rem; letter-spacing: 0.5px"
@@ -1354,11 +1406,14 @@
                           <path d="M5 12l14 0"></path>
                         </svg>
                         Scanner
-                    
                       </button>
 
                       <!-- Monitor Toggle Button (placed under actions) -->
-                      <button id="btn-monitor-toggle" class="btn btn-outline-secondary w-100 mb-3" type="button">
+                      <button
+                        id="btn-monitor-toggle"
+                        class="btn btn-outline-secondary w-100 mb-3"
+                        type="button"
+                      >
                         <span class="monitor-label"> Ativar Monitor</span>
                       </button>
                     </div>
@@ -1680,6 +1735,78 @@
                 </div>
               </div>
             </div>
+
+            <!-- Trade History Section -->
+            <div
+              class="row mt-3"
+              id="trade-history-section"
+              style="display: none"
+            >
+              <div class="col-12">
+                <div
+                  class="card"
+                  style="
+                    background-color: transparent;
+                    border: none;
+                    box-shadow: none;
+                  "
+                >
+                  <div
+                    class="card-header border-0 pb-0"
+                    style="background-color: transparent"
+                  >
+                    <h3
+                      class="card-title text-uppercase text-secondary small font-weight-bold"
+                      style="margin-bottom: 12px"
+                    >
+                      Histórico de Trades
+                    </h3>
+                  </div>
+                  <div class="card-body p-0">
+                    <div
+                      class="table-responsive"
+                      style="
+                        max-height: 400px;
+                        overflow-y: auto;
+                        border-radius: 4px;
+                        border: 1px solid #27272a;
+                        background: #18181b;
+                      "
+                    >
+                      <table class="scanner-table mb-0 w-100">
+                        <thead
+                          style="
+                            position: sticky;
+                            top: 0;
+                            z-index: 20;
+                            background: #1f1f23;
+                          "
+                        >
+                          <tr>
+                            <th class="text-center" style="width: 50px">#</th>
+                            <th>Tipo</th>
+                            <th>Data Entrada</th>
+                            <th class="text-end">Preço Entrada</th>
+                            <th>Data Saída</th>
+                            <th class="text-end">Preço Saída</th>
+                            <th class="text-end" style="padding-right: 12px">
+                              Retorno %
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody id="trades-table-body">
+                          <tr>
+                            <td colspan="7" class="text-muted text-center py-4">
+                              Nenhum trade realizado.
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1790,13 +1917,13 @@
       // Small toast helper for user-visible notifications
       function showToast(message, opts = {}) {
         const duration = opts.duration || 4000;
-        const bg = opts.bg || '#10b981';
-        const el = document.createElement('div');
-        el.className = 'fs-toast';
+        const bg = opts.bg || "#10b981";
+        const el = document.createElement("div");
+        el.className = "fs-toast";
         el.style.cssText = `position:fixed; right:16px; bottom:16px; background:${bg}; color:#fff; padding:10px 14px; border-radius:8px; z-index:99999; box-shadow:0 6px 20px rgba(0,0,0,0.4); font-weight:700;`;
         el.innerText = message;
         document.body.appendChild(el);
-        setTimeout(() => el.style.opacity = '0', duration - 300);
+        setTimeout(() => (el.style.opacity = "0"), duration - 300);
         setTimeout(() => el.remove(), duration);
       }
 
@@ -1827,7 +1954,7 @@
 
       async function loadHistory() {
         if (updateInterval) clearInterval(updateInterval);
-        
+
         // Reset Strategy State on Reload/Symbol Change
         isStrategyActive = false;
 
@@ -1844,6 +1971,12 @@
         // Clear Grid
         document.getElementById("metrics-grid").innerHTML =
           '<div class="text-center text-muted col-12 py-4" style="grid-column: 1 / -1;">Carregando métricas...</div>';
+          
+        const analysisSection = document.getElementById("analysis-section");
+        if (analysisSection) analysisSection.style.display = "none";
+        
+        const historySection = document.getElementById("trade-history-section");
+        if (historySection) historySection.style.display = "none";
 
         logStatus(`Baixando ${count} velas de ${SYMBOL}...`);
 
@@ -1998,7 +2131,7 @@
           candleSeries.setMarkers(data.markers);
           smaShortSeries.setData(data.sma_short);
           smaLongSeries.setData(data.sma_long);
-          
+
           // Enable Live Updates for SMA
           isStrategyActive = true;
 
@@ -2015,8 +2148,11 @@
 
           // Show Analysis Section (Metrics + Scanner placeholder if visible)
           document.getElementById("analysis-section").style.display = "flex";
+          document.getElementById("trade-history-section").style.display =
+            "flex";
 
           renderMetrics(data); // Pass full data object
+          renderTrades(data.trade_stats.trades);
         } catch (e) {
           console.error(e);
           logStatus("Exceção no Backtest", "error");
@@ -2130,6 +2266,47 @@
         `;
       }
 
+      function renderTrades(trades) {
+        const tbody = document.getElementById("trades-table-body");
+        tbody.innerHTML = "";
+
+        if (!trades || trades.length === 0) {
+          tbody.innerHTML =
+            '<tr><td colspan="7" class="text-muted text-center py-4">Nenhum trade na janela selecionada.</td></tr>';
+          return;
+        }
+
+        let rowsHtml = "";
+        trades.forEach((t, i) => {
+          const isWin = t.return > 0;
+          const colorClass = isWin
+            ? "val-pos"
+            : t.return < 0
+              ? "val-neg"
+              : "val-neu";
+          const retPct = (t.return * 100).toFixed(2) + "%";
+          const icon = isWin
+            ? "<i class='ri-arrow-up-line'></i>"
+            : t.return < 0
+              ? "<i class='ri-arrow-down-line'></i>"
+              : "-";
+
+          rowsHtml += `<tr>
+            <td class="text-center text-muted small">${i + 1}</td>
+            <td><span class="badge bg-green-lt fw-bold">COMPRA</span></td>
+            <td class="text-secondary opacity-75">${t.entry_time}</td>
+            <td class="text-end">${t.entry_price.toFixed(2)}</td>
+            <td class="text-secondary opacity-75">${t.exit_time}</td>
+            <td class="text-end">${t.exit_price.toFixed(2)}</td>
+            <td class="text-end" style="padding-right: 12px;">
+                <span class="${colorClass} fw-bold d-flex align-items-center justify-content-end gap-1">${icon} ${retPct}</span>
+            </td>
+          </tr>`;
+        });
+
+        tbody.innerHTML = rowsHtml;
+      }
+
       async function updateLive() {
         const tf = getTimeframeValue();
         const short = document.getElementById("smaShort").value;
@@ -2152,18 +2329,18 @@
 
           // 1. Atualiza Candle (Preço em Tempo Real)
           if (candleSeries) {
-               candleSeries.update(candle);
+            candleSeries.update(candle);
           }
           updateDisplay(candle);
 
           // 2. Atualiza SMAs (Apenas dado consolidado do candle anterior e SE ativo)
           if (isStrategyActive) {
-              if (sma && sma.short !== null) {
-                smaShortSeries.update({ time: sma.time, value: sma.short });
-              }
-              if (sma && sma.long !== null) {
-                smaLongSeries.update({ time: sma.time, value: sma.long });
-              }
+            if (sma && sma.short !== null) {
+              smaShortSeries.update({ time: sma.time, value: sma.short });
+            }
+            if (sma && sma.long !== null) {
+              smaLongSeries.update({ time: sma.time, value: sma.long });
+            }
           }
         } catch (err) {
           console.error(err);
@@ -2177,7 +2354,7 @@
         const now = new Date();
         const timeStr = now.toLocaleTimeString();
         priceEl.innerText = `${candle.close.toFixed(2)}`;
-        
+
         // Debug Title
         document.title = `FinSense | ${candle.close.toFixed(2)}`;
 
@@ -2594,7 +2771,7 @@
       }
 
       /* --- Monitor Button Logic --- */
-      const monitorBtnEl = () => document.getElementById('btn-monitor-toggle');
+      const monitorBtnEl = () => document.getElementById("btn-monitor-toggle");
       let monitorRunning = false;
 
       function applyMonitorState(running) {
@@ -2602,26 +2779,26 @@
         const btn = monitorBtnEl();
         if (!btn) return;
         if (monitorRunning) {
-          btn.classList.add('active');
-          btn.querySelector('.monitor-label').textContent = ' Parar Monitor';
+          btn.classList.add("active");
+          btn.querySelector(".monitor-label").textContent = " Parar Monitor";
         } else {
-          btn.classList.remove('active');
-          btn.querySelector('.monitor-label').textContent = ' Ativar Monitor';
+          btn.classList.remove("active");
+          btn.querySelector(".monitor-label").textContent = " Ativar Monitor";
         }
       }
 
       async function fetchBotStatus() {
         try {
-          const res = await fetch('/api/bot/status');
-          if (!res.ok) throw new Error('Falha ao obter status');
+          const res = await fetch("/api/bot/status");
+          if (!res.ok) throw new Error("Falha ao obter status");
           const json = await res.json();
           applyMonitorState(json.running);
           if (json.running) {
-            logStatus('Monitor Telegram: Ativo (carregado)', 'neutral');
-            showToast('Monitor ativado', { bg: '#10b981' });
+            logStatus("Monitor Telegram: Ativo (carregado)", "neutral");
+            showToast("Monitor ativado", { bg: "#10b981" });
           }
         } catch (err) {
-          console.error('Erro ao obter status do bot:', err);
+          console.error("Erro ao obter status do bot:", err);
           applyMonitorState(false);
         }
       }
@@ -2632,20 +2809,20 @@
         try {
           btn.disabled = true;
           if (!monitorRunning) {
-            const res = await fetch('/api/bot/start', { method: 'POST' });
-            if (!res.ok) throw new Error('Start failed');
+            const res = await fetch("/api/bot/start", { method: "POST" });
+            if (!res.ok) throw new Error("Start failed");
             applyMonitorState(true);
-            logStatus('Monitor Telegram: Iniciado (via UI)', 'neutral');
-            showToast('Monitor ativado', { bg: '#10b981' });
+            logStatus("Monitor Telegram: Iniciado (via UI)", "neutral");
+            showToast("Monitor ativado", { bg: "#10b981" });
           } else {
-            const res = await fetch('/api/bot/stop', { method: 'POST' });
-            if (!res.ok) throw new Error('Stop failed');
+            const res = await fetch("/api/bot/stop", { method: "POST" });
+            if (!res.ok) throw new Error("Stop failed");
             applyMonitorState(false);
-            logStatus('Monitor Telegram: Pausado (via UI)', 'neutral');
-            showToast('Monitor pausado', { bg: '#6c757d' });
+            logStatus("Monitor Telegram: Pausado (via UI)", "neutral");
+            showToast("Monitor pausado", { bg: "#6c757d" });
           }
         } catch (err) {
-          console.error('Erro ao alternar bot:', err);
+          console.error("Erro ao alternar bot:", err);
           applyMonitorState(!monitorRunning);
         } finally {
           const b = monitorBtnEl();
@@ -2654,10 +2831,10 @@
       }
 
       // Bind button after DOM ready
-      document.addEventListener('DOMContentLoaded', () => {
+      document.addEventListener("DOMContentLoaded", () => {
         const btn = monitorBtnEl();
         if (!btn) return;
-        btn.addEventListener('click', onMonitorClick);
+        btn.addEventListener("click", onMonitorClick);
         fetchBotStatus();
       });
 
