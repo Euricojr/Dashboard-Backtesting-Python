@@ -372,6 +372,11 @@ def bot_start():
         BOT_START_TIME = now
         
     print(f"🚀 [Monitor] Bot Iniciado via API (BOT_RUNNING=True, START_TIME={BOT_START_TIME})")
+    
+    # Enviar notificação no Telegram
+    msg = "🚀 **MONITORAMENTO INICIADO!**\n\nO robô de alertas foi ativado e está rastreando cruzamentos de médias nos ativos configurados."
+    global_notifier.enviar_mensagem(msg)
+    
     return jsonify({"message": "Bot Iniciado", "running": True})
 
 
@@ -381,6 +386,11 @@ def bot_stop():
     global BOT_RUNNING
     BOT_RUNNING = False
     print("💤 [Monitor] Bot Pausado via API (BOT_RUNNING=False)")
+    
+    # Enviar notificação no Telegram
+    msg = "💤 **MONITORAMENTO PAUSADO!**\n\nO robô de alertas foi desativado. Você não receberá mais notificações de sinais até ligá-lo novamente."
+    global_notifier.enviar_mensagem(msg)
+    
     return jsonify({"message": "Bot Pausado", "running": False})
 
 
