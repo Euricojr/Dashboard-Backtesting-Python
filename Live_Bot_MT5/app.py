@@ -18,13 +18,33 @@ LAST_SIGNAL_STATE = {} # Dict para guardar estado de cada ativo: { "WINJ26": 1, 
 # Controle On/Off do bot de alertas Telegram
 BOT_RUNNING = False
 BOT_START_TIME = None
+TOTAL_ALERTS = 0
+ALERTS_PER_ASSET = {}
 
 # Instância global do Notifier para o listener e alertas
 global_notifier = TelegramNotifier(token=TELEGRAM_TOKEN, chat_id=TELEGRAM_CHAT_ID)
 
+def get_bot_status_text():
+    global BOT_RUNNING, TOTAL_ALERTS, ALERTS_PER_ASSET
+    status = "🟢 *ONLINE*" if BOT_RUNNING else "🔴 *OFFLINE*"
+    
+    text = f"📊 *Status do Sistema*\n\n"
+    text += f"Status: {status}\n"
+    text += f"Total de Alertas: {TOTAL_ALERTS}\n\n"
+    
+    if ALERTS_PER_ASSET:
+        text += "*Alertas por Ativo:*\n"
+        sorted_alerts = sorted(ALERTS_PER_ASSET.items(), key=lambda x: x[1], reverse=True)
+        for asset, count in sorted_alerts:
+            text += f"▫️ {asset}: {count}\n"
+    else:
+        text += "Nenhum alerta enviado ainda."
+        
+    return text
+
 # Inicia o Listener de Comandos (/start) apenas no processo principal (não no reloader inicial)
 if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
-    global_notifier.start_listener()
+    global_notifier.start_listener(status_callback=get_bot_status_text)
 
 
 def run_telegram_monitor():
@@ -32,7 +52,7 @@ def run_telegram_monitor():
     Função que roda em thread separada para monitorar cruzamento de médias
     e enviar alertas no Telegram.
     """
-    global LAST_SIGNAL_STATE, BOT_RUNNING
+    global LAST_SIGNAL_STATE, BOT_RUNNING, TOTAL_ALERTS, ALERTS_PER_ASSET
     
     # Carrega lista de ativos
     from utils.asset_filter import load_clean_assets
@@ -131,23 +151,22 @@ def run_telegram_monitor():
                                 
                             LAST_SIGNAL_STATE[symbol] = new_state
                             
+                            TOTAL_ALERTS += 1
+                            ALERTS_PER_ASSET[symbol] = ALERTS_PER_ASSET.get(symbol, 0) + 1
+
                             icone = "🟢" if signal_text == "COMPRA" else "🔴"
                             tipo = "Golden Cross" if signal_text == "COMPRA" else "Death Cross"
                             
                             msg = (
-                                f"🚨 **FINSENSE ALERT** 🚨\n\n"
-        
-                                f"{icone} **SINAL:** {alert['sinal']} ({tipo})\n"
-                                f"🎯 **ATIVO:** {SYMBOL}  |  ⏱️ **TF:** {TIMEFRAME}\n\n"
-        
-                                f"💰 **PREÇO ATUAL:** {alert['preco']:.2f}\n\n"
-        
-                                f"📊 **CRUZAMENTO DAS MÉDIAS:**\n"
-                                f"🔸 SMA {SHORT_WINDOW}: {alert['sma_short_val']:.2f}\n"
-                                f"🔹 SMA {LONG_WINDOW}: {alert['sma_long_val']:.2f}\n\n"
-        
-                                f"📅 **DATA/HORA:** {alert['time'].strftime('%d/%m/%Y às %H:%M:%S')}"
-    )
+                                f"🚨 *FINSENSE ALERT* 🚨\n\n"
+                                f"{icone} *SINAL:* {signal_text} ({tipo})\n"
+                                f"🎯 *ATIVO:* {symbol}  |  ⏱️ *TF:* {MONITOR_TIMEFRAME}\n\n"
+                                f"💰 *PREÇO ATUAL:* {current['close']:.2f}\n\n"
+                                f"📊 *CRUZAMENTO DAS MÉDIAS:*\n"
+                                f"🔸 SMA 20: {c_short:.2f}\n"
+                                f"🔹 SMA 50: {c_long:.2f}\n\n"
+                                f"📅 *DATA/HORA:* {current['time'].strftime('%d/%m/%Y às %H:%M:%S')}"
+                            )
                             print(f"\n⚡ [Monitor] ALERTA ENVIADO para {symbol}: {signal_text}")
                             global_notifier.enviar_mensagem(msg)
 

@@ -19,7 +19,13 @@ class TelegramNotifier:
         payload = {
             "chat_id": chat,
             "text": texto,
-            "parse_mode": "Markdown"
+            "parse_mode": "Markdown",
+            "reply_markup": {
+                "keyboard": [
+                    [{"text": "📊 Status"}]
+                ],
+                "resize_keyboard": True
+            }
         }
 
         try:
@@ -34,7 +40,7 @@ class TelegramNotifier:
             print(f"❌ Erro de conexão com Telegram: {e}")
             return False
 
-    def start_listener(self):
+    def start_listener(self, status_callback=None):
         """Inicia uma thread para ouvir comandos do Telegram (como /start)"""
         if not self.token:
             print("❌ Listener do Telegram cancelado: TOKEN não encontrado.")
@@ -70,6 +76,12 @@ class TelegramNotifier:
                                         "Para gerenciar, basta acessar o painel pelo navegador."
                                     )
                                     self.enviar_mensagem(welcome_text, target_chat_id=chat_id)
+                                elif text in ('/status', '📊 Status') and chat_id:
+                                    if status_callback:
+                                        status_text = status_callback()
+                                    else:
+                                        status_text = "Estado do sistema não configurado."
+                                    self.enviar_mensagem(status_text, target_chat_id=chat_id)
                 except requests.exceptions.Timeout:
                     pass  # Timeout esperado do long polling
                 except Exception as e:
