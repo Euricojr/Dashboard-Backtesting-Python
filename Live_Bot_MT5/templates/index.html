@@ -1,1808 +1,1590 @@
 <!doctype html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, viewport-fit=cover"
-    />
-    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>FinSense | Dashboard</title>
-    <!-- Tabler Core -->
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/css/tabler.min.css"
-    />
-    <!-- RemixIcon -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css"
-      rel="stylesheet"
-    />
-    <!-- Fonts -->
-    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
-    <style>
-      :root {
-        --tblr-font-sans-serif:
-          "Inter", -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI,
-          Roboto, Helvetica Neue, sans-serif;
 
-        /* True Dark / Carbon Theme Palette */
-        --bg-color: #09090b;
-        --card-bg: #18181b;
-        --border-color: #27272a;
-        --text-primary: #f4f4f5;
-        --text-secondary: #a1a1aa;
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <title>FinSense | Dashboard</title>
+  <!-- Tabler Core -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/css/tabler.min.css" />
+  <!-- RemixIcon -->
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet" />
+  <!-- Fonts -->
+  <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+  <style>
+    :root {
+      --tblr-font-sans-serif:
+        "Inter", -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI,
+        Roboto, Helvetica Neue, sans-serif;
 
-        --accent-color: #71717a;
-        --accent-hover: #52525b;
+      /* True Dark / Carbon Theme Palette */
+      --bg-color: #09090b;
+      --card-bg: #18181b;
+      --border-color: #27272a;
+      --text-primary: #f4f4f5;
+      --text-secondary: #a1a1aa;
 
-        --profit-color: #10b981;
-        --loss-color: #ef4444;
-      }
-      body {
-        font-feature-settings: "cv03", "cv04", "cv11";
-        background-color: var(--bg-color);
-        color: var(--text-primary);
-      }
+      --accent-color: #71717a;
+      --accent-hover: #52525b;
 
-      /* Theme Overrides */
-      .card {
-        background-color: var(--card-bg);
-        border: 1px solid var(--border-color);
-        box-shadow: none;
-      }
-      .card-header {
-        background-color: transparent;
-        border-bottom: 1px solid var(--border-color);
-      }
-      .card-title {
-        color: var(--text-primary);
-      }
-      .form-control,
-      .form-select {
-        background-color: #09090b;
-        border-color: var(--border-color);
-        color: var(--text-primary);
-      }
-      .form-control:focus,
-      .form-select:focus {
-        background-color: #09090b !important;
-        border-color: var(--border-color) !important;
-        color: var(--text-primary) !important;
-        box-shadow: none !important;
-        outline: none !important;
-      }
+      --profit-color: #10b981;
+      --loss-color: #ef4444;
+    }
 
-      /* Navbar */
-      /* Navbar (Fixed: Remove Blue Line) */
-      header,
-      .navbar,
-      .page-header {
-        border-bottom: 1px solid rgba(0, 227, 150, 0.4) !important;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
-        background-color: #18181b !important;
-      }
+    body {
+      font-feature-settings: "cv03", "cv04", "cv11";
+      background-color: var(--bg-color);
+      color: var(--text-primary);
+    }
 
-      /* Price Display */
-      .price-hero {
-        font-size: 3rem;
-        font-weight: 800;
-        color: var(--profit-color);
-        line-height: 1;
-        letter-spacing: -1px;
-        text-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
-        transition: color 0.3s;
-      }
-      .price-hero.down {
-        color: var(--loss-color);
-        text-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
-      }
+    /* Theme Overrides */
+    .card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      box-shadow: none;
+    }
 
-      /* Asset Input Custom */
-      .asset-input {
-        font-size: 1.2rem;
-        font-weight: bold;
-        text-transform: uppercase;
-        text-align: center;
-        letter-spacing: 1px;
-        background-color: var(--bg-color);
-        border: 1px solid rgba(0, 227, 150, 0.4) !important; /* Green Border */
-      }
+    .card-header {
+      background-color: transparent;
+      border-bottom: 1px solid var(--border-color);
+    }
 
-      /* --- NEW SEARCH WRAPPER (INDESTRUCTIBLE NEON) --- */
-      .neon-search-wrapper {
-        display: flex;
-        align-items: center;
-        background-color: #09090b !important; /* Mantém fundo ultra dark */
-        border: 1px solid rgba(0, 227, 150, 1) !important; /* Borda verde constante */
-        border-radius: 8px !important;
-        overflow: hidden;
-        transition: all 0.3s ease;
-        box-shadow: 0 0 8px rgba(0, 227, 150, 0.2) !important;
-        margin-bottom: 10px;
-      }
+    .card-title {
+      color: var(--text-primary);
+    }
 
-      .neon-search-wrapper:focus-within {
-        border-color: #00ffaf !important;
-        box-shadow: 0 0 15px rgba(0, 227, 150, 0.5) !important;
-        transform: translateY(-1px);
-      }
+    .form-control,
+    .form-select {
+      background-color: #09090b;
+      border-color: var(--border-color);
+      color: var(--text-primary);
+    }
 
-      .clean-input {
-        flex: 1;
-        background: transparent !important;
-        border: none !important;
-        color: white !important;
-        padding: 10px 15px !important;
-        font-size: 1rem !important;
-        font-weight: 600 !important;
-        text-transform: uppercase;
-        outline: none !important;
-        box-shadow: none !important;
-        width: 100%;
-        text-align: center !important; /* Centralizado conforme solicitado */
-        letter-spacing: 0.5px;
-      }
+    .form-control:focus,
+    .form-select:focus {
+      background-color: #09090b !important;
+      border-color: var(--border-color) !important;
+      color: var(--text-primary) !important;
+      box-shadow: none !important;
+      outline: none !important;
+    }
 
-      /* Remove o azul do Chrome/Edge */
-      .clean-input:focus,
-      .clean-input:active {
-        outline: none !important;
-        box-shadow: none !important;
-        background: transparent !important;
-      }
+    /* Navbar */
+    /* Navbar (Fixed: Remove Blue Line) */
+    header,
+    .navbar,
+    .page-header {
+      border-bottom: 1px solid rgba(0, 227, 150, 0.4) !important;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+      background-color: #18181b !important;
+    }
 
-      .clean-btn {
-        background: rgba(0, 227, 150, 0.1) !important;
-        border: none !important;
-        border-left: 1px solid rgba(0, 227, 150, 0.3) !important;
-        color: #00e396 !important;
-        padding: 0 15px !important;
-        height: 44px !important;
-        cursor: pointer !important;
-        transition: all 0.2s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
+    /* Price Display */
+    .price-hero {
+      font-size: 3rem;
+      font-weight: 800;
+      color: var(--profit-color);
+      line-height: 1;
+      letter-spacing: -1px;
+      text-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+      transition: color 0.3s;
+    }
 
-      .clean-btn:hover {
-        background: rgba(0, 227, 150, 0.2) !important;
-        color: #00ffaf !important;
-      }
+    .price-hero.down {
+      color: var(--loss-color);
+      text-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
+    }
 
-      .clean-btn:focus {
-        outline: none !important;
-        box-shadow: none !important;
-      }
+    /* Asset Input Custom */
+    .asset-input {
+      font-size: 1.2rem;
+      font-weight: bold;
+      text-transform: uppercase;
+      text-align: center;
+      letter-spacing: 1px;
+      background-color: var(--bg-color);
+      border: 1px solid rgba(0, 227, 150, 0.4) !important;
+      /* Green Border */
+    }
 
-      .big-chart-container {
-        /* Expand the chart to better fill the card while remaining responsive */
-        height: calc(100vh - 6rem);
-        min-height: 75vh;
-        width: 100%;
-        border-radius: 4px;
-        overflow: hidden;
-        position: relative;
-      }
+    /* --- NEW SEARCH WRAPPER (INDESTRUCTIBLE NEON) --- */
+    .neon-search-wrapper {
+      display: block;
+      /* Modified to block to work with absolute positioning */
+      background-color: #09090b !important;
+      /* Mantém fundo ultra dark */
+      border: 1px solid rgba(0, 227, 150, 1) !important;
+      /* Borda verde constante */
+      border-radius: 8px !important;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 8px rgba(0, 227, 150, 0.2) !important;
+      margin-bottom: 10px;
+      position: relative;
+      /* Add relative position */
+    }
 
-      /* Ensure chart library canvas/div fills the container height */
-      #chart,
-      #chart > canvas,
-      #chart > div {
-        height: 100% !important;
-      }
+    .neon-search-wrapper:focus-within {
+      border-color: #00ffaf !important;
+      box-shadow: 0 0 15px rgba(0, 227, 150, 0.5) !important;
+      transform: translateY(-1px);
+    }
 
-      /* Table Styles */
-      .table thead th {
-        background-color: var(--card-bg);
-        color: var(--text-secondary);
-        border-bottom: 1px solid var(--border-color);
-      }
-      .table td {
-        color: var(--text-primary);
-        border-bottom: 1px solid var(--border-color);
-      }
-      .table-striped tbody tr:nth-of-type(odd) {
-        background-color: rgba(255, 255, 255, 0.02);
-      }
+    .clean-input {
+      width: 100%;
+      background: transparent !important;
+      border: none !important;
+      color: white !important;
+      padding: 10px 15px !important;
+      font-size: 1rem !important;
+      font-weight: 600 !important;
+      text-transform: uppercase;
+      outline: none !important;
+      box-shadow: none !important;
+      text-align: center !important;
+      /* Centralizado conforme solicitado */
+      letter-spacing: 0.5px;
+    }
 
-      /* --- CARBON OVERRIDES (Remove Blues) --- */
+    /* Remove o azul do Chrome/Edge */
+    .clean-input:focus,
+    .clean-input:active {
+      outline: none !important;
+      box-shadow: none !important;
+      background: transparent !important;
+    }
 
-      /* 1. Buttons (Green Primary) */
-      .btn-primary {
-        background: linear-gradient(135deg, #10b981, #059669) !important;
-        border: 1px solid #10b981 !important;
-        color: #ffffff !important;
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4) !important;
-        font-weight: 700;
-        transition: all 0.3s ease;
-      }
-      .btn-primary:hover,
-      .btn-primary:focus,
-      .btn-primary:active {
-        background: linear-gradient(135deg, #059669, #047857) !important;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(16, 185, 129, 0.6) !important;
-      }
+    .clean-btn {
+      background: rgba(0, 227, 150, 0.1) !important;
+      border: none !important;
+      border-left: 1px solid rgba(0, 227, 150, 0.3) !important;
+      color: #00e396 !important;
+      padding: 0 15px !important;
+      height: 100% !important;
+      /* Matches full height of wrapper */
+      position: absolute;
+      right: 0;
+      top: 0;
+      cursor: pointer !important;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-      /* 2. Forms (Inputs/Selects) */
-      .form-control,
-      .form-select {
-        background-color: #18181b !important;
-        border: 1px solid rgba(0, 227, 150, 0.4) !important; /* Green Border */
-        color: var(--text-primary) !important;
-        border-radius: 6px;
-      }
-      .form-control:focus,
-      .form-select:focus {
-        background-color: #18181b !important;
-        border-color: #00e396 !important; /* Green Focus */
-        box-shadow: 0 0 0 2px rgba(0, 227, 150, 0.25) !important;
-        color: white !important;
-        z-index: 5; /* Ensure border is above input-group siblings */
-        position: relative;
-      }
+    .clean-btn:hover {
+      background: rgba(0, 227, 150, 0.2) !important;
+      color: #00ffaf !important;
+    }
 
-      /* 3. Links */
-      a {
-        color: var(--text-secondary);
-      }
-      a:hover {
-        color: var(--text-primary);
-        text-decoration: none;
-      }
+    .clean-btn:focus {
+      outline: none !important;
+      box-shadow: none !important;
+    }
 
-      /* 4. Selection */
-      ::selection {
-        background: #3f3f46;
-        color: #ffffff;
-      }
+    .big-chart-container {
+      /* Expand the chart to better fill the card while remaining responsive */
+      height: calc(100vh - 6rem);
+      min-height: 75vh;
+      width: 100%;
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+    }
 
-      /* Table Hover Neutral */
-      .table-hover tbody tr:hover {
-        background-color: #27272a !important;
-      }
+    /* Ensure chart library canvas/div fills the container height */
+    #chart,
+    #chart>canvas,
+    #chart>div {
+      height: 100% !important;
+    }
 
-      /* Active List Item Neutral */
-      #results-list .list-group-item {
-        border: none !important;
-        margin-bottom: 2px; /* Slight spacing instead of lines */
-        border-radius: 4px; /* Soft rounded corners */
-      }
-      #results-list .list-group-item.active {
-        background-color: #27272a !important;
-        color: #ffffff !important;
-      }
+    /* Table Styles */
+    .table thead th {
+      background-color: var(--card-bg);
+      color: var(--text-secondary);
+      border-bottom: 1px solid var(--border-color);
+    }
 
-      /* 5. Scrollbar (Universal Fix) */
-      /* 5. Scrollbar (Universal & Firefox Support) */
-      /* Firefox Default */
-      * {
-        scrollbar-width: thin;
-        scrollbar-color: #3f3f46 #09090b;
-      }
+    .table td {
+      color: var(--text-primary);
+      border-bottom: 1px solid var(--border-color);
+    }
 
-      /* Webkit (Chrome/Edge/Safari) */
-      ::-webkit-scrollbar,
-      *::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
-      }
-      ::-webkit-scrollbar-track,
-      *::-webkit-scrollbar-track {
-        background: #09090b;
-      }
-      ::-webkit-scrollbar-thumb,
-      *::-webkit-scrollbar-thumb {
-        background: #3f3f46;
-        border-radius: 4px;
-      }
-      ::-webkit-scrollbar-thumb:hover,
-      *::-webkit-scrollbar-thumb:hover {
-        background: #52525b; /* Lighter gray on hover */
-      }
+    .table-striped tbody tr:nth-of-type(odd) {
+      background-color: rgba(255, 255, 255, 0.02);
+    }
 
-      /* Force neutral primary */
-      .bg-primary {
-        background-color: #27272a !important;
-        color: #f4f4f5 !important;
-      }
-      .progress-bar {
-        background-color: #27272a !important;
-      }
-      /* --- AGGRESSIVE COMPONENT OVERRIDES --- */
-      .card-header,
-      .card-body,
-      .card-footer {
-        background-color: #18181b !important;
-        border-color: #27272a !important;
-        color: #f4f4f5 !important;
-      }
+    /* --- CARBON OVERRIDES (Remove Blues) --- */
 
-      .card {
-        background-color: #18181b !important;
-        color: #f4f4f5 !important;
-        border: 1px solid rgba(0, 227, 150, 0.3) !important;
-        box-shadow: 0 0 30px rgba(0, 227, 150, 0.1) !important;
-      }
+    /* 1. Buttons (Green Primary) */
+    .btn-primary {
+      background: linear-gradient(135deg, #10b981, #059669) !important;
+      border: 1px solid #10b981 !important;
+      color: #ffffff !important;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4) !important;
+      font-weight: 700;
+      transition: all 0.3s ease;
+    }
 
-      .page,
-      .page-wrapper,
-      .page-body {
-        background-color: #09090b !important;
-      }
+    .btn-primary:hover,
+    .btn-primary:focus,
+    .btn-primary:active {
+      background: linear-gradient(135deg, #059669, #047857) !important;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(16, 185, 129, 0.6) !important;
+    }
 
-      /* Remove any blue tint from Tabler defaults */
-      .bg-blue-lt,
-      .bg-primary-lt {
-        background-color: #27272a !important;
-        color: #f4f4f5 !important;
-      }
+    /* 2. Forms (Inputs/Selects) */
+    .form-control,
+    .form-select {
+      background-color: #18181b !important;
+      border: 1px solid rgba(0, 227, 150, 0.4) !important;
+      /* Green Border */
+      color: var(--text-primary) !important;
+      border-radius: 6px;
+    }
 
-      /* Fix for blue lines in hr-text (Preco Atual) */
-      .hr-text {
-        color: var(--text-secondary) !important;
-      }
-      .hr-text::before,
-      .hr-text::after {
-        background-color: rgba(0, 227, 150, 0.3) !important; /* Green Lines */
-      }
+    .form-control:focus,
+    .form-select:focus {
+      background-color: #18181b !important;
+      border-color: #00e396 !important;
+      /* Green Focus */
+      box-shadow: 0 0 0 2px rgba(0, 227, 150, 0.25) !important;
+      color: white !important;
+      z-index: 5;
+      /* Ensure border is above input-group siblings */
+      position: relative;
+    }
 
-      /* Ensure asset input doesn't show blue on focus */
-      .asset-input:focus {
-        border-color: var(--border-color) !important;
-        box-shadow: none !important;
-      }
-      /* Floating Toolbar (Neon Green Style) */
-      .floating-toolbar {
-        position: absolute;
-        top: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        z-index: 20;
-        background: rgba(10, 10, 12, 0.85); /* Slightly darker glass */
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border: 1px solid rgba(0, 227, 150, 0.6) !important; /* Constant Green Border */
-        border-radius: 50px;
-        padding: 6px 20px;
-        display: flex;
-        gap: 12px;
-        align-items: center;
-        box-shadow: 0 0 15px rgba(0, 227, 150, 0.15); /* Constant subtle glow */
-        transition: all 0.3s ease;
-      }
-      .floating-toolbar:hover {
-        background: rgba(10, 10, 12, 0.95);
-        border-color: #00ffaf !important;
-        box-shadow: 0 0 25px rgba(0, 227, 150, 0.3);
-        transform: translateX(-50%) translateY(-2px);
-      }
+    /* 3. Links */
+    a {
+      color: var(--text-secondary);
+    }
 
-      /* Minimalist Toolbar Inputs */
-      .toolbar-input {
-        background-color: rgba(0, 0, 0, 0.3) !important;
-        border: 1px solid rgba(255, 255, 255, 0.15) !important;
-        color: #f4f4f5 !important;
-        border-radius: 8px;
-        padding: 6px 10px;
-        font-size: 0.85rem;
-        width: 70px;
-        text-align: center;
-        transition: border-color 0.2s;
-      }
-      .toolbar-select {
-        background-color: rgba(0, 0, 0, 0.5) !important;
-        border: 1px solid rgba(0, 227, 150, 0.4) !important; /* Green Border */
-        color: #f4f4f5 !important;
-        border-radius: 8px;
-        padding: 6px 30px 6px 12px;
-        font-size: 0.85rem;
-        cursor: pointer;
-        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%2300E396' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e") !important;
-        background-size: 10px 10px !important;
-      }
-      .toolbar-input:focus,
-      .toolbar-select:focus {
-        border-color: var(--profit-color) !important;
-        box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2) !important;
-        outline: none;
-      }
+    a:hover {
+      color: var(--text-primary);
+      text-decoration: none;
+    }
 
-      /* Action Buttons */
-      .toolbar-btn {
-        border: none;
-        border-radius: 50%;
-        width: 36px;
-        height: 36px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: all 0.2s;
-      }
-      .btn-play {
-        background: linear-gradient(135deg, #10b981, #059669);
-        color: white;
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
-      }
-      .btn-play:hover {
-        transform: scale(1.1);
-        box-shadow: 0 6px 16px rgba(16, 185, 129, 0.6);
-      }
-      /* Telegram Toggle Button */
-      #btn-telegram-toggle {
-        padding: 8px 12px;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        font-weight: 700;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-      }
-      .telegram-on {
-        background: #ff3860;
-        color: #fff;
-        box-shadow: 0 6px 18px rgba(255, 56, 96, 0.12);
-      }
-      .telegram-off {
-        background: #6c757d;
-        color: #fff;
-      }
+    /* 4. Selection */
+    ::selection {
+      background: #3f3f46;
+      color: #ffffff;
+    }
 
-      /* Monitor toggle active state (make button green when active) */
-      #btn-monitor-toggle.active {
-        background: linear-gradient(135deg, #10b981, #059669) !important;
-        border-color: #10b981 !important;
-        color: #ffffff !important;
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35) !important;
-      }
-      #btn-monitor-toggle.active .monitor-label {
-        color: #ffffff !important;
-      }
+    /* Table Hover Neutral */
+    .table-hover tbody tr:hover {
+      background-color: #27272a !important;
+    }
 
-      /* --- STYLED SWITCH (from attachment) --- */
-      .switch {
-        background-color: rgba(0, 0, 0, 0.2);
-        border-radius: 30px;
-        border: 3px solid rgba(58, 58, 58, 0.08);
-        box-shadow: 0 0 4px rgba(0, 0, 0, 0.45) inset;
-        height: 36px;
-        margin: 2px;
-        position: relative;
-        width: 96px;
-        display: inline-block;
-        user-select: none;
-        vertical-align: middle;
-      }
+    /* Active List Item Neutral */
+    #results-list .list-group-item {
+      border: none !important;
+      margin-bottom: 2px;
+      /* Slight spacing instead of lines */
+      border-radius: 4px;
+      /* Soft rounded corners */
+    }
 
-      .switch-check {
-        position: absolute;
-        visibility: hidden;
-        user-select: none;
-      }
+    #results-list .list-group-item.active {
+      background-color: #27272a !important;
+      color: #ffffff !important;
+    }
 
-      .switch-label {
-        cursor: pointer;
-        display: block;
-        height: 32px;
-        text-indent: -9999px;
-        width: 91px;
-        user-select: none;
-      }
+    /* 5. Scrollbar (Universal Fix) */
+    /* 5. Scrollbar (Universal & Firefox Support) */
+    /* Firefox Default */
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: #3f3f46 #09090b;
+    }
 
-      .switch-label:before {
-        background: #fff;
-        background: -webkit-radial-gradient(
-          45%,
+    /* Webkit (Chrome/Edge/Safari) */
+    ::-webkit-scrollbar,
+    *::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track,
+    *::-webkit-scrollbar-track {
+      background: #09090b;
+    }
+
+    ::-webkit-scrollbar-thumb,
+    *::-webkit-scrollbar-thumb {
+      background: #3f3f46;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover,
+    *::-webkit-scrollbar-thumb:hover {
+      background: #52525b;
+      /* Lighter gray on hover */
+    }
+
+    /* Force neutral primary */
+    .bg-primary {
+      background-color: #27272a !important;
+      color: #f4f4f5 !important;
+    }
+
+    .progress-bar {
+      background-color: #27272a !important;
+    }
+
+    /* --- AGGRESSIVE COMPONENT OVERRIDES --- */
+    .card-header,
+    .card-body,
+    .card-footer {
+      background-color: #18181b !important;
+      border-color: #27272a !important;
+      color: #f4f4f5 !important;
+    }
+
+    .card {
+      background-color: #18181b !important;
+      color: #f4f4f5 !important;
+      border: 1px solid rgba(0, 227, 150, 0.3) !important;
+      box-shadow: 0 0 30px rgba(0, 227, 150, 0.1) !important;
+    }
+
+    .page,
+    .page-wrapper,
+    .page-body {
+      background-color: #09090b !important;
+    }
+
+    /* Remove any blue tint from Tabler defaults */
+    .bg-blue-lt,
+    .bg-primary-lt {
+      background-color: #27272a !important;
+      color: #f4f4f5 !important;
+    }
+
+    /* Fix for blue lines in hr-text (Preco Atual) */
+    .hr-text {
+      color: var(--text-secondary) !important;
+    }
+
+    .hr-text::before,
+    .hr-text::after {
+      background-color: rgba(0, 227, 150, 0.3) !important;
+      /* Green Lines */
+    }
+
+    /* Ensure asset input doesn't show blue on focus */
+    .asset-input:focus {
+      border-color: var(--border-color) !important;
+      box-shadow: none !important;
+    }
+
+    /* Floating Toolbar (Neon Green Style) */
+    .floating-toolbar {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 20;
+      background: rgba(10, 10, 12, 0.85);
+      /* Slightly darker glass */
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(0, 227, 150, 0.6) !important;
+      /* Constant Green Border */
+      border-radius: 50px;
+      padding: 6px 20px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      box-shadow: 0 0 15px rgba(0, 227, 150, 0.15);
+      /* Constant subtle glow */
+      transition: all 0.3s ease;
+    }
+
+    .floating-toolbar:hover {
+      background: rgba(10, 10, 12, 0.95);
+      border-color: #00ffaf !important;
+      box-shadow: 0 0 25px rgba(0, 227, 150, 0.3);
+      transform: translateX(-50%) translateY(-2px);
+    }
+
+    /* Minimalist Toolbar Inputs */
+    .toolbar-input {
+      background-color: rgba(0, 0, 0, 0.3) !important;
+      border: 1px solid rgba(255, 255, 255, 0.15) !important;
+      color: #f4f4f5 !important;
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 0.85rem;
+      width: 70px;
+      text-align: center;
+      transition: border-color 0.2s;
+    }
+
+    .toolbar-select {
+      background-color: rgba(0, 0, 0, 0.5) !important;
+      border: 1px solid rgba(0, 227, 150, 0.4) !important;
+      /* Green Border */
+      color: #f4f4f5 !important;
+      border-radius: 8px;
+      padding: 6px 30px 6px 12px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%2300E396' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e") !important;
+      background-size: 10px 10px !important;
+    }
+
+    .toolbar-input:focus,
+    .toolbar-select:focus {
+      border-color: var(--profit-color) !important;
+      box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2) !important;
+      outline: none;
+    }
+
+    /* Action Buttons */
+    .toolbar-btn {
+      border: none;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-play {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-play:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 16px rgba(16, 185, 129, 0.6);
+    }
+
+    /* Telegram Toggle Button */
+    #btn-telegram-toggle {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .telegram-on {
+      background: #ff3860;
+      color: #fff;
+      box-shadow: 0 6px 18px rgba(255, 56, 96, 0.12);
+    }
+
+    .telegram-off {
+      background: #6c757d;
+      color: #fff;
+    }
+
+    /* Monitor toggle active state (make button green when active) */
+    #btn-monitor-toggle.active {
+      background: linear-gradient(135deg, #10b981, #059669) !important;
+      border-color: #10b981 !important;
+      color: #ffffff !important;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35) !important;
+    }
+
+    #btn-monitor-toggle.active .monitor-label {
+      color: #ffffff !important;
+    }
+
+    /* --- STYLED SWITCH (from attachment) --- */
+    .switch {
+      background-color: rgba(0, 0, 0, 0.2);
+      border-radius: 30px;
+      border: 3px solid rgba(58, 58, 58, 0.08);
+      box-shadow: 0 0 4px rgba(0, 0, 0, 0.45) inset;
+      height: 36px;
+      margin: 2px;
+      position: relative;
+      width: 96px;
+      display: inline-block;
+      user-select: none;
+      vertical-align: middle;
+    }
+
+    .switch-check {
+      position: absolute;
+      visibility: hidden;
+      user-select: none;
+    }
+
+    .switch-label {
+      cursor: pointer;
+      display: block;
+      height: 32px;
+      text-indent: -9999px;
+      width: 91px;
+      user-select: none;
+    }
+
+    .switch-label:before {
+      background: #fff;
+      background: -webkit-radial-gradient(45%,
           circle,
           rgb(255, 58, 58) 0%,
-          rgb(255, 113, 113) 100%
-        );
-        border-radius: 10px;
-        border: 1px solid #742323;
-        box-shadow:
-          0 2px 5px rgba(255, 67, 48, 0.6),
-          0 0 5px rgba(255, 159, 109, 0.5) inset;
-        content: "";
-        display: block;
-        height: 8px;
-        left: -18%;
-        position: absolute;
-        top: 12px;
-        transition: all 0.2s;
-        width: 10px;
-        z-index: 12;
-        user-select: none;
-      }
+          rgb(255, 113, 113) 100%);
+      border-radius: 10px;
+      border: 1px solid #742323;
+      box-shadow:
+        0 2px 5px rgba(255, 67, 48, 0.6),
+        0 0 5px rgba(255, 159, 109, 0.5) inset;
+      content: "";
+      display: block;
+      height: 8px;
+      left: -18%;
+      position: absolute;
+      top: 12px;
+      transition: all 0.2s;
+      width: 10px;
+      z-index: 12;
+      user-select: none;
+    }
 
-      .switch-label:after {
-        background: #fff;
-        background: -moz-radial-gradient(
-          45%,
+    .switch-label:after {
+      background: #fff;
+      background: -moz-radial-gradient(45%,
           circle,
           rgba(60, 60, 60, 0.6) 0%,
-          rgba(151, 151, 151, 0.6) 100%
-        );
-        border-radius: 10px;
-        border: 1px solid #111;
-        box-shadow: 0 2px 5px rgba(20, 20, 20, 0.5);
-        content: "";
-        display: block;
-        height: 8px;
-        right: -18%;
-        position: absolute;
-        top: 12px;
-        transition: all 0.2s;
-        width: 10px;
-        z-index: 12;
-        user-select: none;
-      }
+          rgba(151, 151, 151, 0.6) 100%);
+      border-radius: 10px;
+      border: 1px solid #111;
+      box-shadow: 0 2px 5px rgba(20, 20, 20, 0.5);
+      content: "";
+      display: block;
+      height: 8px;
+      right: -18%;
+      position: absolute;
+      top: 12px;
+      transition: all 0.2s;
+      width: 10px;
+      z-index: 12;
+      user-select: none;
+    }
 
-      .switch-label span {
-        background: linear-gradient(#4f4f4f, #2b2b2b);
-        border-radius: 30px;
-        border: 1px solid #1a1a1a;
-        box-shadow:
-          0 0 3px rgba(0, 0, 0, 0.45),
-          0 1px 1px rgba(255, 255, 255, 0.08) inset,
-          0 -1px 0 rgba(0, 0, 0, 0.15) inset;
-        display: block;
-        height: 30px;
-        left: 1px;
-        position: absolute;
-        top: 2px;
-        -webkit-transition: all 0.18s linear;
-        -moz-transition: all 0.18s linear;
-        -o-transition: all 0.18s linear;
-        transition: all 0.18s linear;
-        width: 45px;
-        user-select: none;
-      }
+    .switch-label span {
+      background: linear-gradient(#4f4f4f, #2b2b2b);
+      border-radius: 30px;
+      border: 1px solid #1a1a1a;
+      box-shadow:
+        0 0 3px rgba(0, 0, 0, 0.45),
+        0 1px 1px rgba(255, 255, 255, 0.08) inset,
+        0 -1px 0 rgba(0, 0, 0, 0.15) inset;
+      display: block;
+      height: 30px;
+      left: 1px;
+      position: absolute;
+      top: 2px;
+      -webkit-transition: all 0.18s linear;
+      -moz-transition: all 0.18s linear;
+      -o-transition: all 0.18s linear;
+      transition: all 0.18s linear;
+      width: 45px;
+      user-select: none;
+    }
 
-      .switch-label span:before {
-        background: #fff;
-        background: -webkit-linear-gradient(
-          left,
+    .switch-label span:before {
+      background: #fff;
+      background: -webkit-linear-gradient(left,
           rgba(48, 48, 48, 0.4),
-          rgba(34, 34, 34, 0.4)
-        );
-        background: linear-gradient(
-          left,
+          rgba(34, 34, 34, 0.4));
+      background: linear-gradient(left,
           rgba(48, 48, 48, 0.4),
-          rgba(34, 34, 34, 0.4)
-        );
-        border-radius: 30px 10px 10px 30px;
-        box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2) inset;
-        content: "";
-        display: block;
-        height: 26px;
-        left: 2px;
-        position: absolute;
-        top: 2px;
-        width: 18px;
-        user-select: none;
-      }
+          rgba(34, 34, 34, 0.4));
+      border-radius: 30px 10px 10px 30px;
+      box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2) inset;
+      content: "";
+      display: block;
+      height: 26px;
+      left: 2px;
+      position: absolute;
+      top: 2px;
+      width: 18px;
+      user-select: none;
+    }
 
-      .switch-label span:after {
-        background: #fff;
-        background: -webkit-linear-gradient(
-          right,
+    .switch-label span:after {
+      background: #fff;
+      background: -webkit-linear-gradient(right,
           rgba(48, 48, 48, 0.4),
-          rgba(34, 34, 34, 0.4)
-        );
-        border-radius: 10px 30px 30px 10px;
-        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2) inset;
-        content: "";
-        display: block;
-        height: 26px;
-        position: absolute;
-        right: 2px;
-        top: 2px;
-        width: 18px;
-        user-select: none;
-      }
+          rgba(34, 34, 34, 0.4));
+      border-radius: 10px 30px 30px 10px;
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2) inset;
+      content: "";
+      display: block;
+      height: 26px;
+      position: absolute;
+      right: 2px;
+      top: 2px;
+      width: 18px;
+      user-select: none;
+    }
 
-      .switch-check:checked + .switch-label span {
-        left: 39px;
-      }
+    .switch-check:checked+.switch-label span {
+      left: 39px;
+    }
 
-      /* Monitor button style (pill with small knob + label) */
-      .monitor-btn {
-        background: #0f1720;
-        border: 1px solid rgba(255, 255, 255, 0.03);
-        color: #e6eef0;
-        padding: 8px 12px;
-        border-radius: 28px;
-        display: inline-flex;
-        align-items: center;
-        gap: 12px;
-        justify-content: center;
-        position: relative;
-        height: 44px;
-      }
-      .monitor-btn .monitor-knob {
-        width: 44px;
-        height: 28px;
-        background: linear-gradient(#2b2b2f, #1f1f22);
-        border-radius: 20px;
-        box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6);
-        display: inline-block;
-        position: relative;
-      }
-      .monitor-btn .monitor-knob:after {
-        content: "";
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        background: #6b7280;
-        position: absolute;
-        right: 6px;
-        top: 50%;
-        transform: translateY(-50%);
-        box-shadow: 0 0 6px rgba(0, 0, 0, 0.6);
-      }
-      .monitor-btn.active {
-        box-shadow:
-          0 0 0 3px rgba(16, 185, 129, 0.06),
-          0 8px 24px rgba(2, 6, 23, 0.6);
-        border-color: rgba(16, 185, 129, 0.25);
-      }
-      .monitor-btn.active .monitor-knob:after {
-        background: #10b981; /* green */
-        box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
-      }
-      .monitor-btn .monitor-label {
-        font-weight: 700;
-      }
+    /* Monitor button style (pill with small knob + label) */
+    .monitor-btn {
+      background: #0f1720;
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      color: #e6eef0;
+      padding: 8px 12px;
+      border-radius: 28px;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      justify-content: center;
+      position: relative;
+      height: 44px;
+    }
 
-      .switch-check:checked + .switch-label:before {
-        background: -webkit-radial-gradient(
-          45%,
+    .monitor-btn .monitor-knob {
+      width: 44px;
+      height: 28px;
+      background: linear-gradient(#2b2b2f, #1f1f22);
+      border-radius: 20px;
+      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6);
+      display: inline-block;
+      position: relative;
+    }
+
+    .monitor-btn .monitor-knob:after {
+      content: "";
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #6b7280;
+      position: absolute;
+      right: 6px;
+      top: 50%;
+      transform: translateY(-50%);
+      box-shadow: 0 0 6px rgba(0, 0, 0, 0.6);
+    }
+
+    .monitor-btn.active {
+      box-shadow:
+        0 0 0 3px rgba(16, 185, 129, 0.06),
+        0 8px 24px rgba(2, 6, 23, 0.6);
+      border-color: rgba(16, 185, 129, 0.25);
+    }
+
+    .monitor-btn.active .monitor-knob:after {
+      background: #10b981;
+      /* green */
+      box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+    }
+
+    .monitor-btn .monitor-label {
+      font-weight: 700;
+    }
+
+    .switch-check:checked+.switch-label:before {
+      background: -webkit-radial-gradient(45%,
           circle,
           rgba(60, 60, 60, 0.6) 0%,
-          rgba(151, 151, 151, 0.6) 100%
-        );
-        border: 1px solid #111;
-        box-shadow: 0 2px 5px rgba(20, 20, 20, 0.5);
-        user-select: none;
-      }
+          rgba(151, 151, 151, 0.6) 100%);
+      border: 1px solid #111;
+      box-shadow: 0 2px 5px rgba(20, 20, 20, 0.5);
+      user-select: none;
+    }
 
-      .switch-check:checked + .switch-label:after {
-        background: -webkit-radial-gradient(
-          45%,
+    .switch-check:checked+.switch-label:after {
+      background: -webkit-radial-gradient(45%,
           circle,
           lightgreen 0%,
-          lightgreen 100%
-        );
-        border: 1px solid #004562;
-        box-shadow:
-          0 2px 5px green,
-          0 0 5px green inset;
-        user-select: none;
-      }
-      .btn-scan {
-        background: rgba(0, 227, 150, 0.05);
-        color: #00e396;
-        border: 1px solid rgba(0, 227, 150, 0.5);
-        font-weight: 600;
-      }
-      .btn-scan:hover {
-        background: rgba(0, 227, 150, 0.15);
-        color: #00ffaf;
-        border-color: #00e396;
-        box-shadow: 0 0 15px rgba(0, 227, 150, 0.2);
-        transform: translateY(-1px);
-      }
+          lightgreen 100%);
+      border: 1px solid #004562;
+      box-shadow:
+        0 2px 5px green,
+        0 0 5px green inset;
+      user-select: none;
+    }
 
-      /* Separator */
-      .toolbar-sep {
-        width: 1px;
-        height: 20px;
-        background: rgba(255, 255, 255, 0.15);
-        margin: 0 4px;
-      }
+    .btn-scan {
+      background: rgba(0, 227, 150, 0.05);
+      color: #00e396;
+      border: 1px solid rgba(0, 227, 150, 0.5);
+      font-weight: 600;
+    }
 
-      /* Addon Label inside Toolbar */
-      .toolbar-label {
-        font-size: 0.75rem;
-        font-weight: 600;
-        color: #a1a1aa;
-        margin-right: 4px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-      }
+    .btn-scan:hover {
+      background: rgba(0, 227, 150, 0.15);
+      color: #00ffaf;
+      border-color: #00e396;
+      box-shadow: 0 0 15px rgba(0, 227, 150, 0.2);
+      transform: translateY(-1px);
+    }
 
-      /* Asset Icon & Placeholder System */
-      .asset-icon-wrapper {
-        width: 72px;
-        height: 72px;
-        margin: 0 auto 16px; /* Fixed margins for layout stability */
-        position: relative;
-      }
+    /* Separator */
+    .toolbar-sep {
+      width: 1px;
+      height: 20px;
+      background: rgba(255, 255, 255, 0.15);
+      margin: 0 4px;
+    }
 
-      .asset-icon-img {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-        border-radius: 12px;
-      }
+    /* Addon Label inside Toolbar */
+    .toolbar-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #a1a1aa;
+      margin-right: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
 
-      .asset-icon-placeholder {
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(135deg, #27272a, #3f3f46);
-        color: #e4e4e7;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.75rem;
-        font-weight: 700;
-        border-radius: 16px;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        text-transform: uppercase;
-      }
+    /* Asset Icon & Placeholder System */
+    .asset-icon-wrapper {
+      width: 72px;
+      height: 72px;
+      margin: 0 auto 16px;
+      /* Fixed margins for layout stability */
+      position: relative;
+    }
 
-      /* --- Financial Data Grid (Scanner Table) --- */
-      .scanner-table {
-        width: 100%;
-        border-collapse: collapse;
-      }
+    .asset-icon-img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 12px;
+    }
 
-      .scanner-table th {
-        background-color: #1f1f23;
-        color: #a1a1aa;
-        font-size: 0.7rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        padding: 8px 12px;
-        position: sticky;
-        top: 0;
-        z-index: 10;
-        border-bottom: 1px solid #27272a;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Shadow for depth */
-      }
+    .asset-icon-placeholder {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #27272a, #3f3f46);
+      color: #e4e4e7;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.75rem;
+      font-weight: 700;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      text-transform: uppercase;
+    }
 
-      .scanner-table td {
-        padding: 8px 12px;
-        font-size: 0.85rem;
-        color: #f4f4f5;
-        border-bottom: 1px solid #27272a;
-        vertical-align: middle;
-        font-variant-numeric: tabular-nums; /* Monospaced numbers */
-        cursor: pointer;
-        transition: background-color 0.15s;
-      }
+    /* --- Financial Data Grid (Scanner Table) --- */
+    .scanner-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
 
-      .scanner-table tbody tr:hover td {
-        background-color: #27272a;
-      }
+    .scanner-table th {
+      background-color: #1f1f23;
+      color: #a1a1aa;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 8px 12px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      border-bottom: 1px solid #27272a;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      /* Shadow for depth */
+    }
 
-      /* Asset Column Styles */
-      .asset-col {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-weight: 700;
-      }
+    .scanner-table td {
+      padding: 8px 12px;
+      font-size: 0.85rem;
+      color: #f4f4f5;
+      border-bottom: 1px solid #27272a;
+      vertical-align: middle;
+      font-variant-numeric: tabular-nums;
+      /* Monospaced numbers */
+      cursor: pointer;
+      transition: background-color 0.15s;
+    }
 
-      .rank-badge {
-        font-size: 0.65rem;
-        padding: 2px 5px;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 4px;
-        color: #a1a1aa;
-        min-width: 20px;
-        text-align: center;
-      }
+    .scanner-table tbody tr:hover td {
+      background-color: #27272a;
+    }
 
-      /* --- Metrics Modern Dashboard (High-End Fintech) --- */
+    /* Asset Column Styles */
+    .asset-col {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+    }
+
+    .rank-badge {
+      font-size: 0.65rem;
+      padding: 2px 5px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      color: #a1a1aa;
+      min-width: 20px;
+      text-align: center;
+    }
+
+    /* --- Metrics Modern Dashboard (High-End Fintech) --- */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    /* --- Metrics Modern Dashboard (High-End Fintech) --- */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      /* Removed margin-bottom to align nicely with full height card */
+    }
+
+    @media (max-width: 1400px) {
       .metrics-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 16px;
-        margin-bottom: 24px;
+        grid-template-columns: repeat(2, 1fr);
       }
+    }
 
-      /* --- Metrics Modern Dashboard (High-End Fintech) --- */
-      .metrics-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 16px;
-        /* Removed margin-bottom to align nicely with full height card */
-      }
+    .metric-card {
+      background: linear-gradient(180deg, #1e1e24 0%, #18181b 100%);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+      border-left: 4px solid #52525e;
+      /* Default Accent */
+    }
 
-      @media (max-width: 1400px) {
-        .metrics-grid {
-          grid-template-columns: repeat(2, 1fr);
-        }
-      }
+    .metric-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+      border-top-color: rgba(255, 255, 255, 0.1);
+      border-right-color: rgba(255, 255, 255, 0.1);
+      border-bottom-color: rgba(255, 255, 255, 0.1);
+    }
 
-      .metric-card {
-        background: linear-gradient(180deg, #1e1e24 0%, #18181b 100%);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        border-radius: 8px;
-        padding: 16px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        position: relative;
-        overflow: hidden;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-        border-left: 4px solid #52525e; /* Default Accent */
-      }
+    /* Accent Colors (Border) */
+    .accent-green {
+      border-left-color: #00e396 !important;
+    }
 
-      .metric-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
-        border-top-color: rgba(255, 255, 255, 0.1);
-        border-right-color: rgba(255, 255, 255, 0.1);
-        border-bottom-color: rgba(255, 255, 255, 0.1);
-      }
+    .accent-red {
+      border-left-color: #ff4560 !important;
+    }
 
-      /* Accent Colors (Border) */
-      .accent-green {
-        border-left-color: #00e396 !important;
-      }
-      .accent-red {
-        border-left-color: #ff4560 !important;
-      }
-      .accent-blue {
-        border-left-color: #008ffb !important;
-      }
-      .accent-purple {
-        border-left-color: #775dd0 !important;
-      }
-      .accent-warn {
-        border-left-color: #feb019 !important;
-      }
+    .accent-blue {
+      border-left-color: #008ffb !important;
+    }
 
-      .metric-label {
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        letter-spacing: 0.8px;
-        color: #a1a1aa;
-        margin-bottom: 8px;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-      }
+    .accent-purple {
+      border-left-color: #775dd0 !important;
+    }
 
-      .metric-label i {
-        font-size: 1rem;
-        color: #71717a;
-      }
+    .accent-warn {
+      border-left-color: #feb019 !important;
+    }
 
-      /* Strategy Card Styles */
-      .input-group-disabled {
-        opacity: 0.5;
-        pointer-events: none;
-        filter: grayscale(1);
-        transition: all 0.3s ease;
-        position: relative;
-      }
+    .metric-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #a1a1aa;
+      margin-bottom: 8px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
 
-      /* Apple Style Switch (Custom) */
-      .checkbox-apple {
-        position: relative;
-        width: 50px;
-        height: 25px;
-        user-select: none;
-        margin-left: 10px;
-      }
+    .metric-label i {
+      font-size: 1rem;
+      color: #71717a;
+    }
 
-      .checkbox-apple label {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 50px;
-        height: 25px;
-        border-radius: 50px;
-        background: linear-gradient(
-          to bottom,
+    /* Strategy Card Styles */
+    .input-group-disabled {
+      opacity: 0.5;
+      pointer-events: none;
+      filter: grayscale(1);
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    /* Apple Style Switch (Custom) */
+    .checkbox-apple {
+      position: relative;
+      width: 50px;
+      height: 25px;
+      user-select: none;
+      margin-left: 10px;
+    }
+
+    .checkbox-apple label {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 50px;
+      height: 25px;
+      border-radius: 50px;
+      background: linear-gradient(to bottom,
           #3f3f46,
-          #27272a
-        ); /* Cinza Escuro (OFF) */
-        cursor: pointer;
-        transition: all 0.3s ease;
-      }
+          #27272a);
+      /* Cinza Escuro (OFF) */
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
 
-      .checkbox-apple label:after {
-        content: "";
-        position: absolute;
-        top: 1px;
-        left: 1px;
-        width: 23px;
-        height: 23px;
-        border-radius: 50%;
-        background-color: #fff;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-        transition: all 0.3s ease;
-      }
+    .checkbox-apple label:after {
+      content: "";
+      position: absolute;
+      top: 1px;
+      left: 1px;
+      width: 23px;
+      height: 23px;
+      border-radius: 50%;
+      background-color: #fff;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s ease;
+    }
 
-      /* ESTADO LIGADO (ON) - Verde Neon */
-      .checkbox-apple input[type="checkbox"]:checked + label {
-        background: #00e396;
-        box-shadow: 0 0 8px rgba(0, 227, 150, 0.5); /* Glow */
-      }
+    /* ESTADO LIGADO (ON) - Verde Neon */
+    .checkbox-apple input[type="checkbox"]:checked+label {
+      background: #00e396;
+      box-shadow: 0 0 8px rgba(0, 227, 150, 0.5);
+      /* Glow */
+    }
 
-      .checkbox-apple input[type="checkbox"]:checked + label:after {
-        transform: translateX(25px);
-      }
+    .checkbox-apple input[type="checkbox"]:checked+label:after {
+      transform: translateX(25px);
+    }
 
-      .yep {
-        position: absolute;
+    .yep {
+      position: absolute;
+      opacity: 0;
+      cursor: pointer;
+      height: 0;
+      width: 0;
+    }
+
+    .metric-value {
+      font-family: "SF Mono", "Segoe UI Mono", "Roboto Mono", monospace;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #f4f4f5;
+      line-height: 1.1;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Detailed Colors */
+    .val-pos {
+      color: #00e396;
+      text-shadow: 0 0 10px rgba(0, 227, 150, 0.2);
+    }
+
+    .val-neg {
+      color: #ff4560;
+      text-shadow: 0 0 10px rgba(255, 69, 96, 0.2);
+    }
+
+    .val-neu {
+      color: #e0e0e0;
+    }
+
+    .val-warn {
+      color: #feb019;
+    }
+
+    /* Custom Dropdowns */
+    .custom-dropdown {
+      position: relative;
+      display: inline-block;
+      font-family: inherit;
+    }
+
+    .dropdown-selected {
+      background-color: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(0, 227, 150, 0.4) !important;
+      /* Green Border internal */
+      color: #f4f4f5;
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-width: 80px;
+      transition: all 0.2s;
+    }
+
+    .dropdown-selected:hover {
+      border-color: #00ffaf !important;
+      background-color: rgba(0, 227, 150, 0.05);
+    }
+
+    /* Green focus state when active/open */
+    .custom-dropdown.active .dropdown-selected {
+      border-color: #00e396;
+      box-shadow: 0 0 0 2px rgba(0, 227, 150, 0.25);
+    }
+
+    .dropdown-options {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      margin-top: 4px;
+      background-color: #18181b;
+      border: 1px solid #27272a;
+      border-radius: 8px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      min-width: 100%;
+      overflow: hidden;
+    }
+
+    .custom-dropdown.active .dropdown-options {
+      display: block;
+      animation: fadeIn 0.15s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from {
         opacity: 0;
-        cursor: pointer;
-        height: 0;
-        width: 0;
+        transform: translateY(-5px);
       }
 
-      .metric-value {
-        font-family: "SF Mono", "Segoe UI Mono", "Roboto Mono", monospace;
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #f4f4f5;
-        line-height: 1.1;
-        font-variant-numeric: tabular-nums;
+      to {
+        opacity: 1;
+        transform: translateY(0);
       }
+    }
 
-      /* Detailed Colors */
-      .val-pos {
-        color: #00e396;
-        text-shadow: 0 0 10px rgba(0, 227, 150, 0.2);
-      }
-      .val-neg {
-        color: #ff4560;
-        text-shadow: 0 0 10px rgba(255, 69, 96, 0.2);
-      }
-      .val-neu {
-        color: #e0e0e0;
-      }
-      .val-warn {
-        color: #feb019;
-      }
-      /* Custom Dropdowns */
-      .custom-dropdown {
-        position: relative;
-        display: inline-block;
-        font-family: inherit;
-      }
+    .dropdown-item {
+      padding: 8px 12px;
+      color: #a1a1aa;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition:
+        background 0.1s,
+        color 0.1s;
+      white-space: nowrap;
+    }
 
-      .dropdown-selected {
-        background-color: rgba(0, 0, 0, 0.4);
-        border: 1px solid rgba(0, 227, 150, 0.4) !important; /* Green Border internal */
-        color: #f4f4f5;
-        border-radius: 8px;
-        padding: 6px 12px;
-        font-size: 0.85rem;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        min-width: 80px;
-        transition: all 0.2s;
-      }
+    .dropdown-item:hover {
+      background-color: #27272a;
+      color: #f4f4f5;
+    }
 
-      .dropdown-selected:hover {
-        border-color: #00ffaf !important;
-        background-color: rgba(0, 227, 150, 0.05);
-      }
+    .dropdown-item.selected {
+      color: #00e396;
+      background-color: rgba(0, 227, 150, 0.1);
+    }
 
-      /* Green focus state when active/open */
-      .custom-dropdown.active .dropdown-selected {
-        border-color: #00e396;
-        box-shadow: 0 0 0 2px rgba(0, 227, 150, 0.25);
-      }
+    .dropdown-arrow {
+      margin-left: 8px;
+      font-size: 0.8rem;
+      transition: transform 0.2s;
+    }
 
-      .dropdown-options {
-        display: none;
-        position: absolute;
-        top: 100%;
-        left: 0;
-        margin-top: 4px;
-        background-color: #18181b;
-        border: 1px solid #27272a;
-        border-radius: 8px;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-        z-index: 1000;
-        min-width: 100%;
-        overflow: hidden;
-      }
+    .custom-dropdown.active .dropdown-arrow {
+      transform: rotate(180deg);
+    }
 
-      .custom-dropdown.active .dropdown-options {
-        display: block;
-        animation: fadeIn 0.15s ease-out;
-      }
+    /* --- FinSense High-Intensity Branding --- */
+    .sidebar-brand-wrapper {
+      display: flex !important;
+      align-items: center !important;
+      gap: 12px !important;
+      text-decoration: none !important;
+    }
 
-      @keyframes fadeIn {
-        from {
-          opacity: 0;
-          transform: translateY(-5px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
+    .brand-icon-svg {
+      filter: drop-shadow(0 0 8px rgba(0, 227, 150, 0.5));
+    }
 
-      .dropdown-item {
-        padding: 8px 12px;
-        color: #a1a1aa;
-        cursor: pointer;
-        font-size: 0.85rem;
-        transition:
-          background 0.1s,
-          color 0.1s;
-        white-space: nowrap;
-      }
+    .brand-text-container {
+      display: flex !important;
+      flex-direction: column !important;
+      line-height: 1 !important;
+    }
 
-      .dropdown-item:hover {
-        background-color: #27272a;
-        color: #f4f4f5;
-      }
+    .finsense-logo-sidebar {
+      margin: 0 !important;
+      font-size: 1.4rem !important;
+      letter-spacing: -1px !important;
+      display: flex !important;
+      align-items: center !important;
+      color: white !important;
+      /* Base */
+    }
 
-      .dropdown-item.selected {
-        color: #00e396;
-        background-color: rgba(0, 227, 150, 0.1);
-      }
+    .finsense-logo-sidebar .text-white-bold {
+      color: #ffffff !important;
+      font-weight: 800 !important;
+    }
 
-      .dropdown-arrow {
-        margin-left: 8px;
-        font-size: 0.8rem;
-        transition: transform 0.2s;
-      }
+    .finsense-logo-sidebar .text-neon-light {
+      color: #00e396 !important;
+      font-weight: 300 !important;
+      margin-left: 2px !important;
+      text-shadow: 0 0 15px rgba(0, 227, 150, 0.4) !important;
+    }
 
-      .custom-dropdown.active .dropdown-arrow {
-        transform: rotate(180deg);
-      }
+    .brand-sub-sidebar {
+      font-size: 0.55rem !important;
+      color: #71717a !important;
+      letter-spacing: 2px !important;
+      font-weight: 700 !important;
+      text-transform: uppercase !important;
+      margin-top: 2px !important;
+    }
+  </style>
+  <!-- Lightweight Charts -->
+  <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
+</head>
 
-      /* --- FinSense High-Intensity Branding --- */
-      .sidebar-brand-wrapper {
-        display: flex !important;
-        align-items: center !important;
-        gap: 12px !important;
-        text-decoration: none !important;
-      }
+<body class="layout-fluid theme-dark" data-bs-theme="dark">
+  <div class="page">
+    <!-- Navbar Simplificada -->
+    <header class="navbar navbar-expand-md d-print-none">
+      <div class="container-xl">
+        <div class="sidebar-brand-wrapper-outer pe-0 pe-md-3">
+          <a href="." class="navbar-brand-link" style="text-decoration: none !important; color: white !important">
+            <div class="sidebar-brand-wrapper">
+              <svg class="brand-icon-svg" width="32" height="32" viewBox="0 0 32 32" fill="none"
+                xmlns="http://www.w3.org/2000/svg">
+                <path d="M16 2L16 6" style="stroke: #00e396 !important" stroke-width="2" stroke-linecap="round" />
+                <path d="M16 26L16 30" style="stroke: #00e396 !important" stroke-width="2" stroke-linecap="round" />
+                <path d="M2 16L6 16" style="stroke: #00e396 !important" stroke-width="2" stroke-linecap="round" />
+                <path d="M26 16L30 16" style="stroke: #00e396 !important" stroke-width="2" stroke-linecap="round" />
+                <circle cx="16" cy="16" r="6" style="stroke: #00e396 !important" stroke-width="2" />
+                <circle cx="16" cy="16" r="2" style="fill: #00e396 !important">
+                  <animate attributeName="opacity" values="1;0.3;1" dur="2s" repeatCount="indefinite" />
+                </circle>
+              </svg>
 
-      .brand-icon-svg {
-        filter: drop-shadow(0 0 8px rgba(0, 227, 150, 0.5));
-      }
-
-      .brand-text-container {
-        display: flex !important;
-        flex-direction: column !important;
-        line-height: 1 !important;
-      }
-
-      .finsense-logo-sidebar {
-        margin: 0 !important;
-        font-size: 1.4rem !important;
-        letter-spacing: -1px !important;
-        display: flex !important;
-        align-items: center !important;
-        color: white !important; /* Base */
-      }
-
-      .finsense-logo-sidebar .text-white-bold {
-        color: #ffffff !important;
-        font-weight: 800 !important;
-      }
-
-      .finsense-logo-sidebar .text-neon-light {
-        color: #00e396 !important;
-        font-weight: 300 !important;
-        margin-left: 2px !important;
-        text-shadow: 0 0 15px rgba(0, 227, 150, 0.4) !important;
-      }
-
-      .brand-sub-sidebar {
-        font-size: 0.55rem !important;
-        color: #71717a !important;
-        letter-spacing: 2px !important;
-        font-weight: 700 !important;
-        text-transform: uppercase !important;
-        margin-top: 2px !important;
-      }
-    </style>
-    <!-- Lightweight Charts -->
-    <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
-  </head>
-  <body class="layout-fluid theme-dark" data-bs-theme="dark">
-    <div class="page">
-      <!-- Navbar Simplificada -->
-      <header class="navbar navbar-expand-md d-print-none">
-        <div class="container-xl">
-          <div class="sidebar-brand-wrapper-outer pe-0 pe-md-3">
-            <a
-              href="."
-              class="navbar-brand-link"
-              style="text-decoration: none !important; color: white !important"
-            >
-              <div class="sidebar-brand-wrapper">
-                <svg
-                  class="brand-icon-svg"
-                  width="32"
-                  height="32"
-                  viewBox="0 0 32 32"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M16 2L16 6"
-                    style="stroke: #00e396 !important"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                  />
-                  <path
-                    d="M16 26L16 30"
-                    style="stroke: #00e396 !important"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                  />
-                  <path
-                    d="M2 16L6 16"
-                    style="stroke: #00e396 !important"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                  />
-                  <path
-                    d="M26 16L30 16"
-                    style="stroke: #00e396 !important"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                  />
-                  <circle
-                    cx="16"
-                    cy="16"
-                    r="6"
-                    style="stroke: #00e396 !important"
-                    stroke-width="2"
-                  />
-                  <circle
-                    cx="16"
-                    cy="16"
-                    r="2"
-                    style="fill: #00e396 !important"
-                  >
-                    <animate
-                      attributeName="opacity"
-                      values="1;0.3;1"
-                      dur="2s"
-                      repeatCount="indefinite"
-                    />
-                  </circle>
-                </svg>
-
-                <div class="brand-text-container">
-                  <div
-                    class="finsense-logo-sidebar"
-                    style="
+              <div class="brand-text-container">
+                <div class="finsense-logo-sidebar" style="
                       margin: 0;
                       display: flex;
                       align-items: center;
                       line-height: 1;
-                    "
-                  >
-                    <span
-                      style="
+                    ">
+                  <span style="
                         color: #ffffff !important;
                         font-weight: 800 !important;
                         font-size: 1.4rem !important;
-                      "
-                      >FIN</span
-                    ><span
-                      style="
+                      ">FIN</span><span style="
                         color: #00e396 !important;
                         font-weight: 300 !important;
                         font-size: 1.4rem !important;
                         text-shadow: 0 0 15px rgba(0, 227, 150, 0.5) !important;
                         margin-left: 2px !important;
-                      "
-                      >SENSE</span
-                    >
-                  </div>
-                  <div
-                    class="brand-sub-sidebar"
-                    style="
+                      ">SENSE</span>
+                </div>
+                <div class="brand-sub-sidebar" style="
                       font-size: 0.55rem !important;
                       color: #71717a !important;
                       letter-spacing: 2px !important;
                       font-weight: 700 !important;
                       text-transform: uppercase !important;
                       margin-top: 2px !important;
-                    "
-                  >
-                    STRATEGY SYSTEM
+                    ">
+                  STRATEGY SYSTEM
+                </div>
+              </div>
+            </div>
+          </a>
+        </div>
+        <div class="navbar-nav flex-row order-md-last">
+          <div class="nav-item">
+            <span class="badge bg-green-lt" id="connection_status">Conectado</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="page-wrapper">
+      <div class="page-body">
+        <div class="container-xl">
+          <!-- Main Content Row (Equal Height Columns) -->
+          <div class="row g-3 align-items-stretch">
+            <!-- Sidebar / Controls -->
+            <div class="col-md-3 d-flex flex-column">
+              <!-- Ativo & Preço (Mini destaque) -->
+              <div class="card mb-3 flex-shrink-0">
+                <div class="card-body text-center">
+                  <div class="text-secondary text-uppercase small mb-3">
+                    Ativo Atual
+                  </div>
+
+                  <!-- Asset Icon Wrapper (Pixel Perfect) -->
+                  <div class="asset-icon-wrapper" id="current-asset-wrapper">
+                    <!-- JS injected content -->
+                  </div>
+
+                  <!-- Input Pesquisável (Refined Wrapper) -->
+                  <div class="mb-3">
+                    <div class="neon-search-wrapper">
+                      <input type="text" id="ticker-input" class="clean-input" placeholder="Buscar Ativo (ex: WIN)"
+                        value="WINJ26" list="assetsList" autocomplete="off" />
+
+                      <button class="clean-btn" type="button" id="search-btn" onclick="updateDashboard()">
+                        <i class="ri-search-line" style="font-size: 1.2rem"></i>
+                      </button>
+                    </div>
+                    <datalist id="assetsList">
+                      {% for asset in assets %}
+                      <option value="{{ asset }}">{% endfor %}</option>
+                    </datalist>
+                  </div>
+                  <div class="text-secondary text-uppercase small mb-3">
+                    {{ assets|length }} Ativos Disponíveis
+                  </div>
+
+                  <div class="hr-text my-3">Preço Atual</div>
+                  <div class="price-hero" id="price" style="font-size: 2.5rem">
+                    --.--
                   </div>
                 </div>
               </div>
-            </a>
-          </div>
-          <div class="navbar-nav flex-row order-md-last">
-            <div class="nav-item">
-              <span class="badge bg-green-lt" id="connection_status"
-                >Conectado</span
-              >
-            </div>
-          </div>
-        </div>
-      </header>
 
-      <div class="page-wrapper">
-        <div class="page-body">
-          <div class="container-xl">
-            <!-- Main Content Row (Equal Height Columns) -->
-            <div class="row g-3 align-items-stretch">
-              <!-- Sidebar / Controls -->
-              <div class="col-md-3 d-flex flex-column">
-                <!-- Ativo & Preço (Mini destaque) -->
-                <div class="card mb-3 flex-shrink-0">
-                  <div class="card-body text-center">
-                    <div class="text-secondary text-uppercase small mb-3">
-                      Ativo Atual
+              <!-- Sidebar Cards Restored -->
+
+              <!-- Backtest Strategy (Fills remaining height) -->
+              <div class="card flex-fill d-flex flex-column mb-0">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                  <h3 class="card-title">Estratégia (SMA)</h3>
+                  <div class="d-flex align-items-center" style="gap: 10px">
+                    <span class="small text-muted me-2 font-weight-bold"
+                      style="font-size: 0.65rem; letter-spacing: 0.5px">OTIMIZAÇÃO</span>
+                    <div class="checkbox-apple">
+                      <input class="yep" id="optimizeCheck" type="checkbox" onchange="toggleOptimizeInputs()" />
+                      <label for="optimizeCheck"></label>
                     </div>
 
-                    <!-- Asset Icon Wrapper (Pixel Perfect) -->
-                    <div class="asset-icon-wrapper" id="current-asset-wrapper">
-                      <!-- JS injected content -->
-                    </div>
-
-                    <!-- Input Pesquisável (Refined Wrapper) -->
-                    <div class="mb-3">
-                      <div class="neon-search-wrapper">
-                        <input
-                          type="text"
-                          id="ticker-input"
-                          class="clean-input"
-                          placeholder="Buscar Ativo (ex: WIN)"
-                          value="WINJ26"
-                          list="assetsList"
-                          autocomplete="off"
-                        />
-
-                        <button
-                          class="clean-btn"
-                          type="button"
-                          id="search-btn"
-                          onclick="updateDashboard()"
-                        >
-                          <i
-                            class="ri-search-line"
-                            style="font-size: 1.2rem"
-                          ></i>
-                        </button>
-                      </div>
-                      <datalist id="assetsList">
-                        {% for asset in assets %}
-                        <option value="{{ asset }}">{% endfor %}</option>
-                      </datalist>
-                    </div>
-                    <div class="text-secondary text-uppercase small mb-3">
-                      {{ assets|length }} Ativos Disponíveis
-                    </div>
-
-                    <div class="hr-text my-3">Preço Atual</div>
-                    <div
-                      class="price-hero"
-                      id="price"
-                      style="font-size: 2.5rem"
-                    >
-                      --.--
-                    </div>
+                    <!-- Telegram switch removed; control moved to action area below -->
                   </div>
                 </div>
-
-                <!-- Sidebar Cards Restored -->
-
-                <!-- Backtest Strategy (Fills remaining height) -->
-                <div class="card flex-fill d-flex flex-column mb-0">
-                  <div
-                    class="card-header d-flex justify-content-between align-items-center"
-                  >
-                    <h3 class="card-title">Estratégia (SMA)</h3>
-                    <div class="d-flex align-items-center" style="gap: 10px">
-                      <span
-                        class="small text-muted me-2 font-weight-bold"
-                        style="font-size: 0.65rem; letter-spacing: 0.5px"
-                        >OTIMIZAÇÃO</span
-                      >
-                      <div class="checkbox-apple">
-                        <input
-                          class="yep"
-                          id="optimizeCheck"
-                          type="checkbox"
-                          onchange="toggleOptimizeInputs()"
-                        />
-                        <label for="optimizeCheck"></label>
-                      </div>
-
-                      <!-- Telegram switch removed; control moved to action area below -->
+                <div class="card-body d-flex flex-column justify-content-between">
+                  <div class="row g-2 mb-3" id="sma-inputs-wrapper">
+                    <div class="col-6">
+                      <label class="form-label">Curta</label>
+                      <input type="number" id="smaShort" class="form-control" value="20" />
+                    </div>
+                    <div class="col-6">
+                      <label class="form-label">Longa</label>
+                      <input type="number" id="smaLong" class="form-control" value="50" />
                     </div>
                   </div>
-                  <div
-                    class="card-body d-flex flex-column justify-content-between"
-                  >
-                    <div class="row g-2 mb-3" id="sma-inputs-wrapper">
-                      <div class="col-6">
-                        <label class="form-label">Curta</label>
-                        <input
-                          type="number"
-                          id="smaShort"
-                          class="form-control"
-                          value="20"
-                        />
-                      </div>
-                      <div class="col-6">
-                        <label class="form-label">Longa</label>
-                        <input
-                          type="number"
-                          id="smaLong"
-                          class="form-control"
-                          value="50"
-                        />
-                      </div>
-                    </div>
 
-                    <div class="mt-auto">
-                      <!-- Push buttons to bottom -->
-                      <button
-                        class="btn btn-primary w-100 mb-3"
-                        onclick="runBacktest()"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          class="icon icon-tabler icon-tabler-player-play"
-                          width="24"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          stroke-width="2"
-                          stroke="currentColor"
-                          fill="none"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                        >
-                          <path
-                            stroke="none"
-                            d="M0 0h24v24H0z"
-                            fill="none"
-                          ></path>
-                          <path d="M7 4v16l13 -8z"></path>
-                        </svg>
-                        Executar Backtest
-                      </button>
+                  <div class="mt-auto">
+                    <!-- Push buttons to bottom -->
+                    <button class="btn btn-primary w-100 mb-3" onclick="runBacktest()">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-player-play"
+                        width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                        <path d="M7 4v16l13 -8z"></path>
+                      </svg>
+                      Executar Backtest
+                    </button>
 
-                      <button
-                        class="btn btn-outline-secondary w-100 mb-1"
-                        onclick="openScanner()"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          class="icon icon-tabler icon-tabler-scan"
-                          width="24"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          stroke-width="2"
-                          stroke="currentColor"
-                          fill="none"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                        >
-                          <path
-                            stroke="none"
-                            d="M0 0h24v24H0z"
-                            fill="none"
-                          ></path>
-                          <path d="M4 7v-1a2 2 0 0 1 2 -2h2" />
-                          <path d="M4 17v1a2 2 0 0 0 2 2h2" />
-                          <path d="M16 4h2a2 2 0 0 1 2 2v1" />
-                          <path d="M16 20h2a2 2 0 0 0 2 -2v-1" />
-                          <path d="M5 12l14 0"></path>
-                        </svg>
-                        Scanner
-                      </button>
+                    <button class="btn btn-outline-secondary w-100 mb-1" onclick="openScanner()">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-scan" width="24"
+                        height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                        <path d="M4 7v-1a2 2 0 0 1 2 -2h2" />
+                        <path d="M4 17v1a2 2 0 0 0 2 2h2" />
+                        <path d="M16 4h2a2 2 0 0 1 2 2v1" />
+                        <path d="M16 20h2a2 2 0 0 0 2 -2v-1" />
+                        <path d="M5 12l14 0"></path>
+                      </svg>
+                      Scanner
+                    </button>
 
-                      <!-- Monitor Toggle Button (placed under actions) -->
-                      <button
-                        id="btn-monitor-toggle"
-                        class="btn btn-outline-secondary w-100 mb-3"
-                        type="button"
-                      >
-                        <span class="monitor-label"> Ativar Monitor</span>
-                      </button>
-                    </div>
+                    <!-- Monitor Toggle Button (placed under actions) -->
+                    <button id="btn-monitor-toggle" class="btn btn-outline-secondary w-100 mb-3" type="button">
+                      <span class="monitor-label"> Ativar Monitor</span>
+                    </button>
                   </div>
                 </div>
+              </div>
 
-                <!-- Scanner Results removed from sidebar to align with metrics -->
+              <!-- Scanner Results removed from sidebar to align with metrics -->
 
-                <!-- Scanner Modal -->
-                <div
-                  class="modal modal-blur fade"
-                  id="modal-scanner"
-                  tabindex="-1"
-                  role="dialog"
-                  aria-hidden="true"
-                >
-                  <div
-                    class="modal-dialog modal-dialog-centered"
-                    role="document"
-                  >
-                    <div
-                      class="modal-content"
-                      style="
+              <!-- Scanner Modal -->
+              <div class="modal modal-blur fade" id="modal-scanner" tabindex="-1" role="dialog" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                  <div class="modal-content" style="
                         background-color: #18181b;
                         border: 1px solid #27272a;
                         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-                      "
-                    >
-                      <div
-                        class="modal-header border-0 pb-0"
-                        style="background-color: #18181b !important"
-                      >
-                        <h5
-                          class="modal-title fw-bold text-white text-uppercase tracking-wide"
-                          style="font-size: 0.9rem"
-                        >
-                          Scanner de Mercado
-                        </h5>
-                        <button
-                          type="button"
-                          class="btn-close"
-                          data-bs-dismiss="modal"
-                          aria-label="Close"
-                        ></button>
+                      ">
+                    <div class="modal-header border-0 pb-0" style="background-color: #18181b !important">
+                      <h5 class="modal-title fw-bold text-white text-uppercase tracking-wide" style="font-size: 0.9rem">
+                        Scanner de Mercado
+                      </h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body pt-2">
+                      <div class="text-secondary mb-3 small" style="font-size: 0.75rem">
+                        Ranking SMA Strategy
                       </div>
-                      <div class="modal-body pt-2">
-                        <div
-                          class="text-secondary mb-3 small"
-                          style="font-size: 0.75rem"
-                        >
-                          Ranking SMA Strategy
-                        </div>
-                        <!-- Loading State with Progress Bar -->
-                        <div
-                          id="scanner-loading"
-                          class="flex-column align-items-center justify-content-center py-3"
-                          style="display: none"
-                        >
-                          <h2
-                            class="text-white mb-2"
-                            id="scan-status-text"
-                            style="font-size: 1.5rem"
-                          >
-                            0%
-                          </h2>
+                      <!-- Loading State with Progress Bar -->
+                      <div id="scanner-loading" class="flex-column align-items-center justify-content-center py-3"
+                        style="display: none">
+                        <h2 class="text-white mb-2" id="scan-status-text" style="font-size: 1.5rem">
+                          0%
+                        </h2>
 
-                          <div
-                            class="progress progress-lg w-100 mb-2 active"
-                            style="height: 6px; background: #27272a"
-                          >
-                            <div
-                              class="progress-bar progress-bar-striped progress-bar-animated bg-success"
-                              id="scan-progress-bar"
-                              role="progressbar"
-                              style="width: 0%"
-                            ></div>
-                          </div>
-
-                          <div
-                            class="text-muted small text-uppercase tracking-wide"
-                            id="scan-status-detail"
-                          >
-                            Iniciando Scanner...
-                          </div>
+                        <div class="progress progress-lg w-100 mb-2 active" style="height: 6px; background: #27272a">
+                          <div class="progress-bar progress-bar-striped progress-bar-animated bg-success"
+                            id="scan-progress-bar" role="progressbar" style="width: 0%"></div>
                         </div>
 
-                        <div id="scanner-results" style="display: none">
-                          <div
-                            class="table-responsive"
-                            style="max-height: 500px; overflow-y: auto"
-                          >
-                            <table
-                              class="table table-vcenter card-table table-hover"
-                            >
-                              <thead>
-                                <tr>
-                                  <th>Rank</th>
-                                  <th>Ativo</th>
-                                  <th>Retorno %</th>
-                                  <th>Win Rate</th>
-                                  <th>Trades</th>
-                                  <th></th>
-                                </tr>
-                              </thead>
-                              <tbody id="tbody_scanner">
-                                <!-- Rows -->
-                              </tbody>
-                            </table>
-                          </div>
+                        <div class="text-muted small text-uppercase tracking-wide" id="scan-status-detail">
+                          Iniciando Scanner...
                         </div>
                       </div>
-                      <div
-                        class="modal-footer border-0 justify-content-center pt-0 pb-4"
-                      >
-                        <button
-                          type="button"
-                          class="btn btn-ghost-secondary px-4 me-2"
-                          data-bs-dismiss="modal"
-                        >
-                          Cancelar
-                        </button>
-                        <button
-                          type="button"
-                          class="btn btn-success px-4 fw-bold"
-                          onclick="runScannerAPI()"
-                          style="
+
+                      <div id="scanner-results" style="display: none">
+                        <div class="table-responsive" style="max-height: 500px; overflow-y: auto">
+                          <table class="table table-vcenter card-table table-hover">
+                            <thead>
+                              <tr>
+                                <th>Rank</th>
+                                <th>Ativo</th>
+                                <th>Retorno %</th>
+                                <th>Win Rate</th>
+                                <th>Trades</th>
+                                <th></th>
+                              </tr>
+                            </thead>
+                            <tbody id="tbody_scanner">
+                              <!-- Rows -->
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="modal-footer border-0 justify-content-center pt-0 pb-4">
+                      <button type="button" class="btn btn-ghost-secondary px-4 me-2" data-bs-dismiss="modal">
+                        Cancelar
+                      </button>
+                      <button type="button" class="btn btn-success px-4 fw-bold" onclick="runScannerAPI()" style="
                             background-color: var(--profit-color);
                             border: none;
-                          "
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            class="icon icon-tabler icon-tabler-radar me-2"
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            stroke-width="2"
-                            stroke="currentColor"
-                            fill="none"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                          >
-                            <path
-                              stroke="none"
-                              d="M0 0h24v24H0z"
-                              fill="none"
-                            ></path>
-                            <path
-                              d="M21 12h-8a1 1 0 1 0 -1 1v8a9 9 0 0 0 8 -9"
-                            ></path>
-                            <path d="M16 9a5 5 0 1 0 -7 7"></path>
-                            <path d="M20.486 9a9 9 0 1 0 -11.482 11.495"></path>
-                          </svg>
-                          Iniciar Escaneamento
-                        </button>
-                      </div>
+                          ">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-radar me-2"
+                          width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                          stroke-linecap="round" stroke-linejoin="round">
+                          <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                          <path d="M21 12h-8a1 1 0 1 0 -1 1v8a9 9 0 0 0 8 -9"></path>
+                          <path d="M16 9a5 5 0 1 0 -7 7"></path>
+                          <path d="M20.486 9a9 9 0 1 0 -11.482 11.495"></path>
+                        </svg>
+                        Iniciar Escaneamento
+                      </button>
                     </div>
                   </div>
                 </div>
               </div>
-
-              <!-- Content Area -->
-              <div class="col-md-9 d-flex flex-column">
-                <!-- Main Chart Card -->
-                <div class="card h-100 mb-0">
-                  <div class="card-body p-0 position-relative">
-                    <!-- New Floating Toolbar (Simplified) -->
-                    <!-- New Floating Toolbar (Simplified) -->
-                    <div class="floating-toolbar">
-                      <!-- Controls -->
-                      <div class="d-flex align-items-center">
-                        <span class="toolbar-label">TF</span>
-                        <!-- Custom TF Dropdown -->
-                        <div class="custom-dropdown" id="tf-dropdown">
-                          <div
-                            class="dropdown-selected"
-                            onclick="toggleDropdown('tf-dropdown')"
-                          >
-                            <span id="tf-value" data-value="H1">H1</span>
-                            <i class="ri-arrow-down-s-line dropdown-arrow"></i>
-                          </div>
-                          <div class="dropdown-options" id="tf-options">
-                            <!-- Populated by JS -->
-                          </div>
-                        </div>
-                      </div>
-
-                      <div class="toolbar-sep"></div>
-
-                      <div class="d-flex align-items-center">
-                        <!-- Custom Candles Dropdown -->
-                        <div class="custom-dropdown" id="candles-dropdown">
-                          <div
-                            class="dropdown-selected"
-                            onclick="toggleDropdown('candles-dropdown')"
-                          >
-                            <span id="candles-value" data-value="1000"
-                              >1000 velas</span
-                            >
-                            <i class="ri-arrow-down-s-line dropdown-arrow"></i>
-                          </div>
-                          <div class="dropdown-options">
-                            <div
-                              class="dropdown-item"
-                              onclick="
-                                selectOption('candles', '100', '100 velas')
-                              "
-                            >
-                              100 velas
-                            </div>
-                            <div
-                              class="dropdown-item selected"
-                              onclick="
-                                selectOption('candles', '1000', '1000 velas')
-                              "
-                            >
-                              1000 velas
-                            </div>
-                            <div
-                              class="dropdown-item"
-                              onclick="selectOption('candles', '5000', 'MAX')"
-                            >
-                              MAX
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <!-- Telegram Toggle removed from floating toolbar (moved to Strategy card) -->
-                    </div>
-
-                    <div id="chart" class="big-chart-container"></div>
-                  </div>
-                </div>
-              </div>
-              <!-- End col-md-9 -->
             </div>
-            <!-- End Main Top Row -->
 
-            <!-- Detailed Analysis Section (New Row Below) -->
-            <div
-              class="row g-2 align-items-stretch mt-3"
-              id="analysis-section"
-              style="display: none"
-            >
-              <!-- Left: Scanner Results (Matches Sidebar Width) -->
-              <div class="col-md-3">
-                <div
-                  class="card h-100"
-                  style="background: transparent; border: none"
-                >
-                  <div class="card-body p-0 h-100">
-                    <div
-                      class="table-responsive"
-                      style="
+            <!-- Content Area -->
+            <div class="col-md-9 d-flex flex-column">
+              <!-- Main Chart Card -->
+              <div class="card h-100 mb-0">
+                <div class="card-body p-0 position-relative">
+                  <!-- New Floating Toolbar (Simplified) -->
+                  <!-- New Floating Toolbar (Simplified) -->
+                  <div class="floating-toolbar">
+                    <!-- Controls -->
+                    <div class="d-flex align-items-center">
+                      <span class="toolbar-label">TF</span>
+                      <!-- Custom TF Dropdown -->
+                      <div class="custom-dropdown" id="tf-dropdown">
+                        <div class="dropdown-selected" onclick="toggleDropdown('tf-dropdown')">
+                          <span id="tf-value" data-value="H1">H1</span>
+                          <i class="ri-arrow-down-s-line dropdown-arrow"></i>
+                        </div>
+                        <div class="dropdown-options" id="tf-options">
+                          <!-- Populated by JS -->
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="toolbar-sep"></div>
+
+                    <div class="d-flex align-items-center">
+                      <!-- Custom Candles Dropdown -->
+                      <div class="custom-dropdown" id="candles-dropdown">
+                        <div class="dropdown-selected" onclick="toggleDropdown('candles-dropdown')">
+                          <span id="candles-value" data-value="1000">1000 velas</span>
+                          <i class="ri-arrow-down-s-line dropdown-arrow"></i>
+                        </div>
+                        <div class="dropdown-options">
+                          <div class="dropdown-item" onclick="
+                                selectOption('candles', '100', '100 velas')
+                              ">
+                            100 velas
+                          </div>
+                          <div class="dropdown-item selected" onclick="
+                                selectOption('candles', '1000', '1000 velas')
+                              ">
+                            1000 velas
+                          </div>
+                          <div class="dropdown-item" onclick="selectOption('candles', '5000', 'MAX')">
+                            MAX
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- Telegram Toggle removed from floating toolbar (moved to Strategy card) -->
+                  </div>
+
+                  <div id="chart" class="big-chart-container"></div>
+                </div>
+              </div>
+            </div>
+            <!-- End col-md-9 -->
+          </div>
+          <!-- End Main Top Row -->
+
+          <!-- Detailed Analysis Section (New Row Below) -->
+          <div class="row g-2 align-items-stretch mt-3" id="analysis-section" style="display: none">
+            <!-- Left: Scanner Results (Matches Sidebar Width) -->
+            <div class="col-md-3">
+              <div class="card h-100" style="background: transparent; border: none">
+                <div class="card-body p-0 h-100">
+                  <div class="table-responsive" style="
                         height: 335px;
                         max-height: 335px;
                         overflow-y: auto;
                         border-radius: 4px;
                         border: 1px solid #27272a;
                         background: #18181b;
-                      "
-                    >
-                      <table class="scanner-table">
-                        <thead
-                          style="
+                      ">
+                    <table class="scanner-table">
+                      <thead style="
                             position: sticky;
                             top: 0;
                             z-index: 20;
                             background: #1f1f23;
-                          "
-                        >
-                          <tr>
-                            <th style="padding-left: 12px">Ativo</th>
-                            <th class="text-end">Retorno</th>
-                            <th class="text-end" style="padding-right: 12px">
-                              Win%
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody id="results-table-body">
-                          <tr>
-                            <td
-                              colspan="3"
-                              class="text-muted text-center py-5 small"
-                            >
-                              Resultados do Scanner aparecerão aqui.
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Right: Metrics Grid (Matches Chart Width) -->
-              <div class="col-md-9">
-                <div class="card h-100 mb-3">
-                  <div class="card-header border-0 pb-0">
-                    <h3
-                      class="card-title text-uppercase text-secondary small font-weight-bold"
-                    >
-                      Relatório de Performance
-                    </h3>
-                  </div>
-                  <div
-                    class="card-body d-flex flex-column justify-content-center"
-                  >
-                    <div id="metrics-grid" class="metrics-grid">
-                      <!-- JS Populated -->
-                      <div
-                        class="text-center text-muted p-4 w-100"
-                        style="grid-column: 1 / -1"
-                      >
-                        Execute o Backtest para visualizar os dados.
-                      </div>
-                    </div>
+                          ">
+                        <tr>
+                          <th style="padding-left: 12px">Ativo</th>
+                          <th class="text-end">Retorno</th>
+                          <th class="text-end" style="padding-right: 12px">
+                            Win%
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody id="results-table-body">
+                        <tr>
+                          <td colspan="3" class="text-muted text-center py-5 small">
+                            Resultados do Scanner aparecerão aqui.
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- Trade History Section -->
-            <div
-              class="row mt-3"
-              id="trade-history-section"
-              style="display: none"
-            >
-              <div class="col-12">
-                <div
-                  class="card"
-                  style="
+            <!-- Right: Metrics Grid (Matches Chart Width) -->
+            <div class="col-md-9">
+              <div class="card h-100 mb-3">
+                <div class="card-header border-0 pb-0">
+                  <h3 class="card-title text-uppercase text-secondary small font-weight-bold">
+                    Relatório de Performance
+                  </h3>
+                </div>
+                <div class="card-body d-flex flex-column justify-content-center">
+                  <div id="metrics-grid" class="metrics-grid">
+                    <!-- JS Populated -->
+                    <div class="text-center text-muted p-4 w-100" style="grid-column: 1 / -1">
+                      Execute o Backtest para visualizar os dados.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Trade History Section -->
+          <div class="row mt-3" id="trade-history-section" style="display: none">
+            <div class="col-12">
+              <div class="card" style="
                     background-color: transparent;
                     border: none;
                     box-shadow: none;
-                  "
-                >
-                  <div
-                    class="card-header border-0 pb-0"
-                    style="background-color: transparent"
-                  >
-                    <h3
-                      class="card-title text-uppercase text-secondary small font-weight-bold"
-                      style="margin-bottom: 12px"
-                    >
-                      Histórico de Trades
-                    </h3>
-                  </div>
-                  <div class="card-body p-0">
-                    <div
-                      class="table-responsive"
-                      style="
+                  ">
+                <div class="card-header border-0 pb-0" style="background-color: transparent">
+                  <h3 class="card-title text-uppercase text-secondary small font-weight-bold"
+                    style="margin-bottom: 12px">
+                    Histórico de Trades
+                  </h3>
+                </div>
+                <div class="card-body p-0">
+                  <div class="table-responsive" style="
                         max-height: 400px;
                         overflow-y: auto;
                         border-radius: 4px;
                         border: 1px solid #27272a;
                         background: #18181b;
-                      "
-                    >
-                      <table class="scanner-table mb-0 w-100">
-                        <thead
-                          style="
+                      ">
+                    <table class="scanner-table mb-0 w-100">
+                      <thead style="
                             position: sticky;
                             top: 0;
                             z-index: 20;
                             background: #1f1f23;
-                          "
-                        >
-                          <tr>
-                            <th class="text-center" style="width: 50px">#</th>
-                            <th>Tipo</th>
-                            <th>Data Entrada</th>
-                            <th class="text-end">Preço Entrada</th>
-                            <th>Data Saída</th>
-                            <th class="text-end">Preço Saída</th>
-                            <th class="text-end" style="padding-right: 12px">
-                              Retorno %
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody id="trades-table-body">
-                          <tr>
-                            <td colspan="7" class="text-muted text-center py-4">
-                              Nenhum trade realizado.
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
+                          ">
+                        <tr>
+                          <th class="text-center" style="width: 50px">#</th>
+                          <th>Tipo</th>
+                          <th>Data Entrada</th>
+                          <th class="text-end">Preço Entrada</th>
+                          <th>Data Saída</th>
+                          <th class="text-end">Preço Saída</th>
+                          <th class="text-end" style="padding-right: 12px">
+                            Retorno %
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody id="trades-table-body">
+                        <tr>
+                          <td colspan="7" class="text-muted text-center py-4">
+                            Nenhum trade realizado.
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               </div>
@@ -1811,194 +1593,285 @@
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Scripts Tabler -->
-    <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/js/tabler.min.js"></script>
+  <!-- Scripts Tabler -->
+  <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/js/tabler.min.js"></script>
 
-    <!-- App Logic -->
-    <script>
-      // ============ SETUP CHART ============
-      const chartContainer = document.getElementById("chart");
-      const chart = LightweightCharts.createChart(chartContainer, {
-        layout: { background: { color: "#18181b" }, textColor: "#a1a1aa" },
-        grid: {
-          vertLines: { color: "#27272a" },
-          horzLines: { color: "#27272a" },
+  <!-- App Logic -->
+  <script>
+    // ============ SETUP CHART ============
+    const chartContainer = document.getElementById("chart");
+    const chart = LightweightCharts.createChart(chartContainer, {
+      layout: { background: { color: "#18181b" }, textColor: "#a1a1aa" },
+      grid: {
+        vertLines: { color: "#27272a" },
+        horzLines: { color: "#27272a" },
+      },
+      timeScale: {
+        timeVisible: true,
+        secondsVisible: false,
+        borderColor: "#27272a",
+      },
+      rightPriceScale: {
+        borderColor: "#27272a",
+        scaleMargins: {
+          top: 0.1,
+          bottom: 0.1,
         },
-        timeScale: {
-          timeVisible: true,
-          secondsVisible: false,
-          borderColor: "#27272a",
-        },
-        rightPriceScale: {
-          borderColor: "#27272a",
-          scaleMargins: {
-            top: 0.1,
-            bottom: 0.1,
-          },
-        },
-      });
+      },
+    });
 
-      let candleSeries = chart.addCandlestickSeries({
-        upColor: "#00e676",
-        downColor: "#ff1744",
-        borderVisible: false,
-        wickUpColor: "#00e676",
-        wickDownColor: "#ff1744",
-      });
+    let candleSeries = chart.addCandlestickSeries({
+      upColor: "#00e676",
+      downColor: "#ff1744",
+      borderVisible: false,
+      wickUpColor: "#00e676",
+      wickDownColor: "#ff1744",
+    });
 
-      let smaShortSeries = chart.addLineSeries({
-        color: "#FFFF00", // Bright Yellow
-        lineWidth: 2,
-        title: "SMA Short",
-      });
+    let smaShortSeries = chart.addLineSeries({
+      color: "#FFFF00", // Bright Yellow
+      lineWidth: 2,
+      title: "SMA Short",
+    });
 
-      let smaLongSeries = chart.addLineSeries({
-        color: "#D500F9", // Bright Purple/Pink
-        lineWidth: 2,
-        title: "SMA Long",
-      });
+    let smaLongSeries = chart.addLineSeries({
+      color: "#D500F9", // Bright Purple/Pink
+      lineWidth: 2,
+      title: "SMA Long",
+    });
 
-      // Resize
-      new ResizeObserver((entries) => {
-        if (entries.length === 0 || entries[0].target !== chartContainer) {
-          return;
+    // Resize
+    new ResizeObserver((entries) => {
+      if (entries.length === 0 || entries[0].target !== chartContainer) {
+        return;
+      }
+      const newRect = entries[0].contentRect;
+      chart.applyOptions({ height: newRect.height, width: newRect.width });
+    }).observe(chartContainer);
+
+    // ============ LOGIC ============
+    const INITIAL_ZOOM_CANDLES = 200; // <--- Mude este número para ajustar o Zoom inicial
+
+    let SYMBOL = document.getElementById("ticker-input").value;
+    let updateInterval = null;
+    let isStrategyActive = false; // Controls SMA visibility
+
+    function logStatus(msg, type = "neutral") {
+      console.log(`[${type}] ${msg}`);
+
+      // Show critical errors to user
+      if (type === "error") {
+        let errorBox = document.getElementById("error-alert");
+        if (!errorBox) {
+          errorBox = document.createElement("div");
+          errorBox.id = "error-alert";
+          errorBox.style.cssText =
+            "position: fixed; top: 10px; right: 10px; z-index: 9999; background: #ff5252; color: white; padding: 15px; border-radius: 5px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); max-width: 300px;";
+          document.body.appendChild(errorBox);
         }
-        const newRect = entries[0].contentRect;
-        chart.applyOptions({ height: newRect.height, width: newRect.width });
-      }).observe(chartContainer);
-
-      // ============ LOGIC ============
-      const INITIAL_ZOOM_CANDLES = 200; // <--- Mude este número para ajustar o Zoom inicial
-
-      let SYMBOL = document.getElementById("ticker-input").value;
-      let updateInterval = null;
-      let isStrategyActive = false; // Controls SMA visibility
-
-      function logStatus(msg, type = "neutral") {
-        console.log(`[${type}] ${msg}`);
-
-        // Show critical errors to user
-        if (type === "error") {
-          let errorBox = document.getElementById("error-alert");
-          if (!errorBox) {
-            errorBox = document.createElement("div");
-            errorBox.id = "error-alert";
-            errorBox.style.cssText =
-              "position: fixed; top: 10px; right: 10px; z-index: 9999; background: #ff5252; color: white; padding: 15px; border-radius: 5px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); max-width: 300px;";
-            document.body.appendChild(errorBox);
-          }
-          errorBox.innerText = "ERRO: " + msg;
-          setTimeout(() => {
-            errorBox.remove();
-          }, 10000);
-        }
-
-        // Badge status logic
-        const badge = document.getElementById("connection_status");
-        if (badge) {
-          if (
-            msg.includes("Erro") ||
-            msg.includes("Offline") ||
-            type === "error"
-          ) {
-            badge.className = "badge bg-red-lt";
-            badge.innerText = "Erro/Offline";
-          } else if (
-            msg.includes("Conectado") ||
-            msg.includes("Sincronizando")
-          ) {
-            badge.className = "badge bg-green-lt";
-            badge.innerText = "Conectado";
-          }
-        }
+        errorBox.innerText = "ERRO: " + msg;
+        setTimeout(() => {
+          errorBox.remove();
+        }, 10000);
       }
 
-      // Small toast helper for user-visible notifications
-      function showToast(message, opts = {}) {
-        const duration = opts.duration || 4000;
-        const bg = opts.bg || "#10b981";
-        const el = document.createElement("div");
-        el.className = "fs-toast";
-        el.style.cssText = `position:fixed; right:16px; bottom:16px; background:${bg}; color:#fff; padding:10px 14px; border-radius:8px; z-index:99999; box-shadow:0 6px 20px rgba(0,0,0,0.4); font-weight:700;`;
-        el.innerText = message;
-        document.body.appendChild(el);
-        setTimeout(() => (el.style.opacity = "0"), duration - 300);
-        setTimeout(() => el.remove(), duration);
+      // Badge status logic
+      const badge = document.getElementById("connection_status");
+      if (badge) {
+        if (
+          msg.includes("Erro") ||
+          msg.includes("Offline") ||
+          type === "error"
+        ) {
+          badge.className = "badge bg-red-lt";
+          badge.innerText = "Erro/Offline";
+        } else if (
+          msg.includes("Conectado") ||
+          msg.includes("Sincronizando")
+        ) {
+          badge.className = "badge bg-green-lt";
+          badge.innerText = "Conectado";
+        }
       }
+    }
 
-      function updateDashboard() {
-        SYMBOL = document.getElementById("ticker-input").value;
+    // Small toast helper for user-visible notifications
+    function showToast(message, opts = {}) {
+      const duration = opts.duration || 4000;
+      const bg = opts.bg || "#10b981";
+      const el = document.createElement("div");
+      el.className = "fs-toast";
+      el.style.cssText = `position:fixed; right:16px; bottom:16px; background:${bg}; color:#fff; padding:10px 14px; border-radius:8px; z-index:99999; box-shadow:0 6px 20px rgba(0,0,0,0.4); font-weight:700;`;
+      el.innerText = message;
+      document.body.appendChild(el);
+      setTimeout(() => (el.style.opacity = "0"), duration - 300);
+      setTimeout(() => el.remove(), duration);
+    }
 
-        // Update Logo
-        updateAssetIcon(SYMBOL);
+    function updateDashboard() {
+      SYMBOL = document.getElementById("ticker-input").value;
+
+      // Update Logo
+      updateAssetIcon(SYMBOL);
+
+      loadHistory();
+    }
+
+    async function init() {
+      try {
+        const res = await fetch("/api/timeframes");
+        const timeframes = await res.json();
+        // Legacy select population removed.
+        // Custom dropdowns are initialized via DOMContentLoaded.
 
         loadHistory();
+        updateAssetIcon(document.getElementById("ticker-input").value);
+
+        loadHistory();
+      } catch (e) {
+        logStatus("Erro init: " + e, "error");
       }
+    }
 
-      async function init() {
-        try {
-          const res = await fetch("/api/timeframes");
-          const timeframes = await res.json();
-          // Legacy select population removed.
-          // Custom dropdowns are initialized via DOMContentLoaded.
+    async function loadHistory() {
+      if (updateInterval) clearInterval(updateInterval);
 
-          loadHistory();
-          updateAssetIcon(document.getElementById("ticker-input").value);
+      // Reset Strategy State on Reload/Symbol Change
+      isStrategyActive = false;
 
-          loadHistory();
-        } catch (e) {
-          logStatus("Erro init: " + e, "error");
+      const tf = getTimeframeValue();
+      const count = getCandleValue();
+
+      SYMBOL = document.getElementById("ticker-input").value;
+
+      // Reset
+      candleSeries.setMarkers([]);
+      smaShortSeries.setData([]);
+      smaLongSeries.setData([]);
+
+      // Clear Grid
+      document.getElementById("metrics-grid").innerHTML =
+        '<div class="text-center text-muted col-12 py-4" style="grid-column: 1 / -1;">Carregando métricas...</div>';
+
+      const analysisSection = document.getElementById("analysis-section");
+      if (analysisSection) analysisSection.style.display = "none";
+
+      const historySection = document.getElementById("trade-history-section");
+      if (historySection) historySection.style.display = "none";
+
+      logStatus(`Baixando ${count} velas de ${SYMBOL}...`);
+
+      try {
+        const res = await fetch(
+          `/api/history?symbol=${SYMBOL}&timeframe=${tf}&count=${count}`,
+        );
+        const data = await res.json();
+
+        if (data.error) {
+          logStatus("Erro API: " + data.error, "error");
+          return;
         }
+
+        // 1. HARD RESET: Remove old series
+        // 1. HARD RESET: Remove ALL series to fix Z-Order (Candles -> SMAs)
+        if (candleSeries) chart.removeSeries(candleSeries);
+        if (smaShortSeries) chart.removeSeries(smaShortSeries);
+        if (smaLongSeries) chart.removeSeries(smaLongSeries);
+
+        // 2. Recreate Series (Order Matters: Last added = Top Layer)
+        // 2.1 Candles (Background Layer)
+        candleSeries = chart.addCandlestickSeries({
+          upColor: "#00E396",
+          downColor: "#FF4560",
+          borderVisible: false,
+          wickUpColor: "#00E396",
+          wickDownColor: "#FF4560",
+        });
+
+        // 2.2 SMAs (Overlay Layer)
+        smaShortSeries = chart.addLineSeries({
+          color: "#FFFF00", // Yellow
+          lineWidth: 2,
+          title: "SMA Short",
+        });
+
+        smaLongSeries = chart.addLineSeries({
+          color: "#D500F9", // Purple
+          lineWidth: 2,
+          title: "SMA Long",
+        });
+
+        // 3. Set Data
+        candleSeries.setData(data);
+
+        // 4. Force Scale Reset (Critical)
+        chart.priceScale("right").applyOptions({
+          autoScale: true,
+          scaleMargins: { top: 0.1, bottom: 0.2 },
+        });
+        // 4.1 ZOOM FIX: Show only last N candles (Strategic Zoom)
+        const totalCandles = data.length;
+        const visibleRange = INITIAL_ZOOM_CANDLES;
+
+        if (totalCandles > 0) {
+          chart.timeScale().setVisibleLogicalRange({
+            from: totalCandles - visibleRange,
+            to: totalCandles,
+          });
+        }
+        chart.timeScale().applyOptions({ rightOffset: 5 });
+
+        logStatus("Dados carregados. Sincronizando...", "success");
+
+        if (data.length > 0) {
+          updateDisplay(data[data.length - 1]);
+        }
+
+        updateInterval = setInterval(updateLive, 1000);
+      } catch (err) {
+        logStatus("Erro conexão: " + err, "error");
       }
+    }
 
-      async function loadHistory() {
-        if (updateInterval) clearInterval(updateInterval);
+    async function runBacktest() {
+      const tf = getTimeframeValue();
+      const count = getCandleValue();
+      const short = document.getElementById("smaShort").value;
+      const long = document.getElementById("smaLong").value;
+      const optimize = document.getElementById("optimizeCheck").checked;
 
-        // Reset Strategy State on Reload/Symbol Change
-        isStrategyActive = false;
+      if (optimize)
+        logStatus("Otimizando parâmetros (isso pode demorar)...", "neutral");
+      else logStatus("Executando Backtest...", "neutral");
 
-        const tf = getTimeframeValue();
-        const count = getCandleValue();
+      try {
+        const res = await fetch(
+          `/api/backtest?symbol=${SYMBOL}&timeframe=${tf}&count=${count}&short=${short}&long=${long}&optimize=${optimize}`,
+        );
+        const data = await res.json();
 
-        SYMBOL = document.getElementById("ticker-input").value;
+        if (data.error) {
+          logStatus("Erro no Backtest: " + data.error, "error");
+          return;
+        }
 
-        // Reset
-        candleSeries.setMarkers([]);
-        smaShortSeries.setData([]);
-        smaLongSeries.setData([]);
-
-        // Clear Grid
-        document.getElementById("metrics-grid").innerHTML =
-          '<div class="text-center text-muted col-12 py-4" style="grid-column: 1 / -1;">Carregando métricas...</div>';
-          
-        const analysisSection = document.getElementById("analysis-section");
-        if (analysisSection) analysisSection.style.display = "none";
-        
-        const historySection = document.getElementById("trade-history-section");
-        if (historySection) historySection.style.display = "none";
-
-        logStatus(`Baixando ${count} velas de ${SYMBOL}...`);
-
-        try {
-          const res = await fetch(
-            `/api/history?symbol=${SYMBOL}&timeframe=${tf}&count=${count}`,
-          );
-          const data = await res.json();
-
-          if (data.error) {
-            logStatus("Erro API: " + data.error, "error");
-            return;
-          }
-
-          // 1. HARD RESET: Remove old series
-          // 1. HARD RESET: Remove ALL series to fix Z-Order (Candles -> SMAs)
+        // Critical: Update Chart Candles if backtest returned fresh data (Syncs Scale)
+        if (data.candles) {
+          const candleData = data.candles.map((c) => ({
+            time: new Date(c.time).getTime() / 1000,
+            open: c.open,
+            high: c.high,
+            low: c.low,
+            close: c.close,
+          }));
+          // 1. HARD RESET ALL (Fix Z-Order & Scaling)
           if (candleSeries) chart.removeSeries(candleSeries);
           if (smaShortSeries) chart.removeSeries(smaShortSeries);
           if (smaLongSeries) chart.removeSeries(smaLongSeries);
 
-          // 2. Recreate Series (Order Matters: Last added = Top Layer)
-          // 2.1 Candles (Background Layer)
+          // 2. Recreate Series
           candleSeries = chart.addCandlestickSeries({
             upColor: "#00E396",
             downColor: "#FF4560",
@@ -2007,253 +1880,163 @@
             wickDownColor: "#FF4560",
           });
 
-          // 2.2 SMAs (Overlay Layer)
           smaShortSeries = chart.addLineSeries({
-            color: "#FFFF00", // Yellow
+            color: "#FFFF00",
             lineWidth: 2,
             title: "SMA Short",
           });
 
           smaLongSeries = chart.addLineSeries({
-            color: "#D500F9", // Purple
+            color: "#D500F9",
             lineWidth: 2,
             title: "SMA Long",
           });
 
           // 3. Set Data
-          candleSeries.setData(data);
+          candleSeries.setData(candleData);
 
-          // 4. Force Scale Reset (Critical)
+          // CRITICAL FIX: Flat Line Bug (Backtest)
           chart.priceScale("right").applyOptions({
             autoScale: true,
-            scaleMargins: { top: 0.1, bottom: 0.2 },
+            scaleMargins: { top: 0.1, bottom: 0.1 },
           });
-          // 4.1 ZOOM FIX: Show only last N candles (Strategic Zoom)
-          const totalCandles = data.length;
+          // 4.1 ZOOM FIX: Show only last N candles
+          const totalCandles = candleData.length;
           const visibleRange = INITIAL_ZOOM_CANDLES;
 
-          if (totalCandles > 0) {
-            chart.timeScale().setVisibleLogicalRange({
-              from: totalCandles - visibleRange,
-              to: totalCandles,
-            });
-          }
+          chart.timeScale().setVisibleLogicalRange({
+            from: totalCandles - visibleRange,
+            to: totalCandles,
+          });
           chart.timeScale().applyOptions({ rightOffset: 5 });
-
-          logStatus("Dados carregados. Sincronizando...", "success");
-
-          if (data.length > 0) {
-            updateDisplay(data[data.length - 1]);
-          }
-
-          updateInterval = setInterval(updateLive, 1000);
-        } catch (err) {
-          logStatus("Erro conexão: " + err, "error");
         }
-      }
 
-      async function runBacktest() {
-        const tf = getTimeframeValue();
-        const count = getCandleValue();
-        const short = document.getElementById("smaShort").value;
-        const long = document.getElementById("smaLong").value;
-        const optimize = document.getElementById("optimizeCheck").checked;
+        candleSeries.setMarkers(data.markers);
+        smaShortSeries.setData(data.sma_short);
+        smaLongSeries.setData(data.sma_long);
 
-        if (optimize)
-          logStatus("Otimizando parâmetros (isso pode demorar)...", "neutral");
-        else logStatus("Executando Backtest...", "neutral");
+        // Enable Live Updates for SMA
+        isStrategyActive = true;
 
-        try {
-          const res = await fetch(
-            `/api/backtest?symbol=${SYMBOL}&timeframe=${tf}&count=${count}&short=${short}&long=${long}&optimize=${optimize}`,
+        if (data.best_params) {
+          document.getElementById("smaShort").value = data.best_params.short;
+          document.getElementById("smaLong").value = data.best_params.long;
+          logStatus(
+            `Otimização Sucesso! Melhores: ${data.best_params.short} x ${data.best_params.long}`,
+            "success",
           );
-          const data = await res.json();
-
-          if (data.error) {
-            logStatus("Erro no Backtest: " + data.error, "error");
-            return;
-          }
-
-          // Critical: Update Chart Candles if backtest returned fresh data (Syncs Scale)
-          if (data.candles) {
-            const candleData = data.candles.map((c) => ({
-              time: new Date(c.time).getTime() / 1000,
-              open: c.open,
-              high: c.high,
-              low: c.low,
-              close: c.close,
-            }));
-            // 1. HARD RESET ALL (Fix Z-Order & Scaling)
-            if (candleSeries) chart.removeSeries(candleSeries);
-            if (smaShortSeries) chart.removeSeries(smaShortSeries);
-            if (smaLongSeries) chart.removeSeries(smaLongSeries);
-
-            // 2. Recreate Series
-            candleSeries = chart.addCandlestickSeries({
-              upColor: "#00E396",
-              downColor: "#FF4560",
-              borderVisible: false,
-              wickUpColor: "#00E396",
-              wickDownColor: "#FF4560",
-            });
-
-            smaShortSeries = chart.addLineSeries({
-              color: "#FFFF00",
-              lineWidth: 2,
-              title: "SMA Short",
-            });
-
-            smaLongSeries = chart.addLineSeries({
-              color: "#D500F9",
-              lineWidth: 2,
-              title: "SMA Long",
-            });
-
-            // 3. Set Data
-            candleSeries.setData(candleData);
-
-            // CRITICAL FIX: Flat Line Bug (Backtest)
-            chart.priceScale("right").applyOptions({
-              autoScale: true,
-              scaleMargins: { top: 0.1, bottom: 0.1 },
-            });
-            // 4.1 ZOOM FIX: Show only last N candles
-            const totalCandles = candleData.length;
-            const visibleRange = INITIAL_ZOOM_CANDLES;
-
-            chart.timeScale().setVisibleLogicalRange({
-              from: totalCandles - visibleRange,
-              to: totalCandles,
-            });
-            chart.timeScale().applyOptions({ rightOffset: 5 });
-          }
-
-          candleSeries.setMarkers(data.markers);
-          smaShortSeries.setData(data.sma_short);
-          smaLongSeries.setData(data.sma_long);
-
-          // Enable Live Updates for SMA
-          isStrategyActive = true;
-
-          if (data.best_params) {
-            document.getElementById("smaShort").value = data.best_params.short;
-            document.getElementById("smaLong").value = data.best_params.long;
-            logStatus(
-              `Otimização Sucesso! Melhores: ${data.best_params.short} x ${data.best_params.long}`,
-              "success",
-            );
-          } else {
-            logStatus("Backtest Concluído com Sucesso!", "success");
-          }
-
-          // Show Analysis Section (Metrics + Scanner placeholder if visible)
-          document.getElementById("analysis-section").style.display = "flex";
-          document.getElementById("trade-history-section").style.display =
-            "flex";
-
-          renderMetrics(data); // Pass full data object
-          renderTrades(data.trade_stats.trades);
-        } catch (e) {
-          console.error(e);
-          logStatus("Exceção no Backtest", "error");
-        }
-      }
-
-      function toggleOptimizeInputs() {
-        const isChecked = document.getElementById("optimizeCheck").checked;
-        const wrapper = document.getElementById("sma-inputs-wrapper");
-
-        if (isChecked) {
-          wrapper.classList.add("input-group-disabled");
-          // Opcional: Adicionar texto "Auto" nos inputs ou deixa-los como estão
         } else {
-          wrapper.classList.remove("input-group-disabled");
+          logStatus("Backtest Concluído com Sucesso!", "success");
         }
+
+        // Show Analysis Section (Metrics + Scanner placeholder if visible)
+        document.getElementById("analysis-section").style.display = "flex";
+        document.getElementById("trade-history-section").style.display =
+          "flex";
+
+        renderMetrics(data); // Pass full data object
+        renderTrades(data.trade_stats.trades);
+      } catch (e) {
+        console.error(e);
+        logStatus("Exceção no Backtest", "error");
       }
+    }
 
-      function renderMetrics(data) {
-        const m = data.metrics;
-        const t = data.trade_stats;
-        const grid = document.getElementById("metrics-grid");
+    function toggleOptimizeInputs() {
+      const isChecked = document.getElementById("optimizeCheck").checked;
+      const wrapper = document.getElementById("sma-inputs-wrapper");
 
-        const fmtPct = (v) => (v * 100).toFixed(2) + "%";
+      if (isChecked) {
+        wrapper.classList.add("input-group-disabled");
+        // Opcional: Adicionar texto "Auto" nos inputs ou deixa-los como estão
+      } else {
+        wrapper.classList.remove("input-group-disabled");
+      }
+    }
 
-        // --- Tooltips Definitions ---
-        const tooltips = {
-          "Retorno Total":
-            "Lucro ou Prejuízo acumulado sobre o capital inicial.",
-          "Win Rate": "Porcentagem de operações que fecharam no positivo.",
-          "Profit Factor":
-            "Razão entre Lucro Bruto e Perda Bruta. > 1.0 indica lucro.",
-          "Total Trades":
-            "Quantidade total de operações realizadas no período.",
-          "Max Drawdown":
-            "A maior queda percentual de capital registrada (Top to Bottom).",
-          "Sharpe Ratio": "Retorno ajustado ao risco. > 1.0 é considerado bom.",
-          Volatilidade: "Desvio padrão dos retornos (Risco da operação).",
-          "Duração (Dias)": "Tempo médio que cada operação ficou aberta.",
-        };
+    function renderMetrics(data) {
+      const m = data.metrics;
+      const t = data.trade_stats;
+      const grid = document.getElementById("metrics-grid");
 
-        // --- Card Generator ---
-        const createCard = (label, value, icon, type = "neutral") => {
-          let valClass = "val-neu";
-          let accentClass = "accent-blue"; // Default Neutral
-          let displayVal = value;
-          const tooltip = tooltips[label] || "";
+      const fmtPct = (v) => (v * 100).toFixed(2) + "%";
 
-          if (type === "pct") {
-            displayVal = fmtPct(value);
-            if (value > 0) {
-              valClass = "val-pos";
-              accentClass = "accent-green";
-            } else if (value < 0) {
-              valClass = "val-neg";
-              accentClass = "accent-red";
-            }
-          } else if (type === "diff") {
-            displayVal = (value >= 0 ? "+" : "") + fmtPct(value);
-            if (value > 0) {
-              valClass = "val-pos";
-              accentClass = "accent-green";
-            } else if (value < 0) {
-              valClass = "val-neg";
-              accentClass = "accent-red";
-            }
-          } else if (type === "pf") {
-            displayVal = value.toFixed(2);
-            if (value >= 1.5) {
-              valClass = "val-pos";
-              accentClass = "accent-green";
-            } else if (value >= 1.0) {
-              valClass = "val-warn";
-              accentClass = "accent-warn";
-            } else {
-              valClass = "val-neg";
-              accentClass = "accent-red";
-            }
-          } else if (type === "neutral") {
-            if (typeof value === "number") displayVal = value.toFixed(2);
-            accentClass = "accent-purple";
-          } else if (type === "int") {
-            displayVal = Math.round(value);
-            valClass = "val-neu";
-            accentClass = "accent-blue";
-          } else if (type === "drawdown") {
-            displayVal = fmtPct(value); // Values usually negative
+      // --- Tooltips Definitions ---
+      const tooltips = {
+        "Retorno Total":
+          "Lucro ou Prejuízo acumulado sobre o capital inicial.",
+        "Win Rate": "Porcentagem de operações que fecharam no positivo.",
+        "Profit Factor":
+          "Razão entre Lucro Bruto e Perda Bruta. > 1.0 indica lucro.",
+        "Total Trades":
+          "Quantidade total de operações realizadas no período.",
+        "Max Drawdown":
+          "A maior queda percentual de capital registrada (Top to Bottom).",
+        "Sharpe Ratio": "Retorno ajustado ao risco. > 1.0 é considerado bom.",
+        Volatilidade: "Desvio padrão dos retornos (Risco da operação).",
+        "Duração (Dias)": "Tempo médio que cada operação ficou aberta.",
+      };
+
+      // --- Card Generator ---
+      const createCard = (label, value, icon, type = "neutral") => {
+        let valClass = "val-neu";
+        let accentClass = "accent-blue"; // Default Neutral
+        let displayVal = value;
+        const tooltip = tooltips[label] || "";
+
+        if (type === "pct") {
+          displayVal = fmtPct(value);
+          if (value > 0) {
+            valClass = "val-pos";
+            accentClass = "accent-green";
+          } else if (value < 0) {
             valClass = "val-neg";
             accentClass = "accent-red";
           }
+        } else if (type === "diff") {
+          displayVal = (value >= 0 ? "+" : "") + fmtPct(value);
+          if (value > 0) {
+            valClass = "val-pos";
+            accentClass = "accent-green";
+          } else if (value < 0) {
+            valClass = "val-neg";
+            accentClass = "accent-red";
+          }
+        } else if (type === "pf") {
+          displayVal = value.toFixed(2);
+          if (value >= 1.5) {
+            valClass = "val-pos";
+            accentClass = "accent-green";
+          } else if (value >= 1.0) {
+            valClass = "val-warn";
+            accentClass = "accent-warn";
+          } else {
+            valClass = "val-neg";
+            accentClass = "accent-red";
+          }
+        } else if (type === "neutral") {
+          if (typeof value === "number") displayVal = value.toFixed(2);
+          accentClass = "accent-purple";
+        } else if (type === "int") {
+          displayVal = Math.round(value);
+          valClass = "val-neu";
+          accentClass = "accent-blue";
+        } else if (type === "drawdown") {
+          displayVal = fmtPct(value); // Values usually negative
+          valClass = "val-neg";
+          accentClass = "accent-red";
+        }
 
-          return `
+        return `
                 <div class="metric-card ${accentClass}" title="${tooltip}" style="cursor: help;">
                     <span class="metric-label"><i class="${icon}"></i>${label}</span>
                     <span class="metric-value ${valClass}">${displayVal}</span>
                 </div>
             `;
-        };
+      };
 
-        // --- Build Grid ---
-        grid.innerHTML = `
+      // --- Build Grid ---
+      grid.innerHTML = `
             ${createCard("Retorno Total", m.total_return, "ri-funds-box-line", "diff")}
             ${createCard("Win Rate", t.win_rate, "ri-crosshair-2-line", "pct")}
             ${createCard("Profit Factor", t.profit_factor, "ri-scales-3-line", "pf")}
@@ -2264,34 +2047,34 @@
             ${createCard("Volatilidade", m.volatility, "ri-activity-line", "pct")}
             ${createCard("Duração (Dias)", t.avg_duration, "ri-time-line", "neutral")}
         `;
+    }
+
+    function renderTrades(trades) {
+      const tbody = document.getElementById("trades-table-body");
+      tbody.innerHTML = "";
+
+      if (!trades || trades.length === 0) {
+        tbody.innerHTML =
+          '<tr><td colspan="7" class="text-muted text-center py-4">Nenhum trade na janela selecionada.</td></tr>';
+        return;
       }
 
-      function renderTrades(trades) {
-        const tbody = document.getElementById("trades-table-body");
-        tbody.innerHTML = "";
+      let rowsHtml = "";
+      trades.forEach((t, i) => {
+        const isWin = t.return > 0;
+        const colorClass = isWin
+          ? "val-pos"
+          : t.return < 0
+            ? "val-neg"
+            : "val-neu";
+        const retPct = (t.return * 100).toFixed(2) + "%";
+        const icon = isWin
+          ? "<i class='ri-arrow-up-line'></i>"
+          : t.return < 0
+            ? "<i class='ri-arrow-down-line'></i>"
+            : "-";
 
-        if (!trades || trades.length === 0) {
-          tbody.innerHTML =
-            '<tr><td colspan="7" class="text-muted text-center py-4">Nenhum trade na janela selecionada.</td></tr>';
-          return;
-        }
-
-        let rowsHtml = "";
-        trades.forEach((t, i) => {
-          const isWin = t.return > 0;
-          const colorClass = isWin
-            ? "val-pos"
-            : t.return < 0
-              ? "val-neg"
-              : "val-neu";
-          const retPct = (t.return * 100).toFixed(2) + "%";
-          const icon = isWin
-            ? "<i class='ri-arrow-up-line'></i>"
-            : t.return < 0
-              ? "<i class='ri-arrow-down-line'></i>"
-              : "-";
-
-          rowsHtml += `<tr>
+        rowsHtml += `<tr>
             <td class="text-center text-muted small">${i + 1}</td>
             <td><span class="badge bg-green-lt fw-bold">COMPRA</span></td>
             <td class="text-secondary opacity-75">${t.entry_time}</td>
@@ -2302,282 +2085,282 @@
                 <span class="${colorClass} fw-bold d-flex align-items-center justify-content-end gap-1">${icon} ${retPct}</span>
             </td>
           </tr>`;
-        });
+      });
 
-        tbody.innerHTML = rowsHtml;
-      }
+      tbody.innerHTML = rowsHtml;
+    }
 
-      async function updateLive() {
-        const tf = getTimeframeValue();
-        const short = document.getElementById("smaShort").value;
-        const long = document.getElementById("smaLong").value;
-        const now = new Date().getTime(); // Anti-cache
+    async function updateLive() {
+      const tf = getTimeframeValue();
+      const short = document.getElementById("smaShort").value;
+      const long = document.getElementById("smaLong").value;
+      const now = new Date().getTime(); // Anti-cache
 
-        try {
-          const res = await fetch(
-            `/api/candle?symbol=${SYMBOL}&timeframe=${tf}&short=${short}&long=${long}&_=${now}`,
-          );
-          const data = await res.json();
-          if (data.error) return;
+      try {
+        const res = await fetch(
+          `/api/candle?symbol=${SYMBOL}&timeframe=${tf}&short=${short}&long=${long}&_=${now}`,
+        );
+        const data = await res.json();
+        if (data.error) return;
 
-          // LOG PARA DEBUG
-          console.log("Tick recebido: ", data.candle);
+        // LOG PARA DEBUG
+        console.log("Tick recebido: ", data.candle);
 
-          // data agora vem como { candle: {...}, sma: {...} }
-          const candle = data.candle;
-          const sma = data.sma;
+        // data agora vem como { candle: {...}, sma: {...} }
+        const candle = data.candle;
+        const sma = data.sma;
 
-          // 1. Atualiza Candle (Preço em Tempo Real)
-          if (candleSeries) {
-            candleSeries.update(candle);
+        // 1. Atualiza Candle (Preço em Tempo Real)
+        if (candleSeries) {
+          candleSeries.update(candle);
+        }
+        updateDisplay(candle);
+
+        // 2. Atualiza SMAs (Apenas dado consolidado do candle anterior e SE ativo)
+        if (isStrategyActive) {
+          if (sma && sma.short !== null) {
+            smaShortSeries.update({ time: sma.time, value: sma.short });
           }
-          updateDisplay(candle);
-
-          // 2. Atualiza SMAs (Apenas dado consolidado do candle anterior e SE ativo)
-          if (isStrategyActive) {
-            if (sma && sma.short !== null) {
-              smaShortSeries.update({ time: sma.time, value: sma.short });
-            }
-            if (sma && sma.long !== null) {
-              smaLongSeries.update({ time: sma.time, value: sma.long });
-            }
+          if (sma && sma.long !== null) {
+            smaLongSeries.update({ time: sma.time, value: sma.long });
           }
-        } catch (err) {
-          console.error(err);
         }
+      } catch (err) {
+        console.error(err);
       }
+    }
 
-      function updateDisplay(candle) {
-        const priceEl = document.getElementById("price");
-        const oldPrice = parseFloat(priceEl.innerText.replace("--.--", "0"));
+    function updateDisplay(candle) {
+      const priceEl = document.getElementById("price");
+      const oldPrice = parseFloat(priceEl.innerText.replace("--.--", "0"));
 
-        const now = new Date();
-        const timeStr = now.toLocaleTimeString();
-        priceEl.innerText = `${candle.close.toFixed(2)}`;
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString();
+      priceEl.innerText = `${candle.close.toFixed(2)}`;
 
-        // Debug Title
-        document.title = `FinSense | ${candle.close.toFixed(2)}`;
+      // Debug Title
+      document.title = `FinSense | ${candle.close.toFixed(2)}`;
 
-        // Color animation based on tick
-        if (candle.close > oldPrice) {
-          priceEl.className = "price-hero"; // Green default
-        } else if (candle.close < oldPrice) {
-          priceEl.className = "price-hero down";
-        }
+      // Color animation based on tick
+      if (candle.close > oldPrice) {
+        priceEl.className = "price-hero"; // Green default
+      } else if (candle.close < oldPrice) {
+        priceEl.className = "price-hero down";
       }
+    }
 
-      // ============ SCANNER LOGIC ============
-      var scannerModalInstance = null;
-      var cachedScanResults = [];
+    // ============ SCANNER LOGIC ============
+    var scannerModalInstance = null;
+    var cachedScanResults = [];
 
-      // Reset UI when opening modal
-      function openScanner() {
-        const el = document.getElementById("modal-scanner");
+    // Reset UI when opening modal
+    function openScanner() {
+      const el = document.getElementById("modal-scanner");
 
-        // Reset Logic
-        document.getElementById("scanner-loading").style.display = "none";
-        document.getElementById("scanner-results").style.display = "none";
-        document.getElementById("scan-status-text").innerText = "0%";
-        document.getElementById("scan-progress-bar").style.width = "0%";
+      // Reset Logic
+      document.getElementById("scanner-loading").style.display = "none";
+      document.getElementById("scanner-results").style.display = "none";
+      document.getElementById("scan-status-text").innerText = "0%";
+      document.getElementById("scan-progress-bar").style.width = "0%";
 
-        // Show Start Button again
-        const startBtn = document.querySelector("#modal-scanner .btn-success");
-        if (startBtn) startBtn.style.display = "inline-block";
+      // Show Start Button again
+      const startBtn = document.querySelector("#modal-scanner .btn-success");
+      if (startBtn) startBtn.style.display = "inline-block";
 
-        if (!scannerModalInstance) {
-          scannerModalInstance = new bootstrap.Modal(el);
-        }
-        scannerModalInstance.show();
+      if (!scannerModalInstance) {
+        scannerModalInstance = new bootstrap.Modal(el);
       }
+      scannerModalInstance.show();
+    }
 
-      // Helper: Asset Icon Logic
+    // Helper: Asset Icon Logic
 
-      // Helper: Asset Icon Logic
-      function updateAssetIcon(symbol) {
-        const wrapper = document.getElementById("current-asset-wrapper");
-        const url = `https://raw.githubusercontent.com/thefintz/icones-b3/main/icones/${symbol}.png`;
+    // Helper: Asset Icon Logic
+    function updateAssetIcon(symbol) {
+      const wrapper = document.getElementById("current-asset-wrapper");
+      const url = `https://raw.githubusercontent.com/thefintz/icones-b3/main/icones/${symbol}.png`;
 
-        // Generate Placeholder content (First 2 chars or First+Last depending on taste)
-        // For WINJ26 -> WI
-        const label = symbol ? symbol.substring(0, 2).toUpperCase() : "??";
+      // Generate Placeholder content (First 2 chars or First+Last depending on taste)
+      // For WINJ26 -> WI
+      const label = symbol ? symbol.substring(0, 2).toUpperCase() : "??";
 
-        // Prepare HTML for both states (Image and Placeholder), toggle visibility via onerror
-        // We put the image first.
+      // Prepare HTML for both states (Image and Placeholder), toggle visibility via onerror
+      // We put the image first.
 
-        wrapper.innerHTML = `
+      wrapper.innerHTML = `
              <img src="${url}" class="asset-icon-img" onload="this.style.display='block'; this.nextElementSibling.style.display='none'" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
              <div class="asset-icon-placeholder" style="display:none">${label}</div>
           `;
-      }
+    }
 
-      async function runScannerAPI() {
-        const tf = getTimeframeValue();
-        const count = getCandleValue();
-        const short = document.getElementById("smaShort").value;
-        const long = document.getElementById("smaLong").value;
-        const optimize = document.getElementById("optimizeCheck").checked;
+    async function runScannerAPI() {
+      const tf = getTimeframeValue();
+      const count = getCandleValue();
+      const short = document.getElementById("smaShort").value;
+      const long = document.getElementById("smaLong").value;
+      const optimize = document.getElementById("optimizeCheck").checked;
 
-        document.getElementById("scanner-loading").style.display = "flex";
-        document.getElementById("scanner-results").style.display = "none";
+      document.getElementById("scanner-loading").style.display = "flex";
+      document.getElementById("scanner-results").style.display = "none";
 
-        // Reset UI
-        document.getElementById("scan-progress-bar").style.width = "0%";
-        document.getElementById("scan-status-text").innerText = "Iniciando...";
-        document.getElementById("scan-status-detail").innerText =
-          "Aguardando servidor...";
+      // Reset UI
+      document.getElementById("scan-progress-bar").style.width = "0%";
+      document.getElementById("scan-status-text").innerText = "Iniciando...";
+      document.getElementById("scan-status-detail").innerText =
+        "Aguardando servidor...";
 
-        const btn = document.querySelector("#modal-scanner .btn-success"); // Updated class
-        if (btn) btn.disabled = true;
+      const btn = document.querySelector("#modal-scanner .btn-success"); // Updated class
+      if (btn) btn.disabled = true;
 
-        try {
-          const response = await fetch("/api/batch_backtest", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              timeframe: tf,
-              candles: count,
-              sma_short: short,
-              sma_long: long,
-              optimize: optimize,
-            }),
-          });
+      try {
+        const response = await fetch("/api/batch_backtest", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            timeframe: tf,
+            candles: count,
+            sma_short: short,
+            sma_long: long,
+            optimize: optimize,
+          }),
+        });
 
-          if (!response.ok) throw new Error("Status " + response.status);
+        if (!response.ok) throw new Error("Status " + response.status);
 
-          const reader = response.body.getReader();
-          const decoder = new TextDecoder("utf-8");
-          let buffer = "";
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder("utf-8");
+        let buffer = "";
 
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
 
-            buffer += decoder.decode(value, { stream: true });
-            let parts = buffer.split("\n");
+          buffer += decoder.decode(value, { stream: true });
+          let parts = buffer.split("\n");
 
-            // Process all complete lines
-            buffer = parts.pop();
+          // Process all complete lines
+          buffer = parts.pop();
 
-            for (let line of parts) {
-              if (!line.trim()) continue;
-              try {
-                const msg = JSON.parse(line);
-                if (msg.type === "progress") {
-                  // Update UI
-                  document.getElementById("scan-progress-bar").style.width =
-                    msg.value + "%";
-                  document.getElementById("scan-status-text").innerText =
-                    `${msg.value}%`;
-                  document.getElementById("scan-status-detail").innerText =
-                    msg.text;
-                } else if (msg.type === "result") {
-                  // Hide loading immediately
-                  document.getElementById("scanner-loading").style.display =
-                    "none";
-
-                  // Hide Start Button
-                  const startBtn = document.querySelector(
-                    "#modal-scanner .btn-success",
-                  );
-                  if (startBtn) startBtn.style.display = "none";
-
-                  // Cache & Render Sidebar
-                  cachedScanResults = msg.data;
-                  renderSidebarResults(msg.data);
-
-                  // Hide Modal & Show First Result
-                  if (scannerModalInstance) scannerModalInstance.hide();
-                  document.getElementById(
-                    "card-scanner-results",
-                  ).style.display = "block";
-
-                  if (msg.data.length > 0) {
-                    selectScannedAsset(msg.data[0].symbol);
-                  }
-                }
-              } catch (e) {
-                console.error("Bad JSON chunk", line);
-              }
-            }
-          }
-
-          // Process remaining buffer after stream end
-          if (buffer.trim()) {
+          for (let line of parts) {
+            if (!line.trim()) continue;
             try {
-              const msg = JSON.parse(buffer);
-              if (msg.type === "result") {
-                // ... Copy Result Logic ...
+              const msg = JSON.parse(line);
+              if (msg.type === "progress") {
+                // Update UI
+                document.getElementById("scan-progress-bar").style.width =
+                  msg.value + "%";
+                document.getElementById("scan-status-text").innerText =
+                  `${msg.value}%`;
+                document.getElementById("scan-status-detail").innerText =
+                  msg.text;
+              } else if (msg.type === "result") {
+                // Hide loading immediately
                 document.getElementById("scanner-loading").style.display =
                   "none";
+
+                // Hide Start Button
                 const startBtn = document.querySelector(
                   "#modal-scanner .btn-success",
                 );
                 if (startBtn) startBtn.style.display = "none";
 
+                // Cache & Render Sidebar
                 cachedScanResults = msg.data;
                 renderSidebarResults(msg.data);
 
+                // Hide Modal & Show First Result
                 if (scannerModalInstance) scannerModalInstance.hide();
-                document.getElementById("card-scanner-results").style.display =
-                  "block";
+                document.getElementById(
+                  "card-scanner-results",
+                ).style.display = "block";
 
                 if (msg.data.length > 0) {
                   selectScannedAsset(msg.data[0].symbol);
                 }
               }
             } catch (e) {
-              console.error("Final Buffer Parse Error", e);
+              console.error("Bad JSON chunk", line);
             }
           }
-        } catch (e) {
-          document.getElementById("scan-status-text").innerText = "ERRO";
-          document.getElementById("scan-status-detail").innerText =
-            "Falha: " + e.message;
-          document
-            .getElementById("scan-status-detail")
-            .classList.add("text-danger");
-          console.error(e);
-        } finally {
-          if (btn) btn.disabled = false;
-        }
-      }
-
-      function renderScannerResults(data) {
-        // Keep legacy modal render just in case, or for debugging
-        const tbody = document.getElementById("tbody_scanner");
-        if (tbody) tbody.innerHTML = "";
-        // ... (simplified or left empty if unused)
-      }
-
-      var cachedScanResults = []; // Store results globally to access params later
-
-      function renderSidebarResults(data) {
-        cachedScanResults = data; // Cache data
-        const tbody = document.getElementById("results-table-body");
-        tbody.innerHTML = "";
-
-        // Ensure visibility of the SECTION
-        document.getElementById("analysis-section").style.display = "flex";
-
-        if (!data || data.length === 0) {
-          tbody.innerHTML =
-            "<tr><td colspan='3' class='text-muted text-center py-3'>Nenhum resultado.</td></tr>";
-          return;
         }
 
-        data.forEach((row, i) => {
-          const isWin = row.total_return > 0;
-          const colorClass = isWin ? "text-green" : "text-red";
-          const retPct = (row.total_return * 100).toFixed(2) + "%";
+        // Process remaining buffer after stream end
+        if (buffer.trim()) {
+          try {
+            const msg = JSON.parse(buffer);
+            if (msg.type === "result") {
+              // ... Copy Result Logic ...
+              document.getElementById("scanner-loading").style.display =
+                "none";
+              const startBtn = document.querySelector(
+                "#modal-scanner .btn-success",
+              );
+              if (startBtn) startBtn.style.display = "none";
 
-          const tr = document.createElement("tr");
-          // Passa os parametros otimizados para a funcao de selecao
-          tr.onclick = () => selectScannedAsset(row.symbol, row.params);
+              cachedScanResults = msg.data;
+              renderSidebarResults(msg.data);
 
-          // Logo Logic
-          const logoUrl = `https://raw.githubusercontent.com/thefintz/icones-b3/main/icones/${row.symbol}.png`;
+              if (scannerModalInstance) scannerModalInstance.hide();
+              document.getElementById("card-scanner-results").style.display =
+                "block";
 
-          tr.innerHTML = `
+              if (msg.data.length > 0) {
+                selectScannedAsset(msg.data[0].symbol);
+              }
+            }
+          } catch (e) {
+            console.error("Final Buffer Parse Error", e);
+          }
+        }
+      } catch (e) {
+        document.getElementById("scan-status-text").innerText = "ERRO";
+        document.getElementById("scan-status-detail").innerText =
+          "Falha: " + e.message;
+        document
+          .getElementById("scan-status-detail")
+          .classList.add("text-danger");
+        console.error(e);
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    }
+
+    function renderScannerResults(data) {
+      // Keep legacy modal render just in case, or for debugging
+      const tbody = document.getElementById("tbody_scanner");
+      if (tbody) tbody.innerHTML = "";
+      // ... (simplified or left empty if unused)
+    }
+
+    var cachedScanResults = []; // Store results globally to access params later
+
+    function renderSidebarResults(data) {
+      cachedScanResults = data; // Cache data
+      const tbody = document.getElementById("results-table-body");
+      tbody.innerHTML = "";
+
+      // Ensure visibility of the SECTION
+      document.getElementById("analysis-section").style.display = "flex";
+
+      if (!data || data.length === 0) {
+        tbody.innerHTML =
+          "<tr><td colspan='3' class='text-muted text-center py-3'>Nenhum resultado.</td></tr>";
+        return;
+      }
+
+      data.forEach((row, i) => {
+        const isWin = row.total_return > 0;
+        const colorClass = isWin ? "text-green" : "text-red";
+        const retPct = (row.total_return * 100).toFixed(2) + "%";
+
+        const tr = document.createElement("tr");
+        // Passa os parametros otimizados para a funcao de selecao
+        tr.onclick = () => selectScannedAsset(row.symbol, row.params);
+
+        // Logo Logic
+        const logoUrl = `https://raw.githubusercontent.com/thefintz/icones-b3/main/icones/${row.symbol}.png`;
+
+        tr.innerHTML = `
                   <td style="padding-left: 12px;">
                       <div class="asset-col">
                           <span class="rank-badge">${i + 1}</span>
@@ -2598,256 +2381,257 @@
                       <span class="text-secondary small">${(row.win_rate * 100).toFixed(0)}%</span>
                   </td>
               `;
-          tbody.appendChild(tr);
-        });
-
-        // Auto-Select First Result (Champion)
-        if (data.length > 0) {
-          selectScannedAsset(data[0].symbol, data[0].params);
-        }
-      }
-
-      function selectScannedAsset(symbol, params = null) {
-        // Close modal if open
-        if (scannerModalInstance) scannerModalInstance.hide();
-
-        // 1. Update Input
-        document.getElementById("ticker-input").value = symbol;
-        SYMBOL = symbol;
-
-        // 2. Override Params if provided (Fix Discrepancy)
-        if (params) {
-          // Se veio do scanner, usamos os parâmetros QUE GERARAM aquele resultado.
-          document.getElementById("smaShort").value = params.short;
-          document.getElementById("smaLong").value = params.long;
-
-          // Importante: Desativamos a otimização automática para rodar com ESSES parâmetros fixos
-          // Caso contrário, o backtest rodaria a otimização de novo e poderia achar outros valores.
-          document.getElementById("optimizeCheck").checked = false;
-          toggleOptimizeInputs(); // Visual update
-          logStatus(
-            `Carregando ${symbol} com parâmetros Otimizados (${params.short}/${params.long})...`,
-          );
-        } else {
-          // Se não tem parametros (clique normal), mantem o estado atual
-          logStatus(`Carregando ${symbol}...`);
-        }
-
-        // 3. Trigger Change Logic
-        changeSymbol();
-
-        // 4. Force Run Backtest immediately
-        setTimeout(runBacktest, 500);
-      }
-
-      function changeSymbol() {
-        SYMBOL = document.getElementById("ticker-input").value;
-
-        // Update Icon System
-        updateAssetIcon(SYMBOL);
-
-        // Reset Logic
-        candleSeries.setMarkers([]);
-
-        // Trigger Reload
-        loadHistory();
-      }
-
-      // Bind Enter Key to Search
-      document.addEventListener("DOMContentLoaded", function () {
-        const input = document.getElementById("ticker-input");
-        if (input) {
-          input.addEventListener("keypress", function (event) {
-            if (event.key === "Enter") {
-              event.preventDefault();
-              document.getElementById("search-btn").click();
-            }
-          });
-        }
+        tbody.appendChild(tr);
       });
 
-      // Auto-run scanner sidebar rendering if cache exists (on page logic if needed, but cache is volatile)
+      // Auto-Select First Result (Champion)
+      if (data.length > 0) {
+        selectScannedAsset(data[0].symbol, data[0].params);
+      }
+    }
 
-      window.onload = init;
-    </script>
-    <script>
-      /* --- Custom Dropdown Logic --- */
+    function selectScannedAsset(symbol, params = null) {
+      // Close modal if open
+      if (scannerModalInstance) scannerModalInstance.hide();
 
-      // Toggle dropdown visibility
-      function toggleDropdown(id) {
-        // Close all other dropdowns first
-        const allDropdowns = document.querySelectorAll(".custom-dropdown");
-        allDropdowns.forEach((dd) => {
-          if (dd.id !== id) dd.classList.remove("active");
-        });
+      // 1. Update Input
+      document.getElementById("ticker-input").value = symbol;
+      SYMBOL = symbol;
 
-        const dropdown = document.getElementById(id);
-        dropdown.classList.toggle("active");
+      // 2. Override Params if provided (Fix Discrepancy)
+      if (params) {
+        // Se veio do scanner, usamos os parâmetros QUE GERARAM aquele resultado.
+        document.getElementById("smaShort").value = params.short;
+        document.getElementById("smaLong").value = params.long;
+
+        // Importante: Desativamos a otimização automática para rodar com ESSES parâmetros fixos
+        // Caso contrário, o backtest rodaria a otimização de novo e poderia achar outros valores.
+        document.getElementById("optimizeCheck").checked = false;
+        toggleOptimizeInputs(); // Visual update
+        logStatus(
+          `Carregando ${symbol} com parâmetros Otimizados (${params.short}/${params.long})...`,
+        );
+      } else {
+        // Se não tem parametros (clique normal), mantem o estado atual
+        logStatus(`Carregando ${symbol}...`);
       }
 
-      // Handle option selection
-      function selectOption(type, value, label) {
-        if (type === "tf") {
-          document.getElementById("tf-value").textContent = label || value;
-          document.getElementById("tf-value").setAttribute("data-value", value);
+      // 3. Trigger Change Logic
+      changeSymbol();
 
-          // Validate TF options styling
-          document
-            .querySelectorAll("#tf-options .dropdown-item")
-            .forEach((item) => {
-              item.classList.remove("selected");
-              if (item.textContent === (label || value))
-                item.classList.add("selected");
-            });
+      // 4. Force Run Backtest immediately
+      setTimeout(runBacktest, 500);
+    }
 
-          // Trigger Update
-          changeTimeframe(value);
-        } else if (type === "candles") {
-          document.getElementById("candles-value").textContent = label;
-          document
-            .getElementById("candles-value")
-            .setAttribute("data-value", value);
+    function changeSymbol() {
+      SYMBOL = document.getElementById("ticker-input").value;
 
-          document
-            .querySelectorAll("#candles-dropdown .dropdown-item")
-            .forEach((item) => {
-              item.classList.remove("selected");
-              if (item.textContent === label) item.classList.add("selected");
-            });
+      // Update Icon System
+      updateAssetIcon(SYMBOL);
 
-          // Trigger Update
-          changeCandleCount(value);
-        }
+      // Reset Logic
+      candleSeries.setMarkers([]);
 
-        // Close dropdown
-        const parentId = type === "tf" ? "tf-dropdown" : "candles-dropdown";
-        document.getElementById(parentId).classList.remove("active");
-      }
+      // Trigger Reload
+      loadHistory();
+    }
 
-      // Close dropdowns when clicking outside
-      window.addEventListener("click", function (e) {
-        if (!e.target.closest(".custom-dropdown")) {
-          document.querySelectorAll(".custom-dropdown").forEach((dd) => {
-            dd.classList.remove("active");
-          });
-        }
-      });
-
-      // Populate Timeframes (Override existing populate)
-      // We will perform this ON LOADER or Initialization
-      function populateCustomTimeframes() {
-        const timeframes = ["M1", "M5", "M15", "M30", "H1", "H4", "D1"];
-        const container = document.getElementById("tf-options");
-        container.innerHTML = ""; // Clear
-
-        timeframes.forEach((tf) => {
-          const item = document.createElement("div");
-          item.className = "dropdown-item";
-          if (tf === "H1") item.classList.add("selected"); // Default now H1
-          item.textContent = tf;
-          item.onclick = () => selectOption("tf", tf, tf);
-          container.appendChild(item);
-        });
-      }
-
-      // Initialize Dropdowns
-      document.addEventListener("DOMContentLoaded", () => {
-        populateCustomTimeframes();
-      });
-
-      // ADAPT EXISTING FUNCTIONS to use new values
-      // Override the old getters if necessary, or just update the handlers.
-      // Since we changed the HTML, `document.getElementById('timeframeSelect').value` will fail in existing code if we don't fix it.
-      // Let's create helper functions that act as the old selectors
-
-      function getTimeframeValue() {
-        const el = document.getElementById("tf-value");
-        return el ? el.getAttribute("data-value") : "H1";
-      }
-
-      function getCandleValue() {
-        const el = document.getElementById("candles-value");
-        return el ? el.getAttribute("data-value") : "1000";
-      }
-
-      /* --- Monitor Button Logic --- */
-      const monitorBtnEl = () => document.getElementById("btn-monitor-toggle");
-      let monitorRunning = false;
-
-      function applyMonitorState(running) {
-        monitorRunning = !!running;
-        const btn = monitorBtnEl();
-        if (!btn) return;
-        if (monitorRunning) {
-          btn.classList.add("active");
-          btn.querySelector(".monitor-label").textContent = " Parar Monitor";
-        } else {
-          btn.classList.remove("active");
-          btn.querySelector(".monitor-label").textContent = " Ativar Monitor";
-        }
-      }
-
-      async function fetchBotStatus() {
-        try {
-          const res = await fetch("/api/bot/status");
-          if (!res.ok) throw new Error("Falha ao obter status");
-          const json = await res.json();
-          applyMonitorState(json.running);
-          if (json.running) {
-            logStatus("Monitor Telegram: Ativo (carregado)", "neutral");
-            showToast("Monitor ativado", { bg: "#10b981" });
+    // Bind Enter Key to Search
+    document.addEventListener("DOMContentLoaded", function () {
+      const input = document.getElementById("ticker-input");
+      if (input) {
+        input.addEventListener("keypress", function (event) {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            document.getElementById("search-btn").click();
           }
-        } catch (err) {
-          console.error("Erro ao obter status do bot:", err);
+        });
+      }
+    });
+
+    // Auto-run scanner sidebar rendering if cache exists (on page logic if needed, but cache is volatile)
+
+    window.onload = init;
+  </script>
+  <script>
+    /* --- Custom Dropdown Logic --- */
+
+    // Toggle dropdown visibility
+    function toggleDropdown(id) {
+      // Close all other dropdowns first
+      const allDropdowns = document.querySelectorAll(".custom-dropdown");
+      allDropdowns.forEach((dd) => {
+        if (dd.id !== id) dd.classList.remove("active");
+      });
+
+      const dropdown = document.getElementById(id);
+      dropdown.classList.toggle("active");
+    }
+
+    // Handle option selection
+    function selectOption(type, value, label) {
+      if (type === "tf") {
+        document.getElementById("tf-value").textContent = label || value;
+        document.getElementById("tf-value").setAttribute("data-value", value);
+
+        // Validate TF options styling
+        document
+          .querySelectorAll("#tf-options .dropdown-item")
+          .forEach((item) => {
+            item.classList.remove("selected");
+            if (item.textContent === (label || value))
+              item.classList.add("selected");
+          });
+
+        // Trigger Update
+        changeTimeframe(value);
+      } else if (type === "candles") {
+        document.getElementById("candles-value").textContent = label;
+        document
+          .getElementById("candles-value")
+          .setAttribute("data-value", value);
+
+        document
+          .querySelectorAll("#candles-dropdown .dropdown-item")
+          .forEach((item) => {
+            item.classList.remove("selected");
+            if (item.textContent === label) item.classList.add("selected");
+          });
+
+        // Trigger Update
+        changeCandleCount(value);
+      }
+
+      // Close dropdown
+      const parentId = type === "tf" ? "tf-dropdown" : "candles-dropdown";
+      document.getElementById(parentId).classList.remove("active");
+    }
+
+    // Close dropdowns when clicking outside
+    window.addEventListener("click", function (e) {
+      if (!e.target.closest(".custom-dropdown")) {
+        document.querySelectorAll(".custom-dropdown").forEach((dd) => {
+          dd.classList.remove("active");
+        });
+      }
+    });
+
+    // Populate Timeframes (Override existing populate)
+    // We will perform this ON LOADER or Initialization
+    function populateCustomTimeframes() {
+      const timeframes = ["M1", "M5", "M15", "M30", "H1", "H4", "D1"];
+      const container = document.getElementById("tf-options");
+      container.innerHTML = ""; // Clear
+
+      timeframes.forEach((tf) => {
+        const item = document.createElement("div");
+        item.className = "dropdown-item";
+        if (tf === "H1") item.classList.add("selected"); // Default now H1
+        item.textContent = tf;
+        item.onclick = () => selectOption("tf", tf, tf);
+        container.appendChild(item);
+      });
+    }
+
+    // Initialize Dropdowns
+    document.addEventListener("DOMContentLoaded", () => {
+      populateCustomTimeframes();
+    });
+
+    // ADAPT EXISTING FUNCTIONS to use new values
+    // Override the old getters if necessary, or just update the handlers.
+    // Since we changed the HTML, `document.getElementById('timeframeSelect').value` will fail in existing code if we don't fix it.
+    // Let's create helper functions that act as the old selectors
+
+    function getTimeframeValue() {
+      const el = document.getElementById("tf-value");
+      return el ? el.getAttribute("data-value") : "H1";
+    }
+
+    function getCandleValue() {
+      const el = document.getElementById("candles-value");
+      return el ? el.getAttribute("data-value") : "1000";
+    }
+
+    /* --- Monitor Button Logic --- */
+    const monitorBtnEl = () => document.getElementById("btn-monitor-toggle");
+    let monitorRunning = false;
+
+    function applyMonitorState(running) {
+      monitorRunning = !!running;
+      const btn = monitorBtnEl();
+      if (!btn) return;
+      if (monitorRunning) {
+        btn.classList.add("active");
+        btn.querySelector(".monitor-label").textContent = " Parar Monitor";
+      } else {
+        btn.classList.remove("active");
+        btn.querySelector(".monitor-label").textContent = " Ativar Monitor";
+      }
+    }
+
+    async function fetchBotStatus() {
+      try {
+        const res = await fetch("/api/bot/status");
+        if (!res.ok) throw new Error("Falha ao obter status");
+        const json = await res.json();
+        applyMonitorState(json.running);
+        if (json.running) {
+          logStatus("Monitor Telegram: Ativo (carregado)", "neutral");
+          showToast("Monitor ativado", { bg: "#10b981" });
+        }
+      } catch (err) {
+        console.error("Erro ao obter status do bot:", err);
+        applyMonitorState(false);
+      }
+    }
+
+    async function onMonitorClick(e) {
+      const btn = monitorBtnEl();
+      if (!btn) return;
+      try {
+        btn.disabled = true;
+        if (!monitorRunning) {
+          const res = await fetch("/api/bot/start", { method: "POST" });
+          if (!res.ok) throw new Error("Start failed");
+          applyMonitorState(true);
+          logStatus("Monitor Telegram: Iniciado (via UI)", "neutral");
+          showToast("Monitor ativado", { bg: "#10b981" });
+        } else {
+          const res = await fetch("/api/bot/stop", { method: "POST" });
+          if (!res.ok) throw new Error("Stop failed");
           applyMonitorState(false);
+          logStatus("Monitor Telegram: Pausado (via UI)", "neutral");
+          showToast("Monitor pausado", { bg: "#6c757d" });
         }
+      } catch (err) {
+        console.error("Erro ao alternar bot:", err);
+        applyMonitorState(!monitorRunning);
+      } finally {
+        const b = monitorBtnEl();
+        if (b) b.disabled = false;
       }
+    }
 
-      async function onMonitorClick(e) {
-        const btn = monitorBtnEl();
-        if (!btn) return;
-        try {
-          btn.disabled = true;
-          if (!monitorRunning) {
-            const res = await fetch("/api/bot/start", { method: "POST" });
-            if (!res.ok) throw new Error("Start failed");
-            applyMonitorState(true);
-            logStatus("Monitor Telegram: Iniciado (via UI)", "neutral");
-            showToast("Monitor ativado", { bg: "#10b981" });
-          } else {
-            const res = await fetch("/api/bot/stop", { method: "POST" });
-            if (!res.ok) throw new Error("Stop failed");
-            applyMonitorState(false);
-            logStatus("Monitor Telegram: Pausado (via UI)", "neutral");
-            showToast("Monitor pausado", { bg: "#6c757d" });
-          }
-        } catch (err) {
-          console.error("Erro ao alternar bot:", err);
-          applyMonitorState(!monitorRunning);
-        } finally {
-          const b = monitorBtnEl();
-          if (b) b.disabled = false;
-        }
-      }
+    // Bind button after DOM ready
+    document.addEventListener("DOMContentLoaded", () => {
+      const btn = monitorBtnEl();
+      if (!btn) return;
+      btn.addEventListener("click", onMonitorClick);
+      fetchBotStatus();
+    });
 
-      // Bind button after DOM ready
-      document.addEventListener("DOMContentLoaded", () => {
-        const btn = monitorBtnEl();
-        if (!btn) return;
-        btn.addEventListener("click", onMonitorClick);
-        fetchBotStatus();
-      });
+    // BRIDGE FUNCTIONS
+    function changeTimeframe(val) {
+      console.log("Timeframe changed to:", val);
+      loadHistory(); // Trigger Full Reload
+    }
 
-      // BRIDGE FUNCTIONS
-      function changeTimeframe(val) {
-        console.log("Timeframe changed to:", val);
-        loadHistory(); // Trigger Full Reload
-      }
+    function changeCandleCount(val) {
+      console.log("Candle count changed to:", val);
+      loadHistory(); // Trigger Full Reload
+    }
+  </script>
+</body>
 
-      function changeCandleCount(val) {
-        console.log("Candle count changed to:", val);
-        loadHistory(); // Trigger Full Reload
-      }
-    </script>
-  </body>
 </html>
