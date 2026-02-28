@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -121,8 +122,45 @@
             transform: scale(0.98);
         }
 
+        /* Footer */
+        .landing-footer {
+            position: fixed;
+            bottom: 25px;
+            width: 100%;
+            text-align: center;
+            font-size: 0.70rem;
+            color: rgba(255, 255, 255, 0.95);
+            z-index: 10;
+            font-weight: 500;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            animation: floatUp 1s ease-out forwards;
+            animation-delay: 0.5s;
+            opacity: 0;
+            letter-spacing: 0.5px;
+            text-shadow: 1px 1px 4px rgba(0, 0, 0, 1), 0 0 15px rgba(0, 0, 0, 1);
+        }
+
+        .landing-footer span.highlight {
+            color: #00E396;
+            font-weight: 700;
+        }
+
+        .landing-footer a {
+            color: #00E396;
+            text-decoration: none;
+            font-weight: 700;
+            transition: all 0.3s ease;
+        }
+
+        .landing-footer a:hover {
+            color: #00ffaf;
+            text-shadow: 0 0 12px rgba(0, 227, 150, 0.8);
+        }
     </style>
 </head>
+
 <body>
 
     <canvas id="fintech-canvas"></canvas>
@@ -132,11 +170,17 @@
             <span class="text-white">FIN</span><span class="text-neon">SENSE</span>
         </h1>
         <div class="brand-sub">STRATEGY SYSTEM</div>
-        
+
         <a href="/dashboard" class="btn-fintech">
             ACESSAR TERMINAL
         </a>
     </div>
+
+    <!-- Footer Copyright -->
+    <footer class="landing-footer">
+        <div>&copy; 2026 <span class="highlight">FinSense</span>. Todos os direitos reservados.</div>
+        <div>Desenvolvido por <a href="#" target="_blank">Eurico Júnior</a></div>
+    </footer>
 
     <script>
         const canvas = document.getElementById('fintech-canvas');
@@ -151,9 +195,9 @@
 
         // Configuração da Chuva
         // APENAS NÚMEROS conforme solicitado
-        const chars = "0123456789"; 
+        const chars = "0123456789";
         const charArray = chars.split("");
-        
+
         const fontSize = 14;
         let columns = canvas.width / fontSize;
         let drops = [];
@@ -179,9 +223,9 @@
                 // Aleatoriedade no brilho
                 const isBright = Math.random() > 0.95;
                 ctx.fillStyle = isBright ? "#fff" : "#00E396"; // Branco ou Verde Neon
-                
+
                 const text = charArray[Math.floor(Math.random() * charArray.length)];
-                
+
                 ctx.fillText(text, i * fontSize, drops[i] * fontSize);
 
                 // Reset aleatório
@@ -190,9 +234,9 @@
                 }
 
                 // Velocidade variável para profundidade
-                drops[i] += 0.5 + Math.random() * 0.5; 
+                drops[i] += 0.5 + Math.random() * 0.5;
             }
-            
+
             requestAnimationFrame(draw);
         }
 
@@ -201,4 +245,5 @@
 
     </script>
 </body>
+
 </html>
