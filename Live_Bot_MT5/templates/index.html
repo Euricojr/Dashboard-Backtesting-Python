@@ -491,6 +491,24 @@
       color: #fff;
     }
 
+    .btn-telegram-link {
+      background: linear-gradient(135deg, #0088cc, #005a9e) !important;
+      border: 1px solid #0088cc !important;
+      color: #ffffff !important;
+      box-shadow: 0 4px 12px rgba(0, 136, 204, 0.4) !important;
+      font-weight: 700;
+      transition: all 0.3s ease;
+    }
+
+    .btn-telegram-link:hover,
+    .btn-telegram-link:focus,
+    .btn-telegram-link:active {
+      background: linear-gradient(135deg, #005a9e, #004080) !important;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 136, 204, 0.6) !important;
+      color: #ffffff !important;
+    }
+
     /* Monitor toggle active state (make button green when active) */
     #btn-monitor-toggle.active {
       background: linear-gradient(135deg, #10b981, #059669) !important;
@@ -1326,9 +1344,20 @@
                     </button>
 
                     <!-- Monitor Toggle Button (placed under actions) -->
-                    <button id="btn-monitor-toggle" class="btn btn-outline-secondary w-100 mb-3" type="button">
+                    <button id="btn-monitor-toggle" class="btn btn-outline-secondary w-100 mb-2" type="button">
                       <span class="monitor-label"> Ativar Monitor</span>
                     </button>
+
+                    <!-- Telegram Link Button -->
+                    <a href="https://t.me/AlertaOperacoes_bot" target="_blank" class="btn w-100 mb-0 btn-telegram-link">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-telegram me-2"
+                        width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                        <path d="M15 10l-4 4l6 6l4 -16l-18 7l4 2l2 6l3 -4"></path>
+                      </svg>
+                      Alerta Operações Bot
+                    </a>
                   </div>
                 </div>
               </div>
