@@ -1641,6 +1641,18 @@
         timeVisible: true,
         secondsVisible: false,
         borderColor: "#27272a",
+        tickMarkFormatter: (time, tickMarkType, locale) => {
+          const date = new Date(time * 1000);
+          const hours = date.getUTCHours().toString().padStart(2, '0');
+          const minutes = date.getUTCMinutes().toString().padStart(2, '0');
+          const day = date.getUTCDate().toString().padStart(2, '0');
+          const mo = (date.getUTCMonth() + 1).toString().padStart(2, '0');
+
+          if (tickMarkType === LightweightCharts.TickMarkType.Year || tickMarkType === LightweightCharts.TickMarkType.Month) {
+            return `${day}/${mo}`;
+          }
+          return `${hours}:${minutes}`;
+        }
       },
       rightPriceScale: {
         borderColor: "#27272a",
@@ -1648,6 +1660,17 @@
           top: 0.1,
           bottom: 0.1,
         },
+      },
+      localization: {
+        timeFormatter: time => {
+          const date = new Date(time * 1000);
+          const hours = date.getUTCHours().toString().padStart(2, '0');
+          const minutes = date.getUTCMinutes().toString().padStart(2, '0');
+          const day = date.getUTCDate().toString().padStart(2, '0');
+          const mo = (date.getUTCMonth() + 1).toString().padStart(2, '0');
+          const yr = date.getUTCFullYear().toString().substring(2);
+          return `${day}/${mo}/${yr} ${hours}:${minutes}`;
+        }
       },
     });
 
@@ -1832,14 +1855,8 @@
           title: "SMA Long",
         });
 
-        // Shift time for chart
-        const formattedData = data.map(c => ({
-          ...c,
-          time: applyTzOffset(c.time)
-        }));
-
         // 3. Set Data
-        candleSeries.setData(formattedData);
+        candleSeries.setData(data);
 
         // 4. Force Scale Reset (Critical)
         chart.priceScale("right").applyOptions({
@@ -1894,9 +1911,8 @@
 
         // Critical: Update Chart Candles if backtest returned fresh data (Syncs Scale)
         if (data.candles) {
-          const brokerTimezoneOffset = new Date().getTimezoneOffset() * 60;
           const candleData = data.candles.map((c) => ({
-            time: c.time + brokerTimezoneOffset,
+            time: c.time,
             open: c.open,
             high: c.high,
             low: c.low,
@@ -1947,9 +1963,9 @@
           chart.timeScale().applyOptions({ rightOffset: 5 });
         }
 
-        candleSeries.setMarkers(data.markers.map(m => ({ ...m, time: applyTzOffset(m.time) })));
-        smaShortSeries.setData(data.sma_short.map(s => ({ ...s, time: applyTzOffset(s.time) })));
-        smaLongSeries.setData(data.sma_long.map(s => ({ ...s, time: applyTzOffset(s.time) })));
+        candleSeries.setMarkers(data.markers);
+        smaShortSeries.setData(data.sma_short);
+        smaLongSeries.setData(data.sma_long);
 
         // Enable Live Updates for SMA
         isStrategyActive = true;
@@ -2126,12 +2142,7 @@
       tbody.innerHTML = rowsHtml;
     }
 
-    // Add timezone offset helper to shift timestamps
-    function applyTzOffset(ts) {
-      if (!ts) return ts;
-      const offset = new Date().getTimezoneOffset() * 60;
-      return ts + offset;
-    }
+    // applyTzOffset removed as it causes shifts due to OS timezone issues.
 
     async function updateLive() {
       const tf = getTimeframeValue();
@@ -2153,8 +2164,8 @@
         const raw_candle = data.candle;
         const raw_sma = data.sma;
 
-        const candle = { ...raw_candle, time: applyTzOffset(raw_candle.time) };
-        const sma = { ...raw_sma, time: raw_sma ? applyTzOffset(raw_sma.time) : null };
+        const candle = raw_candle;
+        const sma = raw_sma;
 
         // 1. Atualiza Candle (Preço em Tempo Real)
         if (candleSeries) {
