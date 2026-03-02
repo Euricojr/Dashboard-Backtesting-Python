@@ -22,7 +22,7 @@ class TelegramNotifier:
             "parse_mode": "Markdown",
             "reply_markup": {
                 "keyboard": [
-                    [{"text": "📊 Status"}],
+                    [{"text": "📊 Status"}, {"text": "📊 Resumo Diário"}],
                     [{"text": "🟢 Ligar Robô"}, {"text": "🔴 Desligar Robô"}]
                 ],
                 "resize_keyboard": True
@@ -41,7 +41,7 @@ class TelegramNotifier:
             print(f"❌ Erro de conexão com Telegram: {e}")
             return False
 
-    def start_listener(self, status_callback=None, toggle_callback=None):
+    def start_listener(self, status_callback=None, toggle_callback=None, summary_callback=None):
         """Inicia uma thread para ouvir comandos do Telegram (como /start)"""
         if not self.token:
             print("❌ Listener do Telegram cancelado: TOKEN não encontrado.")
@@ -83,6 +83,13 @@ class TelegramNotifier:
                                     else:
                                         status_text = "Estado do sistema não configurado."
                                     self.enviar_mensagem(status_text, target_chat_id=chat_id)
+                                    
+                                elif text in ('/resumo', '📊 Resumo Diário') and chat_id:
+                                    if summary_callback:
+                                        summary_text = summary_callback()
+                                    else:
+                                        summary_text = "Resumo indisponível."
+                                    self.enviar_mensagem(summary_text, target_chat_id=chat_id)
                                     
                                 elif text == '🟢 Ligar Robô' and chat_id:
                                     if toggle_callback:

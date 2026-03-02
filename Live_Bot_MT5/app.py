@@ -107,22 +107,125 @@ load_alerts_state()
 global_notifier = TelegramNotifier(token=TELEGRAM_TOKEN, chat_id=TELEGRAM_CHAT_ID)
 
 def get_bot_status_text():
-    global BOT_RUNNING, TOTAL_ALERTS, ALERTS_PER_ASSET
+    global BOT_RUNNING, SENT_ALERTS_TODAY
     status = "🟢 *ONLINE*" if BOT_RUNNING else "🔴 *OFFLINE*"
+    
+    hoje_str = datetime.now().strftime('%Y-%m-%d')
+    alertas_hoje = []
+    
+    for asset, info in SENT_ALERTS_TODAY.items():
+        if isinstance(info, dict) and info.get("data") == hoje_str:
+            alertas_hoje.append(asset)
+        elif isinstance(info, str) and info == hoje_str:
+            alertas_hoje.append(asset)
+            
+    total_hoje = len(alertas_hoje)
     
     text = f"📊 *Status do Sistema*\n\n"
     text += f"Status: {status}\n"
-    text += f"Total de Alertas: {TOTAL_ALERTS}\n\n"
+    text += f"Total de Alertas Hoje: {total_hoje}\n\n"
     
-    if ALERTS_PER_ASSET:
-        text += "*Alertas por Ativo:*\n"
-        sorted_alerts = sorted(ALERTS_PER_ASSET.items(), key=lambda x: x[1], reverse=True)
-        for asset, count in sorted_alerts:
-            text += f"▫️ {asset}: {count}\n"
+    if total_hoje > 0:
+        text += "*Ativos Alertados Hoje:*\n"
+        for asset in alertas_hoje:
+            text += f"▫️ {asset}\n"
     else:
-        text += "Nenhum alerta enviado ainda."
+        text += "Nenhum alerta enviado hoje."
         
     return text
+
+def gerar_resumo_diario_ativo():
+    """
+    Realiza um Scanner Ativo de Fim de Dia:
+    Varre todos os ativos, puxa os candles de hoje e verifica 
+    se houve algum cruzamento de médias independentemente do JSON.
+    """
+    print("🔄 [Scanner] Iniciando Varredura Ativa para o Resumo Diário...")
+    
+    # 1. Garante que o MT5 está conectado
+    ensure_mt5_connected()
+    
+    # 2. Carrega a lista de ativos
+    from utils.asset_filter import load_clean_assets
+    assets_data = load_clean_assets()
+    if isinstance(assets_data, dict):
+        assets = assets_data.get("Indices", []) + assets_data.get("Acoes", [])
+    else:
+        assets = assets_data
+        
+    mt5_tf = TIMEFRAMES.get(MONITOR_TIMEFRAME, mt5.TIMEFRAME_M5)
+    start_hoje = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    
+    compras_hoje = []
+    vendas_hoje = []
+    
+    for symbol in assets:
+        try:
+            rates = mt5.copy_rates_from_pos(symbol, mt5_tf, 0, 100)
+            if rates is None or len(rates) < 55:
+                continue
+                
+            df = pd.DataFrame(rates)
+            df['time'] = pd.to_datetime(df['time'], unit='s')
+            
+            df['SMA_Short'] = df['close'].rolling(window=20).mean()
+            df['SMA_Long'] = df['close'].rolling(window=50).mean()
+            
+            df_hoje = df[df['time'] >= start_hoje]
+            if df_hoje.empty or len(df_hoje) < 2:
+                continue
+                
+            ultimo_cruzamento = None
+            hora_cruzamento = None
+            
+            for i in range(1, len(df_hoje)):
+                idx_current = df_hoje.index[i]
+                idx_prev = df_hoje.index[i-1]
+                
+                c_short = df.loc[idx_current, 'SMA_Short']
+                c_long = df.loc[idx_current, 'SMA_Long']
+                p_short = df.loc[idx_prev, 'SMA_Short']
+                p_long = df.loc[idx_prev, 'SMA_Long']
+                
+                if pd.isna(c_short) or pd.isna(c_long):
+                    continue
+                    
+                if p_short <= p_long and c_short > c_long:
+                    ultimo_cruzamento = "COMPRA"
+                    hora_cruzamento = df.loc[idx_current, 'time'].strftime('%H:%M')
+                elif p_short >= p_long and c_short < c_long:
+                    ultimo_cruzamento = "VENDA"
+                    hora_cruzamento = df.loc[idx_current, 'time'].strftime('%H:%M')
+                    
+            if ultimo_cruzamento == "COMPRA":
+                compras_hoje.append(f"🔹 {symbol} - COMPRA (às {hora_cruzamento})")
+            elif ultimo_cruzamento == "VENDA":
+                vendas_hoje.append(f"🔹 {symbol} - VENDA (às {hora_cruzamento})")
+                
+        except Exception as e:
+            pass
+            
+    # 3. Formatação da Mensagem
+    total = len(compras_hoje) + len(vendas_hoje)
+    
+    if total == 0:
+        return "Nenhum cruzamento de médias foi detectado no mercado hoje."
+        
+    final_text = (
+        f"📊 *Scanner de Fim de Dia (Hoje):*\n"
+        f"O mercado apresentou os seguintes cruzamentos hoje:\n\n"
+    )
+    
+    if compras_hoje:
+        final_text += "🟢 *COMPRAS (Golden Cross):*\n"
+        final_text += "\n".join(compras_hoje) + "\n\n"
+        
+    if vendas_hoje:
+        final_text += "🔴 *VENDAS (Death Cross):*\n"
+        final_text += "\n".join(vendas_hoje) + "\n"
+        
+    print("✅ [Scanner] Resumo Diário gerado com sucesso!")
+    return final_text
 
 def toggle_bot_from_telegram(turn_on: bool):
     global BOT_RUNNING, BOT_START_TIME, TOTAL_ALERTS, ALERTS_PER_ASSET
@@ -131,7 +234,7 @@ def toggle_bot_from_telegram(turn_on: bool):
             return "O robô já está 🟢 LIGADO."
         BOT_RUNNING = True
         BOT_START_TIME = datetime.now()
-        TOTAL_ALERTS = 0
+        TOTAL_ALERTS = 0 # Mantendo para não quebrar compatibilidade
         ALERTS_PER_ASSET.clear()
         return "▶️ O robô foi 🟢 LIGADO pelo Telegram e começou a monitorar os ativos."
     else:
@@ -143,8 +246,102 @@ def toggle_bot_from_telegram(turn_on: bool):
 
 # Inicia o Listener de Comandos (/start) apenas no processo principal (não no reloader inicial)
 if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
-    global_notifier.start_listener(status_callback=get_bot_status_text, toggle_callback=toggle_bot_from_telegram)
+    global_notifier.start_listener(
+        status_callback=get_bot_status_text, 
+        toggle_callback=toggle_bot_from_telegram,
+        summary_callback=gerar_resumo_diario_ativo
+    )
 
+def sincronizar_historico_hoje():
+    """
+    Roda UMA VEZ ao ligar o bot para buscar no histórico do MT5 se houve algum
+    cruzamento MAIS CEDO NO MESMO DIA (hoje). Se sim, registra silenciosamente
+    no JSON de persistência para evitar flood ao usuário.
+    """
+    global SENT_ALERTS_TODAY
+    
+    print("🔄 [Catch-Up] Sincronizando histórico de hoje para evitar alertas repetidos...")
+    hoje_str = datetime.now().strftime('%Y-%m-%d')
+    start_hoje = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    
+    from utils.asset_filter import load_clean_assets
+    assets_data = load_clean_assets()
+    if isinstance(assets_data, dict):
+        assets = assets_data.get("Indices", []) + assets_data.get("Acoes", [])
+    else:
+        assets = assets_data
+        
+    mt5_tf = TIMEFRAMES.get(MONITOR_TIMEFRAME, mt5.TIMEFRAME_M5)
+    sinal_encontrado_count = 0
+    
+    for symbol in assets:
+        try:
+            # Puxa candles suficientes para cruzar médias (ex: 100)
+            rates = mt5.copy_rates_from_pos(symbol, mt5_tf, 0, 100)
+            if rates is None or len(rates) < 55:
+                continue
+                
+            df = pd.DataFrame(rates)
+            df['time'] = pd.to_datetime(df['time'], unit='s')
+            
+            df['SMA_Short'] = df['close'].rolling(window=20).mean()
+            df['SMA_Long'] = df['close'].rolling(window=50).mean()
+            
+            # Precisamos iterar sobre os candles apenas do DIA DE HOJE
+            # Para não enviar sinais antigos da semana passada "retroativamente pra hoje"
+            df_hoje = df[df['time'] >= start_hoje]
+            if df_hoje.empty or len(df_hoje) < 2:
+                continue
+                
+            ultimo_cruzamento = None
+            hora_cruzamento = None
+            
+            # Procura pelo ÚLTIMO cruzamento que ocorreu HOJE
+            for i in range(1, len(df_hoje)):
+                idx_current = df_hoje.index[i]
+                idx_prev = df_hoje.index[i-1]
+                
+                c_short = df.loc[idx_current, 'SMA_Short']
+                c_long = df.loc[idx_current, 'SMA_Long']
+                p_short = df.loc[idx_prev, 'SMA_Short']
+                p_long = df.loc[idx_prev, 'SMA_Long']
+                
+                if pd.isna(c_short) or pd.isna(c_long):
+                    continue
+                    
+                if p_short <= p_long and c_short > c_long:
+                    ultimo_cruzamento = "COMPRA"
+                    hora_cruzamento = df.loc[idx_current, 'time'].strftime('%H:%M')
+                elif p_short >= p_long and c_short < c_long:
+                    ultimo_cruzamento = "VENDA"
+                    hora_cruzamento = df.loc[idx_current, 'time'].strftime('%H:%M')
+                    
+            if ultimo_cruzamento:
+                # Verifica se JÁ NÃO ESTAVA no JSON para não sobrescrever a hora atoa
+                ja_alertado = False
+                info = SENT_ALERTS_TODAY.get(symbol)
+                if isinstance(info, dict) and info.get("data") == hoje_str:
+                    ja_alertado = True
+                elif isinstance(info, str) and info == hoje_str:
+                    ja_alertado = True
+                    
+                if not ja_alertado:
+                    SENT_ALERTS_TODAY[symbol] = {
+                        "data": hoje_str,
+                        "hora": hora_cruzamento,
+                        "sinal": ultimo_cruzamento
+                    }
+                    LAST_SIGNAL_STATE[symbol] = 1 if ultimo_cruzamento == "COMPRA" else -1
+                    sinal_encontrado_count += 1
+                    
+        except Exception as e:
+            pass # Erros individuais blindados no loop de sync
+            
+    if sinal_encontrado_count > 0:
+        save_alerts_state()
+        print(f"✅ [Catch-Up] {sinal_encontrado_count} cruzamentos passados de hoje encontrados e salvos silenciosamente.")
+    else:
+        print("✅ [Catch-Up] Nenhum cruzamento perdido no histórico de hoje.")
 
 def run_telegram_monitor():
     """
@@ -168,6 +365,9 @@ def run_telegram_monitor():
             print(f"⚠️ [Monitor] MT5 não conectado: {err}. Tentando novamente em 5s...")
             time.sleep(5)
             continue
+            
+        # Sincroniza retroativamente os cruzamentos esquecidos de hoje CADA VEZ que liga
+        sincronizar_historico_hoje()
 
         print(f"🚀 [Monitor] Iniciando Thread de Monitoramento para TODOS os ativos...")
         print(f"⏰ Timeframe: {MONITOR_TIMEFRAME} | Delay entre ativos: 0.1s | Ciclo: 60s")
@@ -251,7 +451,13 @@ def run_telegram_monitor():
                                 continue
                                 
                             # Se já mandamos hoje para esse ticker na mesma data, ignora
-                            if ultimo_alerta_data == hoje_str:
+                            is_already_sent = False
+                            if isinstance(ultimo_alerta_data, str) and ultimo_alerta_data == hoje_str:
+                                is_already_sent = True
+                            elif isinstance(ultimo_alerta_data, dict) and ultimo_alerta_data.get("data") == hoje_str:
+                                is_already_sent = True
+
+                            if is_already_sent:
                                 print(f"🔒 [Monitor] Sinal de {symbol} bloqueado pelo controle Anti-Spam (Já enviado hoje).")
                                 continue
                             
@@ -275,8 +481,12 @@ def run_telegram_monitor():
                             
                             try:
                                 global_notifier.enviar_mensagem(msg)
-                                # SE SUCESSO NO ENVIO, SALVA NO JSON PARA NÃO REPETIR HOJE
-                                SENT_ALERTS_TODAY[symbol] = hoje_str
+                                # SE SUCESSO NO ENVIO, SALVA NO JSON PARA NÃO REPETIR HOJE (COM FORMATO DETALHADO PT RESUMO)
+                                SENT_ALERTS_TODAY[symbol] = {
+                                    "data": hoje_str,
+                                    "hora": current['time'].strftime('%H:%M'),
+                                    "sinal": signal_text
+                                }
                                 save_alerts_state()
                             except Exception as env_erro:
                                 print(f"❌ Erro ao enviar mensagem Telegram para {symbol}: {env_erro}")
