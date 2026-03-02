@@ -6,8 +6,54 @@ from datetime import datetime
 import pandas as pd
 from utils.telegram_notifier import TelegramNotifier
 import os
+from dotenv import load_dotenv
+
+# Carrega variáveis de ambiente (incluindo XP_DEMO_PASSWORD)
+load_dotenv()
 
 app = Flask(__name__)
+
+# ======================================================================
+# CONEXÃO BLINDADA (XP SIMULADOR) - INICIA ANTES DE TUDO
+# ======================================================================
+def ensure_mt5_connected():
+    print("🛡️ Iniciando Módulo de Segurança MT5 (XP Simulador)...")
+    try:
+        XP_LOGIN = 59539675
+        XP_SERVER = "XPMT5-DEMO"
+        XP_PASSWORD = os.getenv("XP_DEMO_PASSWORD")
+        
+        if not XP_PASSWORD:
+            err_msg = "A senha da conta XP Demo não foi encontrada! (Falta XP_DEMO_PASSWORD no .env)"
+            print(f"❌ {err_msg}")
+            return False, err_msg
+            
+        if not mt5.initialize():
+            print(f"❌ Erro MT5 Initialize: {mt5.last_error()}")
+            return False, str(mt5.last_error())
+            
+        account_info = mt5.account_info()
+        if account_info is not None and account_info.login == XP_LOGIN:
+            print("✅ Já conectado no Simulador XP!")
+            return True, None
+            
+        print(f"🔄 Forçando conexão segura para Simulação XP (Login: {XP_LOGIN})...")
+        if mt5.login(login=XP_LOGIN, password=XP_PASSWORD, server=XP_SERVER):
+            acc = mt5.account_info()
+            print(f"✅ PROTEGIDO: Conectado ao Simulador XP! Corretora: {acc.company} | Saldo: R${acc.balance:.2f}")
+            return True, None
+        else:
+            print(f"❌ ERRO DE LOGIN NA XP: {mt5.last_error()}")
+            return False, f"Falha no MT5 Login: {mt5.last_error()}"
+            
+    except Exception as e:
+        print(f"❌ Exception MT5: {e}")
+        return False, str(e)
+
+# 🚨 CHAMA IMEDIATAMENTE NA INICIALIZAÇÃO DO APP 🚨
+# Para garantir que as threads do Flask/Telegram não usem a conta de Produção (BTG)
+if os.environ.get("WERKZEUG_RUN_MAIN") == "true" or __name__ == "__main__":
+    ensure_mt5_connected()
 
 # --- GLOBAL CONFIG & STATE ---
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
@@ -228,23 +274,7 @@ if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
 
 
 
-# Helper para garantir conexão com MT5
-def ensure_mt5_connected():
-    # Verifica se já está inicializado e com terminal rodando
-    try:
-        if mt5.terminal_info() is None:
-            print("🔄 Tentando inicializar MT5...")
-            if not mt5.initialize():
-                err = mt5.last_error()
-                print(f"❌ Erro MT5 Initialize: {err}")
-                return False, err
-        return True, None
-    except Exception as e:
-        print(f"❌ Exception MT5: {e}")
-        return False, str(e)
-
-# Nota: não forçamos conexão com MT5 na inicialização.
-# A conexão será efetuada quando o monitor for ligado via API (/api/bot/start).
+# Conexão MT5 forçada agora ocorre no início do arquivo.
 
 from utils.asset_filter import load_clean_assets
 
