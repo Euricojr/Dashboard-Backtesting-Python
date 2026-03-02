@@ -2675,7 +2675,12 @@
       const btn = monitorBtnEl();
       if (!btn) return;
       btn.addEventListener("click", onMonitorClick);
+
+      // Fetch initial status
       fetchBotStatus();
+
+      // Auto-poll status every 3s to stay synced with Telegram bot clicks
+      setInterval(fetchBotStatus, 3000);
     });
 
     // BRIDGE FUNCTIONS

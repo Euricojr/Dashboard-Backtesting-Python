@@ -42,9 +42,26 @@ def get_bot_status_text():
         
     return text
 
+def toggle_bot_from_telegram(turn_on: bool):
+    global BOT_RUNNING, BOT_START_TIME, TOTAL_ALERTS, ALERTS_PER_ASSET
+    if turn_on:
+        if BOT_RUNNING:
+            return "O robô já está 🟢 LIGADO."
+        BOT_RUNNING = True
+        BOT_START_TIME = datetime.now()
+        TOTAL_ALERTS = 0
+        ALERTS_PER_ASSET.clear()
+        return "▶️ O robô foi 🟢 LIGADO pelo Telegram e começou a monitorar os ativos."
+    else:
+        if not BOT_RUNNING:
+            return "O robô já está 🔴 DESLIGADO."
+        BOT_RUNNING = False
+        BOT_START_TIME = None
+        return "⏸️ O robô foi 🔴 DESLIGADO pelo Telegram. O monitoramento parou."
+
 # Inicia o Listener de Comandos (/start) apenas no processo principal (não no reloader inicial)
 if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
-    global_notifier.start_listener(status_callback=get_bot_status_text)
+    global_notifier.start_listener(status_callback=get_bot_status_text, toggle_callback=toggle_bot_from_telegram)
 
 
 def run_telegram_monitor():
@@ -194,6 +211,18 @@ def run_telegram_monitor():
 
 # Inicia a thread de monitoramento apenas se não for o reloader do Flask (para não duplicar)
 if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+    import atexit
+    
+    def on_shutdown():
+        if BOT_RUNNING:
+            msg = "🛑 *ALERTA CRÍTICO!*\n\nO servidor do seu Robô (Python) foi fechado ou reiniciado manualmente.\nO monitoramento de ativos foi **interrompido**!"
+            try:
+                global_notifier.enviar_mensagem(msg)
+            except:
+                pass
+                
+    atexit.register(on_shutdown)
+
     monitor_thread = threading.Thread(target=run_telegram_monitor, daemon=True)
     monitor_thread.start()
 
