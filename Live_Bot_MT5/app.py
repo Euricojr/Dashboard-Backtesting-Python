@@ -7,6 +7,7 @@ import pandas as pd
 from utils.telegram_notifier import TelegramNotifier
 import os
 import logging
+import json
 from dotenv import load_dotenv
 
 # Carrega variáveis de ambiente (incluindo XP_DEMO_PASSWORD)
@@ -70,11 +71,37 @@ TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 MONITOR_SYMBOL = "WINJ26" # Default monitored symbol (Deprecated in favor of full list)
 MONITOR_TIMEFRAME = "H1" # Timeframe do Monitoramento (M1, M5, H1, etc)
 LAST_SIGNAL_STATE = {} # Dict para guardar estado de cada ativo: { "WINJ26": 1, ... }
+# Novo dict de persistência
+SENT_ALERTS_TODAY = {} # {"PETR4F": "2026-03-02"}
+ALERTS_FILE = "alertas_enviados.json"
+
+def load_alerts_state():
+    global SENT_ALERTS_TODAY
+    if os.path.exists(ALERTS_FILE):
+        try:
+            with open(ALERTS_FILE, "r") as f:
+                SENT_ALERTS_TODAY = json.load(f)
+        except Exception as e:
+            print(f"⚠️ Erro ao carregar arquivo de alertas: {e}")
+            SENT_ALERTS_TODAY = {}
+    else:
+        SENT_ALERTS_TODAY = {}
+
+def save_alerts_state():
+    try:
+        with open(ALERTS_FILE, "w") as f:
+            json.dump(SENT_ALERTS_TODAY, f, indent=4)
+    except Exception as e:
+        print(f"⚠️ Erro ao salvar arquivo de alertas: {e}")
+
 # Controle On/Off do bot de alertas Telegram
 BOT_RUNNING = False
 BOT_START_TIME = None
 TOTAL_ALERTS = 0
 ALERTS_PER_ASSET = {}
+
+# Carrega persistência imediatamente na inicialização
+load_alerts_state()
 
 # Instância global do Notifier para o listener e alertas
 global_notifier = TelegramNotifier(token=TELEGRAM_TOKEN, chat_id=TELEGRAM_CHAT_ID)
@@ -124,7 +151,7 @@ def run_telegram_monitor():
     Função que roda em thread separada para monitorar cruzamento de médias
     e enviar alertas no Telegram.
     """
-    global LAST_SIGNAL_STATE, BOT_RUNNING, TOTAL_ALERTS, ALERTS_PER_ASSET
+    global LAST_SIGNAL_STATE, BOT_RUNNING, TOTAL_ALERTS, ALERTS_PER_ASSET, SENT_ALERTS_TODAY
     
     # Carrega lista de ativos
     from utils.asset_filter import load_clean_assets
@@ -211,17 +238,22 @@ def run_telegram_monitor():
                             # Filtro Temporal: Só alerta se o cruzamento for MAIS RECENTE que o start do Bot
                             sinal_time = current['time']
                             
-                            # MT5 data e datetime.now() vêm como naive datetimes (sem fuso).
-                            # Se precisarmos comparar de forma segura (ignorando timezone offsets):
-                            # sinal_time = sinal_time.replace(tzinfo=None) # Caso o DF tenha trazido com TZ
+                            # Filtro de Persistência (JSON)
+                            # Verifica se já alertamos sobre este cruzamento HOJE
+                            hoje_str = sinal_time.strftime('%Y-%m-%d')
+                            ultimo_alerta_data = SENT_ALERTS_TODAY.get(symbol)
+                            
+                            # Atualiza estado na RAM igual
+                            LAST_SIGNAL_STATE[symbol] = new_state
                             
                             if BOT_START_TIME and sinal_time <= BOT_START_TIME:
-                                # Apenas atualiza o estado, mas NÃO envia notificação
-                                LAST_SIGNAL_STATE[symbol] = new_state
                                 print(f"🕒 [Monitor] Ignorando sinal passado de {symbol} em {sinal_time}")
                                 continue
                                 
-                            LAST_SIGNAL_STATE[symbol] = new_state
+                            # Se já mandamos hoje para esse ticker na mesma data, ignora
+                            if ultimo_alerta_data == hoje_str:
+                                print(f"🔒 [Monitor] Sinal de {symbol} bloqueado pelo controle Anti-Spam (Já enviado hoje).")
+                                continue
                             
                             TOTAL_ALERTS += 1
                             ALERTS_PER_ASSET[symbol] = ALERTS_PER_ASSET.get(symbol, 0) + 1
@@ -240,7 +272,14 @@ def run_telegram_monitor():
                                 f"📅 *DATA/HORA:* {current['time'].strftime('%d/%m/%Y às %H:%M:%S')}"
                             )
                             print(f"\n⚡ [Monitor] ALERTA ENVIADO para {symbol}: {signal_text}")
-                            global_notifier.enviar_mensagem(msg)
+                            
+                            try:
+                                global_notifier.enviar_mensagem(msg)
+                                # SE SUCESSO NO ENVIO, SALVA NO JSON PARA NÃO REPETIR HOJE
+                                SENT_ALERTS_TODAY[symbol] = hoje_str
+                                save_alerts_state()
+                            except Exception as env_erro:
+                                print(f"❌ Erro ao enviar mensagem Telegram para {symbol}: {env_erro}")
 
                 except Exception as e:
                     # Silencia erros individuais para nao flodar o log, ou imprime so o simbolo
