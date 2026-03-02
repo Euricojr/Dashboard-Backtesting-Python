@@ -339,7 +339,7 @@ def get_candle():
     # Pega ultima vela (LIVE) para o grafico de precos
     last_row = df.iloc[-1]
     candle_data = {
-        "time": int(last_row['time'].timestamp()),
+        "time": int(last_row['time'].value // 10**9) if isinstance(last_row['time'], pd.Timestamp) else int(last_row['time']),
         "open": float(last_row['open']),
         "high": float(last_row['high']),
         "low": float(last_row['low']),
@@ -351,7 +351,7 @@ def get_candle():
     prev_row = df.iloc[-2] if len(df) > 1 else last_row
     
     sma_data = {
-        "time": int(prev_row['time'].timestamp()),
+        "time": int(prev_row['time'].value // 10**9) if isinstance(prev_row['time'], pd.Timestamp) else int(prev_row['time']),
         "short": float(prev_row['SMA_Short']) if not pd.isna(prev_row['SMA_Short']) else None,
         "long": float(prev_row['SMA_Long']) if not pd.isna(prev_row['SMA_Long']) else None
     }
@@ -476,7 +476,7 @@ def run_backtest():
     sma_long_data = []
     
     for idx, row in df_res.iterrows():
-        ts = int(idx.timestamp()) if isinstance(idx, pd.Timestamp) else int(row['time'].timestamp())
+        ts = int(idx.value // 10**9) if isinstance(idx, pd.Timestamp) else int(row['time'].value // 10**9) if isinstance(row['time'], pd.Timestamp) else int(row['time'])
         
         if not pd.isna(row['SMA_Short']):
             sma_short_data.append({"time": ts, "value": float(row['SMA_Short'])})
@@ -493,7 +493,7 @@ def run_backtest():
     sells = df_res[trade_signal == -1]
     
     for idx, row in buys.iterrows():
-        ts = int(row['time'].timestamp())
+        ts = int(row['time'].value // 10**9) if isinstance(row['time'], pd.Timestamp) else int(row['time'])
         markers.append({
             "time": ts,
             "position": "belowBar",
@@ -503,7 +503,7 @@ def run_backtest():
         })
         
     for idx, row in sells.iterrows():
-        ts = int(row['time'].timestamp())
+        ts = int(row['time'].value // 10**9) if isinstance(row['time'], pd.Timestamp) else int(row['time'])
         markers.append({
             "time": ts,
             "position": "aboveBar",
@@ -515,6 +515,10 @@ def run_backtest():
     # CRITICAL: Sort markers by time. Lightweight Charts requires sorted markers.
     markers.sort(key=lambda x: x['time'])
         
+    # Fix candle time serialization in candles dict
+    candles_dict = df_res[['time', 'open', 'high', 'low', 'close']].copy()
+    candles_dict['time'] = candles_dict['time'].apply(lambda x: int(x.value // 10**9) if isinstance(x, pd.Timestamp) else int(x))
+    
     return jsonify({
         "metrics": metrics,
         "trade_stats": trade_stats,
@@ -522,7 +526,7 @@ def run_backtest():
         "sma_long": sma_long_data,
         "markers": markers,
         "best_params": best_params,
-        "candles": df_res[['time', 'open', 'high', 'low', 'close']].rename(columns={'time': 'time'}).to_dict('records') # Send Candle Data
+        "candles": candles_dict.to_dict('records') # Send Candle Data
     })
 
 @app.route('/api/batch_backtest', methods=['POST'])

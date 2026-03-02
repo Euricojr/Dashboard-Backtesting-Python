@@ -1832,8 +1832,14 @@
           title: "SMA Long",
         });
 
+        // Shift time for chart
+        const formattedData = data.map(c => ({
+          ...c,
+          time: applyTzOffset(c.time)
+        }));
+
         // 3. Set Data
-        candleSeries.setData(data);
+        candleSeries.setData(formattedData);
 
         // 4. Force Scale Reset (Critical)
         chart.priceScale("right").applyOptions({
@@ -1888,8 +1894,9 @@
 
         // Critical: Update Chart Candles if backtest returned fresh data (Syncs Scale)
         if (data.candles) {
+          const brokerTimezoneOffset = new Date().getTimezoneOffset() * 60;
           const candleData = data.candles.map((c) => ({
-            time: new Date(c.time).getTime() / 1000,
+            time: c.time + brokerTimezoneOffset,
             open: c.open,
             high: c.high,
             low: c.low,
@@ -1940,9 +1947,9 @@
           chart.timeScale().applyOptions({ rightOffset: 5 });
         }
 
-        candleSeries.setMarkers(data.markers);
-        smaShortSeries.setData(data.sma_short);
-        smaLongSeries.setData(data.sma_long);
+        candleSeries.setMarkers(data.markers.map(m => ({ ...m, time: applyTzOffset(m.time) })));
+        smaShortSeries.setData(data.sma_short.map(s => ({ ...s, time: applyTzOffset(s.time) })));
+        smaLongSeries.setData(data.sma_long.map(s => ({ ...s, time: applyTzOffset(s.time) })));
 
         // Enable Live Updates for SMA
         isStrategyActive = true;
@@ -2119,6 +2126,13 @@
       tbody.innerHTML = rowsHtml;
     }
 
+    // Add timezone offset helper to shift timestamps
+    function applyTzOffset(ts) {
+      if (!ts) return ts;
+      const offset = new Date().getTimezoneOffset() * 60;
+      return ts + offset;
+    }
+
     async function updateLive() {
       const tf = getTimeframeValue();
       const short = document.getElementById("smaShort").value;
@@ -2136,8 +2150,11 @@
         console.log("Tick recebido: ", data.candle);
 
         // data agora vem como { candle: {...}, sma: {...} }
-        const candle = data.candle;
-        const sma = data.sma;
+        const raw_candle = data.candle;
+        const raw_sma = data.sma;
+
+        const candle = { ...raw_candle, time: applyTzOffset(raw_candle.time) };
+        const sma = { ...raw_sma, time: raw_sma ? applyTzOffset(raw_sma.time) : null };
 
         // 1. Atualiza Candle (Preço em Tempo Real)
         if (candleSeries) {
