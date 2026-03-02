@@ -6,6 +6,7 @@ from datetime import datetime
 import pandas as pd
 from utils.telegram_notifier import TelegramNotifier
 import os
+import logging
 from dotenv import load_dotenv
 
 # Carrega variáveis de ambiente (incluindo XP_DEMO_PASSWORD)
@@ -13,11 +14,14 @@ load_dotenv()
 
 app = Flask(__name__)
 
+# Silencia os logs de requisição HTTP do Flask (Werkzeug) para não poluir o terminal
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
+
 # ======================================================================
 # CONEXÃO BLINDADA (XP SIMULADOR) - INICIA ANTES DE TUDO
 # ======================================================================
 def ensure_mt5_connected():
-    print("🛡️ Iniciando Módulo de Segurança MT5 (XP Simulador)...")
     try:
         XP_LOGIN = 59539675
         XP_SERVER = "XPMT5-DEMO"
@@ -28,14 +32,19 @@ def ensure_mt5_connected():
             print(f"❌ {err_msg}")
             return False, err_msg
             
+        # 1. Silenciosamente verifica se já está conectado na conta correta
+        # Se terminal_info e account_info existirem, e o login bater, ignora o resto
+        if mt5.terminal_info() is not None:
+            acc_info = mt5.account_info()
+            if acc_info is not None and acc_info.login == XP_LOGIN:
+                return True, None
+                
+        # 2. Se chegar aqui, significa que PRECISA inicializar ou conectar
+        print("🛡️ Iniciando Módulo de Segurança MT5 (XP Simulador)...")
+        
         if not mt5.initialize():
             print(f"❌ Erro MT5 Initialize: {mt5.last_error()}")
             return False, str(mt5.last_error())
-            
-        account_info = mt5.account_info()
-        if account_info is not None and account_info.login == XP_LOGIN:
-            print("✅ Já conectado no Simulador XP!")
-            return True, None
             
         print(f"🔄 Forçando conexão segura para Simulação XP (Login: {XP_LOGIN})...")
         if mt5.login(login=XP_LOGIN, password=XP_PASSWORD, server=XP_SERVER):
@@ -423,8 +432,8 @@ def get_candle():
     response.headers.add("Pragma", "no-cache")
     response.headers.add("Expires", "0")
     
-    # Debug print to confirm request
-    print(f"[{datetime.now().strftime('%H:%M:%S')}] Enviando tick: {candle_data['close']}")
+    # Debug print to confirm request (SILENCIADO a pedido do usuário)
+    # print(f"[{datetime.now().strftime('%H:%M:%S')}] Enviando tick: {candle_data['close']}")
     
     return response
 
