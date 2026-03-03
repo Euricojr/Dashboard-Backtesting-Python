@@ -8,6 +8,8 @@ from utils.telegram_notifier import TelegramNotifier
 import os
 import logging
 import json
+import io
+import mplfinance as mpf
 from dotenv import load_dotenv
 
 # Carrega variáveis de ambiente (incluindo XP_DEMO_PASSWORD)
@@ -515,7 +517,37 @@ def enviar_alerta_teste(chat_id):
     inline_kb = [
         [{"text": f"🛒 Executar {signal_text}", "callback_data": f"prep_{'buy' if signal_text=='COMPRA' else 'sell'}_{symbol}"}]
     ]
-    global_notifier.enviar_mensagem(msg, target_chat_id=chat_id, inline_keyboard=inline_kb)
+    
+    try:
+        # Gera o grafico falso de teste
+        rates = mt5.copy_rates_from_pos("PETR4", mt5.TIMEFRAME_H1, 0, 1000)
+        df_test = pd.DataFrame(rates)
+        df_test['time'] = pd.to_datetime(df_test['time'], unit='s')
+        df_test.set_index('time', inplace=True)
+        
+        df_test['SMA_Short'] = df_test['close'].rolling(window=20).mean()
+        df_test['SMA_Long'] = df_test['close'].rolling(window=50).mean()
+        
+        # Mantem so as ultimas 100 velas pro plot ficar clean
+        df_plot = df_test.tail(100).copy()
+        
+        mc = mpf.make_marketcolors(up='#00e676', down='#ff1744', edge='inherit', wick='inherit', volume='in', ohlc='i')
+        s  = mpf.make_mpf_style(marketcolors=mc, facecolor='#121212', edgecolor='#2c2c2c', figcolor='#121212', gridcolor='#2c2c2c', gridstyle='--')
+        
+        ap = [
+            mpf.make_addplot(df_plot['SMA_Short'], color='#FFFF00', width=1.5),
+            mpf.make_addplot(df_plot['SMA_Long'], color='#00BFFF', width=1.5)
+        ]
+        
+        buf = io.BytesIO()
+        mpf.plot(df_plot, type='candle', style=s, addplot=ap, volume=False,
+                 figsize=(8, 4), tight_layout=True,
+                 axisoff=True, savefig=dict(fname=buf, dpi=100, bbox_inches='tight', pad_inches=0.1))
+        
+        global_notifier.enviar_foto(buf, msg, target_chat_id=chat_id, inline_keyboard=inline_kb)
+    except Exception as e:
+        print(f"Erro ao gerar grafico de teste: {e}")
+        global_notifier.enviar_mensagem(msg, target_chat_id=chat_id, inline_keyboard=inline_kb)
 
 # Inicia o Listener de Comandos (/start) apenas no processo principal (não no reloader inicial)
 if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
@@ -673,7 +705,8 @@ def run_telegram_monitor():
                     # Define Timeframe (Default M5 se não achar)
                     mt5_tf = TIMEFRAMES.get(MONITOR_TIMEFRAME, mt5.TIMEFRAME_M5)
                     
-                    rates = mt5.copy_rates_from_pos(symbol, mt5_tf, 0, 100)
+                    # 1000 velas para dar o warm-up matematico exato da plataforma
+                    rates = mt5.copy_rates_from_pos(symbol, mt5_tf, 0, 1000)
                     if rates is None or len(rates) < 55: # Precisa de pelo menos 50 + buffer
                         continue
 
@@ -760,8 +793,47 @@ def run_telegram_monitor():
                                 inline_kb = [
                                     [{"text": f"🛒 Executar {signal_text}", "callback_data": f"prep_{'buy' if signal_text=='COMPRA' else 'sell'}_{symbol}"}]
                                 ]
-                                global_notifier.enviar_mensagem(msg, inline_keyboard=inline_kb)
-                                # SE SUCESSO NO ENVIO, SALVA NO JSON PARA NÃO REPETIR HOJE (COM FORMATO DETALHADO PT RESUMO)
+                                
+                                # -- GERAÇÃO DO GRÁFICO (Dark Mode Institutional) --
+                                df_plot = df.tail(100).copy()
+                                df_plot.set_index('time', inplace=True)
+                                
+                                mc = mpf.make_marketcolors(
+                                    up='#00e676', down='#ff1744', 
+                                    edge='inherit', wick='inherit', 
+                                    volume='in', ohlc='i'
+                                )
+                                s = mpf.make_mpf_style(
+                                    marketcolors=mc, 
+                                    facecolor='#121212', 
+                                    edgecolor='#2c2c2c', 
+                                    figcolor='#121212', 
+                                    gridcolor='#2c2c2c', 
+                                    gridstyle='--'
+                                )
+                                
+                                ap = [
+                                    mpf.make_addplot(df_plot['SMA_Short'], color='#FFFF00', width=1.5),
+                                    mpf.make_addplot(df_plot['SMA_Long'], color='#00BFFF', width=1.5)
+                                ]
+                                
+                                buf = io.BytesIO()
+                                mpf.plot(
+                                    df_plot, 
+                                    type='candle', 
+                                    style=s, 
+                                    addplot=ap, 
+                                    volume=False,
+                                    figsize=(8, 4), 
+                                    tight_layout=True,
+                                    axisoff=True, 
+                                    savefig=dict(fname=buf, dpi=100, bbox_inches='tight', pad_inches=0.1)
+                                )
+                                
+                                # Envia como Foto com Caption
+                                global_notifier.enviar_foto(buf, msg, inline_keyboard=inline_kb)
+                                
+                                # SE SUCESSO NO ENVIO, SALVA NO JSON PARA NÃO REPETIR HOJE
                                 SENT_ALERTS_TODAY[symbol] = {
                                     "data": hoje_str,
                                     "hora": current['time'].strftime('%H:%M'),

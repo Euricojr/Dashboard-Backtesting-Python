@@ -50,6 +50,53 @@ class TelegramNotifier:
             print(f"❌ Erro de conexão com Telegram: {e}")
             return False
 
+    def enviar_foto(self, photo_stream, caption, target_chat_id=None, inline_keyboard=None):
+        import json
+        chat = target_chat_id or self.chat_id
+        if not self.token or not chat:
+            print("❌ Erro: Token ou Chat ID configurados.")
+            return False
+
+        url = f"https://api.telegram.org/bot{self.token}/sendPhoto"
+        
+        reply_markup = {
+            "keyboard": [
+                [{"text": "📊 Status"}, {"text": "📊 Resumo Diário"}],
+                [{"text": "🟢 Ligar Robô"}, {"text": "🔴 Desligar Robô"}],
+                [{"text": "💼 Minha Carteira"}, {"text": "📜 Histórico Hoje"}]
+            ],
+            "resize_keyboard": True
+        }
+
+        if inline_keyboard:
+            reply_markup = {
+                "inline_keyboard": inline_keyboard
+            }
+
+        data = {
+            "chat_id": chat,
+            "caption": caption,
+            "parse_mode": "Markdown",
+            "reply_markup": json.dumps(reply_markup)
+        }
+        
+        photo_stream.seek(0)
+        files = {
+            "photo": ("grafico.png", photo_stream, "image/png")
+        }
+
+        try:
+            response = requests.post(url, data=data, files=files, timeout=15)
+            if response.status_code == 200:
+                print(f"[{datetime.now().strftime('%H:%M:%S')}] ✅ Foto enviada com sucesso!")
+                return True
+            else:
+                print(f"⚠️ Falha ao enviar foto: {response.text}")
+                return False
+        except Exception as e:
+            print(f"❌ Erro de conexão com Telegram ao enviar foto: {e}")
+            return False
+
     def editar_mensagem(self, chat_id, message_id, texto, inline_keyboard=None):
         url = f"https://api.telegram.org/bot{self.token}/editMessageText"
         
