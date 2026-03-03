@@ -1704,7 +1704,8 @@
     }).observe(chartContainer);
 
     // ============ LOGIC ============
-    const INITIAL_ZOOM_CANDLES = 200; // <--- Mude este número para ajustar o Zoom inicial
+    // Ajuste dinâmico: mostra menos velas no mobile para o gráfico não ficar espremido.
+    const INITIAL_ZOOM_CANDLES = window.innerWidth < 768 ? 60 : 200; 
 
     let SYMBOL = document.getElementById("ticker-input").value;
     let updateInterval = null;

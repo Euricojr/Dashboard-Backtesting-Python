@@ -2,7 +2,7 @@ import threading
 import time
 from flask import Flask, render_template, jsonify, request
 import MetaTrader5 as mt5
-from datetime import datetime
+from datetime import datetime, timedelta
 import pandas as pd
 from utils.telegram_notifier import TelegramNotifier
 import os
@@ -326,6 +326,89 @@ def fechar_posicao_mt5(ticket):
         
     return True, f"✅ Posição de {symbol} (Ticket {ticket}) fechada com sucesso!"
 
+def ver_historico_mt5():
+    connected, err = ensure_mt5_connected()
+    if not connected:
+        return f"❌ Erro de conexão com MT5: {err}"
+        
+    agora = datetime.now()
+    hoje_inicio = agora.replace(hour=0, minute=0, second=0, microsecond=0)
+    hoje_fim = hoje_inicio + timedelta(days=1)
+    
+    # Busca histórico dos últimos 30 dias para ter uma visão ampla
+    inicio_historico = hoje_inicio - timedelta(days=30)
+    
+    deals = mt5.history_deals_get(inicio_historico, hoje_fim)
+    if deals is None or len(deals) == 0:
+        return "📜 *Histórico Vazio*\nNenhuma operação foi encontrada nos últimos 30 dias."
+        
+    deals_hoje = []
+    deals_passado = []
+    
+    for deal in deals:
+        if getattr(deal, 'entry', 0) == 1 or deal.profit != 0:
+            if deal.symbol == "":
+                continue
+                
+            deal_time = datetime.fromtimestamp(deal.time)
+            if deal_time >= hoje_inicio:
+                deals_hoje.append(deal)
+            else:
+                deals_passado.append(deal)
+
+    def formatar_deals(deal_list, titulo, mostrar_data=False):
+        if not deal_list:
+            return f"_{titulo}_\nNenhuma operação.\n\n", 0, 0, 0, 0
+            
+        texto = f"*{titulo}*\n"
+        total_profit = 0.0
+        trades_count = 0
+        gain_count = 0
+        loss_count = 0
+        
+        # Inverter para mostrar os mais recentes primeiro
+        for deal in reversed(deal_list):
+            ticker = deal.symbol
+            profit = deal.profit
+            dt = datetime.fromtimestamp(deal.time)
+            
+            hora = dt.strftime('%d/%m %H:%M') if mostrar_data else dt.strftime('%H:%M:%S')
+            
+            total_profit += profit
+            trades_count += 1
+            if profit >= 0:
+                gain_count += 1
+                icon = "✅"
+            else:
+                loss_count += 1
+                icon = "❌"
+                
+            texto += f"{icon} {ticker} ({hora}) ➔ R$ {profit:.2f}\n"
+            
+        texto += f"\n📊 *Resumo ({titulo.lower()}):*\n"
+        texto += f"Trades: {trades_count} ({gain_count} Gain / {loss_count} Loss)\n"
+        texto += f"Resultado: *R$ {total_profit:.2f}*\n\n"
+        
+        return texto, total_profit, trades_count, gain_count, loss_count
+
+    txt_hoje, p_h, t_h, g_h, l_h = formatar_deals(deals_hoje, "Hoje", mostrar_data=False)
+    
+    # Limita os trades passados aos últimos 15 para não estourar o limite de mensagem do Telegram
+    txt_passado, p_p, t_p, g_p, l_p = formatar_deals(deals_passado[-15:], "Últimos Dias (Até 15 trades)", mostrar_data=True)
+    
+    final_text = "📜 *SEU HISTÓRICO DE TRADES*\n━━━━━━━━━━━━━━━━━━\n\n"
+    final_text += txt_hoje
+    final_text += "━━━━━━━━━━━━━━━━━━\n\n"
+    final_text += txt_passado
+    final_text += "━━━━━━━━━━━━━━━━━━\n"
+    
+    total_geral = p_h + p_p
+    total_trades = t_h + t_p
+    final_text += f"🏆 *SALDO TOTAL (30 dias):* R$ {total_geral:.2f}\n"
+    final_text += f"📈 *Winrate:* {(g_h+g_p)/total_trades*100:.1f}% se {total_trades} > 0 else 0%"
+    
+    return final_text
+
 def executar_ordem_mt5(action, symbol, volume):
     connected, err = ensure_mt5_connected()
     if not connected:
@@ -442,7 +525,8 @@ if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
         summary_callback=gerar_resumo_diario_ativo,
         carteira_callback=ver_carteira_mt5,
         callback_query_handler=handle_telegram_callback,
-        teste_callback=enviar_alerta_teste
+        teste_callback=enviar_alerta_teste,
+        historico_callback=ver_historico_mt5
     )
 
 def sincronizar_historico_hoje():

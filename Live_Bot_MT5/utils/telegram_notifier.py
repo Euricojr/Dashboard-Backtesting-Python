@@ -20,7 +20,7 @@ class TelegramNotifier:
             "keyboard": [
                 [{"text": "📊 Status"}, {"text": "📊 Resumo Diário"}],
                 [{"text": "🟢 Ligar Robô"}, {"text": "🔴 Desligar Robô"}],
-                [{"text": "💼 Minha Carteira"}]
+                [{"text": "💼 Minha Carteira"}, {"text": "📜 Histórico Hoje"}]
             ],
             "resize_keyboard": True
         }
@@ -74,7 +74,7 @@ class TelegramNotifier:
             print(f"❌ Erro de conexão com Telegram ao editar: {e}")
             return False
 
-    def start_listener(self, status_callback=None, toggle_callback=None, summary_callback=None, carteira_callback=None, callback_query_handler=None, teste_callback=None):
+    def start_listener(self, status_callback=None, toggle_callback=None, summary_callback=None, carteira_callback=None, callback_query_handler=None, teste_callback=None, historico_callback=None):
         """Inicia uma thread para ouvir comandos do Telegram (como /start)"""
         if not self.token:
             print("❌ Listener do Telegram cancelado: TOKEN não encontrado.")
@@ -162,6 +162,13 @@ class TelegramNotifier:
                                         teste_callback(chat_id)
                                     else:
                                         self.enviar_mensagem("Comando de teste não configurado.", target_chat_id=chat_id)
+                                        
+                                elif text in ('/historico', '📜 Histórico Hoje') and chat_id:
+                                    if historico_callback:
+                                        hist_text = historico_callback()
+                                    else:
+                                        hist_text = "Módulo de histórico indisponível."
+                                    self.enviar_mensagem(hist_text, target_chat_id=chat_id)
                                         
                 except requests.exceptions.Timeout:
                     pass  # Timeout esperado do long polling
