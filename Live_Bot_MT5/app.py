@@ -244,12 +244,144 @@ def toggle_bot_from_telegram(turn_on: bool):
         BOT_START_TIME = None
         return "⏸️ O robô foi 🔴 DESLIGADO pelo Telegram. O monitoramento parou."
 
+def ver_carteira_mt5():
+    connected, err = ensure_mt5_connected()
+    if not connected:
+        return f"❌ Erro de conexão com MT5: {err}"
+        
+    positions = mt5.positions_get()
+    if positions is None or len(positions) == 0:
+        return "💼 *Sua Carteira está vazia!*\nNenhuma posição aberta no momento."
+        
+    text = "💼 *Sua Carteira (Posições Abertas)*\n\n"
+    total_profit = 0.0
+    for pos in positions:
+        ticker = pos.symbol
+        volume = pos.volume
+        price_open = pos.price_open
+        price_current = pos.price_current
+        profit = pos.profit
+        total_profit += profit
+        
+        tipo = "🟢 COMPRA" if pos.type == mt5.ORDER_TYPE_BUY else "🔴 VENDA"
+        text += f"*{ticker}* ({tipo})\n"
+        text += f"Volume: {volume}\n"
+        text += f"Preço Médio: R$ {price_open:.2f}\n"
+        text += f"Preço Atual: R$ {price_current:.2f}\n"
+        text += f"Lucro/Prej: R$ {profit:.2f}\n"
+        text += "------------------------\n"
+        
+    text += f"\n📊 *Resultado Aberto Total:* R$ {total_profit:.2f}"
+    return text
+
+def executar_ordem_mt5(action, symbol, volume):
+    connected, err = ensure_mt5_connected()
+    if not connected:
+        return False, f"Erro MT5: {err}"
+        
+    if not mt5.symbol_select(symbol, True):
+        return False, f"Ativo {symbol} não encontrado no Market Watch."
+
+    symbol_info = mt5.symbol_info(symbol)
+    if symbol_info is None:
+        return False, f"Falha ao obter dados do ativo {symbol}."
+
+    if action == "buy":
+        order_type = mt5.ORDER_TYPE_BUY
+        price = mt5.symbol_info_tick(symbol).ask
+    else:
+        order_type = mt5.ORDER_TYPE_SELL
+        price = mt5.symbol_info_tick(symbol).bid
+
+    request = {
+        "action": mt5.TRADE_ACTION_DEAL,
+        "symbol": symbol,
+        "volume": float(volume),
+        "type": order_type,
+        "price": price,
+        "deviation": 20,
+        "magic": 101010,
+        "comment": "Bot_FinSense",
+        "type_time": mt5.ORDER_TIME_GTC,
+        "type_filling": mt5.ORDER_FILLING_RETURN,
+    }
+
+    result = mt5.order_send(request)
+    if result.retcode != mt5.TRADE_RETCODE_DONE:
+        return False, f"Erro ao enviar ordem: {result.comment} (Code: {result.retcode})"
+        
+    tipo_str = "COMPRA" if action == "buy" else "VENDA"
+    return True, f"✅ Ordem de {tipo_str} de {volume}x {symbol} executada com sucesso!\nPreço: R$ {result.price:.2f}"
+
+def handle_telegram_callback(data, chat_id, message_id):
+    if data == "cancel":
+        global_notifier.editar_mensagem(chat_id, message_id, "❌ *Operação Cancelada.*")
+        return
+        
+    parts = data.split('_')
+    if len(parts) >= 3 and parts[0] == "prep":
+        action = parts[1]
+        symbol = parts[2]
+        action_str = "COMPRA" if action == "buy" else "VENDA"
+        
+        texto = f"⚙️ *Preparando envio de ordem*\nQuantas ações de *{symbol}* deseja operar? ({action_str})"
+        inline_kb = [
+            [
+                {"text": "1", "callback_data": f"exec_{action}_{symbol}_1"},
+                {"text": "5", "callback_data": f"exec_{action}_{symbol}_5"},
+                {"text": "10", "callback_data": f"exec_{action}_{symbol}_10"},
+                {"text": "20", "callback_data": f"exec_{action}_{symbol}_20"}
+            ],
+            [
+                {"text": "❌ Cancelar", "callback_data": "cancel"}
+            ]
+        ]
+        global_notifier.editar_mensagem(chat_id, message_id, texto, inline_kb)
+        
+    elif len(parts) >= 4 and parts[0] == "exec":
+        action = parts[1]
+        symbol = parts[2]
+        volume = float(parts[3])
+        
+        global_notifier.editar_mensagem(chat_id, message_id, f"⏳ *Enviando ordem de {volume}x {symbol} para o MetaTrader 5...*")
+        
+        success, result_msg = executar_ordem_mt5(action, symbol, volume)
+        global_notifier.editar_mensagem(chat_id, message_id, result_msg)
+
+def enviar_alerta_teste(chat_id):
+    symbol = "PETR4F"
+    signal_text = "COMPRA"
+    tipo = "Golden Cross"
+    price = 40.00
+    c_short = 39.80
+    c_long = 39.50
+    agora = datetime.now()
+    
+    msg = (
+        f"🚨 *FINSENSE ALERT (TESTE)* 🚨\n\n"
+        f"🟢 *SINAL:* {signal_text} ({tipo})\n"
+        f"🎯 *ATIVO:* {symbol}  |  ⏱️ *TF:* TESTE\n\n"
+        f"💰 *PREÇO ATUAL:* {price:.2f}\n\n"
+        f"📊 *CRUZAMENTO DAS MÉDIAS:*\n"
+        f"🔸 SMA 20: {c_short:.2f}\n"
+        f"🔹 SMA 50: {c_long:.2f}\n\n"
+        f"📅 *DATA/HORA:* {agora.strftime('%d/%m/%Y às %H:%M:%S')}"
+    )
+    
+    inline_kb = [
+        [{"text": f"🛒 Executar {signal_text}", "callback_data": f"prep_{'buy' if signal_text=='COMPRA' else 'sell'}_{symbol}"}]
+    ]
+    global_notifier.enviar_mensagem(msg, target_chat_id=chat_id, inline_keyboard=inline_kb)
+
 # Inicia o Listener de Comandos (/start) apenas no processo principal (não no reloader inicial)
 if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
     global_notifier.start_listener(
         status_callback=get_bot_status_text, 
         toggle_callback=toggle_bot_from_telegram,
-        summary_callback=gerar_resumo_diario_ativo
+        summary_callback=gerar_resumo_diario_ativo,
+        carteira_callback=ver_carteira_mt5,
+        callback_query_handler=handle_telegram_callback,
+        teste_callback=enviar_alerta_teste
     )
 
 def sincronizar_historico_hoje():
@@ -480,7 +612,10 @@ def run_telegram_monitor():
                             print(f"\n⚡ [Monitor] ALERTA ENVIADO para {symbol}: {signal_text}")
                             
                             try:
-                                global_notifier.enviar_mensagem(msg)
+                                inline_kb = [
+                                    [{"text": f"🛒 Executar {signal_text}", "callback_data": f"prep_{'buy' if signal_text=='COMPRA' else 'sell'}_{symbol}"}]
+                                ]
+                                global_notifier.enviar_mensagem(msg, inline_keyboard=inline_kb)
                                 # SE SUCESSO NO ENVIO, SALVA NO JSON PARA NÃO REPETIR HOJE (COM FORMATO DETALHADO PT RESUMO)
                                 SENT_ALERTS_TODAY[symbol] = {
                                     "data": hoje_str,

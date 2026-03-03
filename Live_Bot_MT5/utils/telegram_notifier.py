@@ -10,24 +10,33 @@ class TelegramNotifier:
         self.chat_id = chat_id or os.getenv("TELEGRAM_CHAT_ID")
         self.base_url = f"https://api.telegram.org/bot{self.token}/sendMessage"
 
-    def enviar_mensagem(self, texto, target_chat_id=None):
+    def enviar_mensagem(self, texto, target_chat_id=None, inline_keyboard=None):
         chat = target_chat_id or self.chat_id
         if not self.token or not chat:
             print("❌ Erro: Token ou Chat ID do Telegram não configurados.")
             return False
 
+        reply_markup = {
+            "keyboard": [
+                [{"text": "📊 Status"}, {"text": "📊 Resumo Diário"}],
+                [{"text": "🟢 Ligar Robô"}, {"text": "🔴 Desligar Robô"}],
+                [{"text": "💼 Minha Carteira"}]
+            ],
+            "resize_keyboard": True
+        }
+
+        if inline_keyboard:
+            reply_markup = {
+                "inline_keyboard": inline_keyboard
+            }
+
         payload = {
             "chat_id": chat,
             "text": texto,
             "parse_mode": "Markdown",
-            "reply_markup": {
-                "keyboard": [
-                    [{"text": "📊 Status"}, {"text": "📊 Resumo Diário"}],
-                    [{"text": "🟢 Ligar Robô"}, {"text": "🔴 Desligar Robô"}]
-                ],
-                "resize_keyboard": True
-            }
+            "reply_markup": reply_markup
         }
+
 
         try:
             response = requests.post(self.base_url, json=payload, timeout=10)
@@ -41,7 +50,31 @@ class TelegramNotifier:
             print(f"❌ Erro de conexão com Telegram: {e}")
             return False
 
-    def start_listener(self, status_callback=None, toggle_callback=None, summary_callback=None):
+    def editar_mensagem(self, chat_id, message_id, texto, inline_keyboard=None):
+        url = f"https://api.telegram.org/bot{self.token}/editMessageText"
+        
+        payload = {
+            "chat_id": chat_id,
+            "message_id": message_id,
+            "text": texto,
+            "parse_mode": "Markdown"
+        }
+        
+        if inline_keyboard:
+            payload["reply_markup"] = {"inline_keyboard": inline_keyboard}
+            
+        try:
+            response = requests.post(url, json=payload, timeout=10)
+            if response.status_code == 200:
+                return True
+            else:
+                print(f"⚠️ Falha ao editar mensagem: {response.text}")
+                return False
+        except Exception as e:
+            print(f"❌ Erro de conexão com Telegram ao editar: {e}")
+            return False
+
+    def start_listener(self, status_callback=None, toggle_callback=None, summary_callback=None, carteira_callback=None, callback_query_handler=None, teste_callback=None):
         """Inicia uma thread para ouvir comandos do Telegram (como /start)"""
         if not self.token:
             print("❌ Listener do Telegram cancelado: TOKEN não encontrado.")
@@ -61,6 +94,22 @@ class TelegramNotifier:
                         if data.get('ok'):
                             for update in data['result']:
                                 offset = update['update_id'] + 1
+                                
+                                if 'callback_query' in update:
+                                    cq = update['callback_query']
+                                    data_cb = cq.get('data')
+                                    cb_msg = cq.get('message', {})
+                                    cb_chat_id = cb_msg.get('chat', {}).get('id')
+                                    cb_msg_id = cb_msg.get('message_id')
+                                    
+                                    if callback_query_handler:
+                                        callback_query_handler(data_cb, cb_chat_id, cb_msg_id)
+                                    
+                                    # Answer callback query to stop loading state on the button
+                                    cb_id = cq.get('id')
+                                    requests.post(f"https://api.telegram.org/bot{self.token}/answerCallbackQuery", json={"callback_query_id": cb_id})
+                                    continue
+                                
                                 msg = update.get('message', {})
                                 text = msg.get('text', '')
                                 chat_id = msg.get('chat', {}).get('id')
@@ -100,6 +149,19 @@ class TelegramNotifier:
                                     if toggle_callback:
                                         res_text = toggle_callback(False)
                                         self.enviar_mensagem(res_text, target_chat_id=chat_id)
+                                        
+                                elif text in ('/carteira', '💼 Minha Carteira') and chat_id:
+                                    if carteira_callback:
+                                        cart_text = carteira_callback()
+                                    else:
+                                        cart_text = "Módulo de carteira indisponível."
+                                    self.enviar_mensagem(cart_text, target_chat_id=chat_id)
+                                    
+                                elif text == '/teste_compra' and chat_id:
+                                    if teste_callback:
+                                        teste_callback(chat_id)
+                                    else:
+                                        self.enviar_mensagem("Comando de teste não configurado.", target_chat_id=chat_id)
                                         
                 except requests.exceptions.Timeout:
                     pass  # Timeout esperado do long polling
