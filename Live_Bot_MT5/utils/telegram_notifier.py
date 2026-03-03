@@ -152,10 +152,10 @@ class TelegramNotifier:
                                         
                                 elif text in ('/carteira', '💼 Minha Carteira') and chat_id:
                                     if carteira_callback:
-                                        cart_text = carteira_callback()
+                                        cart_text, inline_kb = carteira_callback()
                                     else:
-                                        cart_text = "Módulo de carteira indisponível."
-                                    self.enviar_mensagem(cart_text, target_chat_id=chat_id)
+                                        cart_text, inline_kb = "Módulo de carteira indisponível.", None
+                                    self.enviar_mensagem(cart_text, target_chat_id=chat_id, inline_keyboard=inline_kb)
                                     
                                 elif text == '/teste_compra' and chat_id:
                                     if teste_callback:

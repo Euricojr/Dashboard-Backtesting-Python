@@ -247,20 +247,23 @@ def toggle_bot_from_telegram(turn_on: bool):
 def ver_carteira_mt5():
     connected, err = ensure_mt5_connected()
     if not connected:
-        return f"❌ Erro de conexão com MT5: {err}"
+        return f"❌ Erro de conexão com MT5: {err}", None
         
     positions = mt5.positions_get()
     if positions is None or len(positions) == 0:
-        return "💼 *Sua Carteira está vazia!*\nNenhuma posição aberta no momento."
+        return "💼 *Sua Carteira está vazia!*\nNenhuma posição aberta no momento.", None
         
     text = "💼 *Sua Carteira (Posições Abertas)*\n\n"
     total_profit = 0.0
+    inline_kb = []
+    
     for pos in positions:
         ticker = pos.symbol
         volume = pos.volume
         price_open = pos.price_open
         price_current = pos.price_current
         profit = pos.profit
+        ticket = pos.ticket
         total_profit += profit
         
         tipo = "🟢 COMPRA" if pos.type == mt5.ORDER_TYPE_BUY else "🔴 VENDA"
@@ -271,8 +274,57 @@ def ver_carteira_mt5():
         text += f"Lucro/Prej: R$ {profit:.2f}\n"
         text += "------------------------\n"
         
+        # Add a close button for this position
+        inline_kb.append([{"text": f"❌ Fechar {ticker} ({volume}x)", "callback_data": f"close_{ticket}"}])
+        
     text += f"\n📊 *Resultado Aberto Total:* R$ {total_profit:.2f}"
-    return text
+    
+    # Add a global cancel button to dismiss the menu
+    inline_kb.append([{"text": "Esconder", "callback_data": "cancel"}])
+    
+    return text, inline_kb
+
+def fechar_posicao_mt5(ticket):
+    connected, err = ensure_mt5_connected()
+    if not connected:
+        return False, f"Erro MT5: {err}"
+        
+    position = mt5.positions_get(ticket=int(ticket))
+    if position is None or len(position) == 0:
+        return False, f"Posição {ticket} não encontrada."
+        
+    pos = position[0]
+    symbol = pos.symbol
+    lot = pos.volume
+    order_type = pos.type
+    
+    # To close a BUY, we SELL. To close a SELL, we BUY.
+    if order_type == mt5.ORDER_TYPE_BUY:
+        close_type = mt5.ORDER_TYPE_SELL
+        price = mt5.symbol_info_tick(symbol).bid
+    else:
+        close_type = mt5.ORDER_TYPE_BUY
+        price = mt5.symbol_info_tick(symbol).ask
+        
+    request = {
+        "action": mt5.TRADE_ACTION_DEAL,
+        "symbol": symbol,
+        "volume": float(lot),
+        "type": close_type,
+        "position": pos.ticket,
+        "price": price,
+        "deviation": 20,
+        "magic": 101010,
+        "comment": "Bot_FinSense_Close",
+        "type_time": mt5.ORDER_TIME_GTC,
+        "type_filling": mt5.ORDER_FILLING_RETURN,
+    }
+    
+    result = mt5.order_send(request)
+    if result.retcode != mt5.TRADE_RETCODE_DONE:
+        return False, f"Erro ao fechar posição: {result.comment} (Code: {result.retcode})"
+        
+    return True, f"✅ Posição de {symbol} (Ticket {ticket}) fechada com sucesso!"
 
 def executar_ordem_mt5(action, symbol, volume):
     connected, err = ensure_mt5_connected()
@@ -345,7 +397,16 @@ def handle_telegram_callback(data, chat_id, message_id):
         
         global_notifier.editar_mensagem(chat_id, message_id, f"⏳ *Enviando ordem de {volume}x {symbol} para o MetaTrader 5...*")
         
+        
         success, result_msg = executar_ordem_mt5(action, symbol, volume)
+        global_notifier.editar_mensagem(chat_id, message_id, result_msg)
+        
+    elif len(parts) >= 2 and parts[0] == "close":
+        ticket = parts[1]
+        
+        global_notifier.editar_mensagem(chat_id, message_id, f"⏳ *Fechando posição Ticket {ticket}...*")
+        
+        success, result_msg = fechar_posicao_mt5(ticket)
         global_notifier.editar_mensagem(chat_id, message_id, result_msg)
 
 def enviar_alerta_teste(chat_id):
