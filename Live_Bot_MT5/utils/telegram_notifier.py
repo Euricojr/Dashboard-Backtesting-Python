@@ -98,25 +98,45 @@ class TelegramNotifier:
             return False
 
     def editar_mensagem(self, chat_id, message_id, texto, inline_keyboard=None):
-        url = f"https://api.telegram.org/bot{self.token}/editMessageText"
+        url_text = f"https://api.telegram.org/bot{self.token}/editMessageText"
+        url_caption = f"https://api.telegram.org/bot{self.token}/editMessageCaption"
         
-        payload = {
+        payload_text = {
             "chat_id": chat_id,
             "message_id": message_id,
             "text": texto,
             "parse_mode": "Markdown"
         }
         
+        payload_caption = {
+            "chat_id": chat_id,
+            "message_id": message_id,
+            "caption": texto,
+            "parse_mode": "Markdown"
+        }
+        
         if inline_keyboard:
-            payload["reply_markup"] = {"inline_keyboard": inline_keyboard}
+            payload_text["reply_markup"] = {"inline_keyboard": inline_keyboard}
+            payload_caption["reply_markup"] = {"inline_keyboard": inline_keyboard}
             
         try:
-            response = requests.post(url, json=payload, timeout=10)
+            # Tenta editar como texto primeiro
+            response = requests.post(url_text, json=payload_text, timeout=10)
             if response.status_code == 200:
                 return True
             else:
-                print(f"⚠️ Falha ao editar mensagem: {response.text}")
-                return False
+                resp_json = response.json()
+                # Se o erro for de que não há texto para editar, significa que é uma foto/mídia com caption
+                if resp_json.get("description") == "Bad Request: there is no text in the message to edit":
+                    response_caption = requests.post(url_caption, json=payload_caption, timeout=10)
+                    if response_caption.status_code == 200:
+                        return True
+                    else:
+                        print(f"⚠️ Falha ao editar caption: {response_caption.text}")
+                        return False
+                else:
+                    print(f"⚠️ Falha ao editar mensagem: {response.text}")
+                    return False
         except Exception as e:
             print(f"❌ Erro de conexão com Telegram ao editar: {e}")
             return False

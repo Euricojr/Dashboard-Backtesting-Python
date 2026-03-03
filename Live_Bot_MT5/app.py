@@ -9,6 +9,8 @@ import os
 import logging
 import json
 import io
+import matplotlib
+matplotlib.use('Agg')
 import mplfinance as mpf
 from dotenv import load_dotenv
 

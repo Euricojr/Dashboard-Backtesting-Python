@@ -1,3 +1,58 @@
 {
-    "LREN3": "2026-03-02"
+    "LREN3": "2026-03-02",
+    "ALOS3": {
+        "data": "2026-03-03",
+        "hora": "14:00",
+        "sinal": "VENDA"
+    },
+    "B3SA3": {
+        "data": "2026-03-03",
+        "hora": "12:00",
+        "sinal": "VENDA"
+    },
+    "BHIA3": {
+        "data": "2026-03-03",
+        "hora": "13:00",
+        "sinal": "VENDA"
+    },
+    "BRAP4": {
+        "data": "2026-03-03",
+        "hora": "12:00",
+        "sinal": "VENDA"
+    },
+    "LWSA3": {
+        "data": "2026-03-03",
+        "hora": "14:00",
+        "sinal": "VENDA"
+    },
+    "MOVI3": {
+        "data": "2026-03-03",
+        "hora": "15:00",
+        "sinal": "VENDA"
+    },
+    "MULT3": {
+        "data": "2026-03-03",
+        "hora": "12:00",
+        "sinal": "VENDA"
+    },
+    "NEOE3": {
+        "data": "2026-03-03",
+        "hora": "14:00",
+        "sinal": "VENDA"
+    },
+    "PCAR3": {
+        "data": "2026-03-03",
+        "hora": "13:00",
+        "sinal": "VENDA"
+    },
+    "VIVA3": {
+        "data": "2026-03-03",
+        "hora": "11:00",
+        "sinal": "VENDA"
+    },
+    "VIVT3": {
+        "data": "2026-03-03",
+        "hora": "14:00",
+        "sinal": "VENDA"
+    }
 }
