@@ -354,7 +354,7 @@ def ver_historico_mt5():
             if deal.symbol == "":
                 continue
                 
-            deal_time = datetime.fromtimestamp(deal.time)
+            deal_time = datetime.utcfromtimestamp(deal.time)
             if deal_time >= hoje_inicio:
                 deals_hoje.append(deal)
             else:
@@ -374,7 +374,7 @@ def ver_historico_mt5():
         for deal in reversed(deal_list):
             ticker = deal.symbol
             profit = deal.profit
-            dt = datetime.fromtimestamp(deal.time)
+            dt = datetime.utcfromtimestamp(deal.time)
             
             hora = dt.strftime('%d/%m %H:%M') if mostrar_data else dt.strftime('%H:%M:%S')
             
