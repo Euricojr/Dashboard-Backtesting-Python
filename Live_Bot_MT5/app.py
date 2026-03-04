@@ -360,7 +360,7 @@ def ver_historico_mt5():
             else:
                 deals_passado.append(deal)
 
-    def formatar_deals(deal_list, titulo, mostrar_data=False):
+    def formatar_deals(deal_list, titulo, mostrar_data=False, limit_display=None):
         if not deal_list:
             return f"_{titulo}_\nNenhuma operação.\n\n", 0, 0, 0, 0
             
@@ -387,7 +387,12 @@ def ver_historico_mt5():
                 loss_count += 1
                 icon = "❌"
                 
-            texto += f"{icon} {ticker} ({hora}) ➔ R$ {profit:.2f}\n"
+            if limit_display is None or trades_count <= limit_display:
+                texto += f"{icon} {ticker} ({hora}) ➔ R$ {profit:.2f}\n"
+                
+        if limit_display is not None and len(deal_list) > limit_display:
+            ocultos = len(deal_list) - limit_display
+            texto += f"...e mais {ocultos} operações ocultas.\n"
             
         texto += f"\n📊 *Resumo ({titulo.lower()}):*\n"
         texto += f"Trades: {trades_count} ({gain_count} Gain / {loss_count} Loss)\n"
@@ -397,8 +402,8 @@ def ver_historico_mt5():
 
     txt_hoje, p_h, t_h, g_h, l_h = formatar_deals(deals_hoje, "Hoje", mostrar_data=False)
     
-    # Limita os trades passados aos últimos 15 para não estourar o limite de mensagem do Telegram
-    txt_passado, p_p, t_p, g_p, l_p = formatar_deals(deals_passado[-15:], "Últimos Dias (Até 15 trades)", mostrar_data=True)
+    # Passa todos os trades, mas limita a exibição aos últimos 15
+    txt_passado, p_p, t_p, g_p, l_p = formatar_deals(deals_passado, "Últimos Dias (Até 15 mostrados)", mostrar_data=True, limit_display=15)
     
     final_text = "📜 *SEU HISTÓRICO DE TRADES*\n━━━━━━━━━━━━━━━━━━\n\n"
     final_text += txt_hoje
@@ -408,8 +413,11 @@ def ver_historico_mt5():
     
     total_geral = p_h + p_p
     total_trades = t_h + t_p
+    
+    winrate_valor = ((g_h + g_p) / total_trades * 100) if total_trades > 0 else 0.0
+    
     final_text += f"🏆 *SALDO TOTAL (30 dias):* R$ {total_geral:.2f}\n"
-    final_text += f"📈 *Winrate:* {(g_h+g_p)/total_trades*100:.1f}% se {total_trades} > 0 else 0%"
+    final_text += f"📈 *Winrate:* {winrate_valor:.1f}%"
     
     return final_text
 
