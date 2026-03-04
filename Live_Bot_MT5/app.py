@@ -14,7 +14,7 @@ matplotlib.use('Agg')
 import mplfinance as mpf
 from dotenv import load_dotenv
 
-# Carrega variáveis de ambiente (incluindo XP_DEMO_PASSWORD)
+# Carrega variáveis de ambiente (incluindo XP_DEMO_PASSWORD e XP_DEMO_LOGIN)
 load_dotenv()
 
 app = Flask(__name__)
@@ -28,12 +28,17 @@ log.setLevel(logging.ERROR)
 # ======================================================================
 def ensure_mt5_connected():
     try:
-        XP_LOGIN = 59539675
+        XP_LOGIN = int(os.getenv("XP_DEMO_LOGIN"))
         XP_SERVER = "XPMT5-DEMO"
         XP_PASSWORD = os.getenv("XP_DEMO_PASSWORD")
         
         if not XP_PASSWORD:
             err_msg = "A senha da conta XP Demo não foi encontrada! (Falta XP_DEMO_PASSWORD no .env)"
+            print(f"❌ {err_msg}")
+            return False, err_msg
+            
+        if not os.getenv("XP_DEMO_LOGIN"):
+            err_msg = "O login da conta XP Demo não foi encontrado! (Falta XP_DEMO_LOGIN no .env)"
             print(f"❌ {err_msg}")
             return False, err_msg
             
