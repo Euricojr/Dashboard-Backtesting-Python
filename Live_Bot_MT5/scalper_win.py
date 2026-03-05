@@ -1,0 +1,170 @@
+import time
+import json
+import os
+import MetaTrader5 as mt5
+import pandas as pd
+from datetime import datetime, timedelta
+from dotenv import load_dotenv
+
+load_dotenv()
+
+CONTROLE_FILE = "controle_scalper.json"
+SYMBOL = "WINJ26" # Ajuste para o contrato vigente do momento
+TIMEFRAME = mt5.TIMEFRAME_M5
+VOLUME = 1.0
+SL_POINTS = 150.0
+TP_POINTS = 150.0  
+MAGIC_NUMBER = 777777 # Magic exclusivo para isolar as negociações do Scalper
+
+def load_controle():
+    if not os.path.exists(CONTROLE_FILE):
+        return {"status": "OFF", "trades_hoje": 0, "lucro_hoje": 0.0, "data": datetime.now().strftime('%Y-%m-%d')}
+    
+    try:
+        with open(CONTROLE_FILE, "r") as f:
+            data = json.load(f)
+            hoje_str = datetime.now().strftime('%Y-%m-%d')
+            # Reset diário dos lucros e trades se virou o dia
+            if data.get("data") != hoje_str:
+                data["trades_hoje"] = 0
+                data["lucro_hoje"] = 0.0
+                data["data"] = hoje_str
+                save_controle(data)
+            return data
+    except Exception:
+        return {"status": "OFF", "trades_hoje": 0, "lucro_hoje": 0.0, "data": datetime.now().strftime('%Y-%m-%d')}
+
+def save_controle(data):
+    with open(CONTROLE_FILE, "w") as f:
+        json.dump(data, f, indent=4)
+
+def ensure_mt5_connection():
+    if not mt5.terminal_info():
+        mt5.initialize(login=int(os.getenv("XP_DEMO_LOGIN", 0)), 
+                       password=os.getenv("XP_DEMO_PASSWORD", ""), 
+                       server="XPMT5-DEMO")
+        
+def wait_position_close(ticket):
+    """Fica em loop até o SL ou TP bater na corretora e fechar a posição"""
+    print(f"⏳ Aguardando fechamento da posição (Ticket: {ticket})...")
+    while True:
+        pos = mt5.positions_get(ticket=ticket)
+        if pos is None or len(pos) == 0:
+            break
+        time.sleep(2)
+        
+    print("🏁 Posição Encerrada! Compilando resultado...")
+    time.sleep(2) # Buffer para o MT5 atualizar o History
+    
+    hoje = datetime.now().replace(hour=0, minute=0, second=0)
+    deals = mt5.history_deals_get(hoje, datetime.now() + timedelta(days=1))
+    lucro = 0.0
+    
+    if deals:
+        for deal in deals:
+            # deal.entry == 1 (DEAL_ENTRY_OUT) significa que foi negócio de saída (fechamento)
+            if deal.position_id == ticket and getattr(deal, 'entry', 0) == 1:
+                lucro += deal.profit
+                
+    # Atualiza JSON
+    data = load_controle()
+    data["trades_hoje"] += 1
+    data["lucro_hoje"] += lucro
+    save_controle(data)
+    print(f"💰 Trade fechado. Lucro/Prejuízo: R$ {lucro:.2f}")
+
+def iniciar_robo():
+    ensure_mt5_connection()
+    print("🤖 Robô Scalper WIN Inicializado. Lendo Regra de Ouro...")
+    
+    ultima_vela_operada = None
+    
+    while True:
+        # 1. Regra de Ouro: Ler status antes de tudo
+        controle = load_controle()
+        if controle["status"] == "OFF":
+            # Sleep longo e PULA para reavaliar no proximo tick
+            time.sleep(5)
+            continue
+            
+        # 2. Status é ON. Seguir com análise
+        ensure_mt5_connection()
+        rates = mt5.copy_rates_from_pos(SYMBOL, TIMEFRAME, 0, 300)
+        if rates is None or len(rates) < 50:
+            time.sleep(5)
+            continue
+            
+        df = pd.DataFrame(rates)
+        df['time'] = pd.to_datetime(df['time'], unit='s')
+        
+        # Filtro de VWAP (só pega volume do dia de hoje para ser fidedigno)
+        start_hoje = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        df_hoje = df[df['time'] >= start_hoje].copy()
+        if not df_hoje.empty:
+            df_hoje['Typical_Price'] = (df_hoje['high'] + df_hoje['low'] + df_hoje['close']) / 3
+            df_hoje['Vol_x_TP'] = df_hoje['tick_volume'] * df_hoje['Typical_Price']
+            df_hoje['Cum_Vol_x_TP'] = df_hoje['Vol_x_TP'].cumsum()
+            df_hoje['Cum_Vol'] = df_hoje['tick_volume'].cumsum()
+            df_hoje['VWAP'] = df_hoje['Cum_Vol_x_TP'] / df_hoje['Cum_Vol']
+            df['VWAP'] = df_hoje['VWAP']
+        else:
+            df['VWAP'] = df['close']
+
+        # Calculo das Médias Exponenciais
+        df['EMA9'] = df['close'].ewm(span=9, adjust=False).mean()
+        df['EMA21'] = df['close'].ewm(span=21, adjust=False).mean()
+        
+        current = df.iloc[-1]
+        prev = df.iloc[-2]
+        
+        vela_time = current['time']
+        
+        # Lógicas de Cruzamento
+        cross_up = prev['EMA9'] <= prev['EMA21'] and current['EMA9'] > current['EMA21']
+        cross_down = prev['EMA9'] >= prev['EMA21'] and current['EMA9'] < current['EMA21']
+        
+        # Só opera essa vela 1 vez
+        if vela_time != ultima_vela_operada:
+            action = None
+            
+            # Sinal de COMPRA: EMA9 passa pra cima E o preço atual está acima do VWAP
+            if cross_up and current['close'] > current['VWAP']:
+                action = mt5.ORDER_TYPE_BUY
+            # Sinal de VENDA: EMA9 passa pra baixo E o preço atual está abaixo do VWAP
+            elif cross_down and current['close'] < current['VWAP']:
+                action = mt5.ORDER_TYPE_SELL
+                
+            if action is not None:
+                ultima_vela_operada = vela_time
+                price = mt5.symbol_info_tick(SYMBOL).ask if action == mt5.ORDER_TYPE_BUY else mt5.symbol_info_tick(SYMBOL).bid
+                
+                # Para Win: preço + SL_POINTS faz sentido porque 1 ponto = 1 point no contrato cheio do indice
+                sl = price - SL_POINTS if action == mt5.ORDER_TYPE_BUY else price + SL_POINTS
+                tp = price + TP_POINTS if action == mt5.ORDER_TYPE_BUY else price - TP_POINTS
+                
+                request = {
+                    "action": mt5.TRADE_ACTION_DEAL,
+                    "symbol": SYMBOL,
+                    "volume": float(VOLUME),
+                    "type": action,
+                    "price": price,
+                    "sl": float(sl),
+                    "tp": float(tp),
+                    "deviation": 20,
+                    "magic": MAGIC_NUMBER,
+                    "comment": "ScalperWIN_Auto",
+                    "type_time": mt5.ORDER_TIME_GTC,
+                    "type_filling": mt5.ORDER_FILLING_RETURN, # Comum B3
+                }
+                
+                print(f"📩 Enviando Ordem OCO: {'COMPRA' if action == mt5.ORDER_TYPE_BUY else 'VENDA'} | Price: {price} | SL: {sl} | TP: {tp}")
+                res = mt5.order_send(request)
+                if res.retcode == mt5.TRADE_RETCODE_DONE:
+                    wait_position_close(res.order)
+                else:
+                    print(f"❌ Erro na Ordem: {res.comment}")
+        
+        time.sleep(3) # Pausa pequena no meio da vela atual para não causar CPU estresse (~Tick loop)
+
+if __name__ == "__main__":
+    iniciar_robo()

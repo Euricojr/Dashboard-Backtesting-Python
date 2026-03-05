@@ -564,6 +564,52 @@ def enviar_alerta_teste(chat_id):
         print(f"Erro ao gerar grafico de teste: {e}")
         global_notifier.enviar_mensagem(msg, target_chat_id=chat_id, inline_keyboard=inline_kb)
 
+# ==========================================
+# ROTAS DO MÓDULO SCALPER WIN (IN NAVE MÃE)
+# ==========================================
+CONTROLE_SCALPER_FILE = "controle_scalper.json"
+
+def get_scalper_state():
+    if os.path.exists(CONTROLE_SCALPER_FILE):
+        try:
+            with open(CONTROLE_SCALPER_FILE, "r") as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return {"status": "OFF", "trades_hoje": 0, "lucro_hoje": 0.0}
+
+@app.route('/api/toggle_scalper', methods=['POST'])
+def toggle_scalper():
+    state = get_scalper_state()
+    state['status'] = "ON" if state['status'] == "OFF" else "OFF"
+    
+    with open(CONTROLE_SCALPER_FILE, "w") as f:
+        json.dump(state, f, indent=4)
+        
+    return jsonify({"success": True, "new_status": state['status']})
+
+@app.route('/api/stats_scalper', methods=['GET'])
+def stats_scalper():
+    return jsonify(get_scalper_state())
+
+def handle_telegram_toggle_scalper():
+    state = get_scalper_state()
+    state['status'] = "ON" if state['status'] == "OFF" else "OFF"
+    with open(CONTROLE_SCALPER_FILE, "w") as f:
+        json.dump(state, f, indent=4)
+        
+    return f"O Robô Scalper de Índice foi {'🟢 LIGADO' if state['status'] == 'ON' else '🔴 DESLIGADO'} com sucesso."
+
+def handle_telegram_stats_scalper():
+    state = get_scalper_state()
+    status_fmt = "ON 🟢" if state['status'] == "ON" else "OFF 🔴"
+    return (
+        f"🤖 *Status Scalper WIN*\n\n"
+        f"Status: {status_fmt}\n"
+        f"Trades Hoje: {state.get('trades_hoje', 0)}\n"
+        f"Lucro/Prej: R$ {float(state.get('lucro_hoje', 0.0)):.2f}"
+    )
+
 # Inicia o Listener de Comandos (/start) apenas no processo principal (não no reloader inicial)
 if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
     global_notifier.start_listener(
@@ -573,7 +619,9 @@ if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
         carteira_callback=ver_carteira_mt5,
         callback_query_handler=handle_telegram_callback,
         teste_callback=enviar_alerta_teste,
-        historico_callback=ver_historico_mt5
+        historico_callback=ver_historico_mt5,
+        toggle_scalper_cb=handle_telegram_toggle_scalper,
+        stats_scalper_cb=handle_telegram_stats_scalper
     )
 
 def sincronizar_historico_hoje():
@@ -1335,5 +1383,47 @@ def batch_backtest():
     return response
 
 if __name__ == '__main__':
+    import subprocess
+    import sys
+    import atexit
+    import signal
+    import platform
+    
+    # Auto-start scalper script in background
+    print("🚀 Iniciando Módulo Scalper em plano de fundo...")
+    scalper_process = None
+    try:
+        # Popen roda sem travar o Flask
+        # Em Windows evitamos que o Ctrl+C mate tudo magicamente e cause bugs, 
+        # e tratamos no atexit
+        import os
+        script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "scalper_win.py")
+        scalper_process = subprocess.Popen([sys.executable, script_path])
+        print(f"✅ Scalper iniciado com PID: {scalper_process.pid} ({script_path})")
+        
+        # Sistema Anti-Zumbi
+        def kill_scalper(*args):
+            if scalper_process:
+                print(f"🛑 [Graceful Shutdown] Encerrando o Robô Scalper (PID: {scalper_process.pid})...")
+                scalper_process.terminate()
+                try:
+                    scalper_process.wait(timeout=3)
+                except subprocess.TimeoutExpired:
+                    scalper_process.kill() # Força parada se rejeitar terminação suave
+                print("💀 Zumbi Eliminado!")
+
+        # Registra a captura da saída normal e comandos de teclado (Ctrl+C)
+        atexit.register(kill_scalper)
+        signal.signal(signal.SIGINT, kill_scalper)  # Ctrl+C
+        signal.signal(signal.SIGTERM, kill_scalper) # Finalização do terminal
+
+    except Exception as e:
+        print(f"❌ Falha ao iniciar Scalper: {e}")
+        
     print("🚀 Servidor PoC WINJ26 rodando em http://localhost:5002")
-    app.run(debug=True, port=5002)
+    try:
+        app.run(debug=True, port=5002, use_reloader=False) # Important: Turn off reloader to avoid opening 2 scalpers!
+    except KeyboardInterrupt:
+        # O KeyboardInterrupt será capturado e processado pelos signals acima
+        pass
+

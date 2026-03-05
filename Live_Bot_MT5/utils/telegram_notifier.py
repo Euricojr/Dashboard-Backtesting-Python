@@ -20,7 +20,8 @@ class TelegramNotifier:
             "keyboard": [
                 [{"text": "📊 Status"}, {"text": "📊 Resumo Diário"}],
                 [{"text": "🟢 Ligar Robô"}, {"text": "🔴 Desligar Robô"}],
-                [{"text": "💼 Minha Carteira"}, {"text": "📜 Histórico Hoje"}]
+                [{"text": "💼 Minha Carteira"}, {"text": "📜 Histórico Hoje"}],
+                [{"text": "🤖 Ligar/Desligar Scalper"}, {"text": "📊 Stats Scalper"}]
             ],
             "resize_keyboard": True
         }
@@ -63,7 +64,8 @@ class TelegramNotifier:
             "keyboard": [
                 [{"text": "📊 Status"}, {"text": "📊 Resumo Diário"}],
                 [{"text": "🟢 Ligar Robô"}, {"text": "🔴 Desligar Robô"}],
-                [{"text": "💼 Minha Carteira"}, {"text": "📜 Histórico Hoje"}]
+                [{"text": "💼 Minha Carteira"}, {"text": "📜 Histórico Hoje"}],
+                [{"text": "🤖 Ligar/Desligar Scalper"}, {"text": "📊 Stats Scalper"}]
             ],
             "resize_keyboard": True
         }
@@ -141,7 +143,7 @@ class TelegramNotifier:
             print(f"❌ Erro de conexão com Telegram ao editar: {e}")
             return False
 
-    def start_listener(self, status_callback=None, toggle_callback=None, summary_callback=None, carteira_callback=None, callback_query_handler=None, teste_callback=None, historico_callback=None):
+    def start_listener(self, status_callback=None, toggle_callback=None, summary_callback=None, carteira_callback=None, callback_query_handler=None, teste_callback=None, historico_callback=None, toggle_scalper_cb=None, stats_scalper_cb=None):
         """Inicia uma thread para ouvir comandos do Telegram (como /start)"""
         if not self.token:
             print("❌ Listener do Telegram cancelado: TOKEN não encontrado.")
@@ -236,6 +238,16 @@ class TelegramNotifier:
                                     else:
                                         hist_text = "Módulo de histórico indisponível."
                                     self.enviar_mensagem(hist_text, target_chat_id=chat_id)
+                                        
+                                elif text == '🤖 Ligar/Desligar Scalper' and chat_id:
+                                    if toggle_scalper_cb:
+                                        res_text = toggle_scalper_cb()
+                                        self.enviar_mensagem(res_text, target_chat_id=chat_id)
+                                        
+                                elif text == '📊 Stats Scalper' and chat_id:
+                                    if stats_scalper_cb:
+                                        res_text = stats_scalper_cb()
+                                        self.enviar_mensagem(res_text, target_chat_id=chat_id)
                                         
                 except requests.exceptions.Timeout:
                     pass  # Timeout esperado do long polling

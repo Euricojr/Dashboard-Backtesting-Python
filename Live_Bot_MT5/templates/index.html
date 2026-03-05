@@ -1362,6 +1362,36 @@
                 </div>
               </div>
 
+              <!-- MÓDULO SCALPER WIN UI -->
+              <div class="card mt-3 mb-0" style="border: 1px solid rgba(0, 227, 150, 0.4);">
+                <div class="card-header border-0 pb-0 d-flex justify-content-between align-items-center">
+                  <h3 class="card-title text-uppercase font-weight-bold" style="font-size: 0.8rem; color: #00e396;">
+                    🤖 Scalper Automático WIN
+                  </h3>
+                  <span id="scalper-status" class="badge bg-danger">OFF</span>
+                </div>
+                <div class="card-body">
+                  <div class="row text-center mb-3">
+                    <div class="col-6">
+                      <div class="text-secondary small text-uppercase">Trades Hoje</div>
+                      <div id="scalper-trades" class="font-weight-bold" style="font-size: 1.2rem; color: #f4f4f5;">0
+                      </div>
+                    </div>
+                    <div class="col-6 border-start" style="border-color: #27272a !important;">
+                      <div class="text-secondary small text-uppercase">Lucro Hoje</div>
+                      <div id="scalper-lucro" class="font-weight-bold" style="font-size: 1.2rem; color: #10b981;">R$
+                        0.00</div>
+                    </div>
+                  </div>
+
+                  <button id="btn-toggle-scalper" class="btn w-100"
+                    style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444; font-weight: bold;"
+                    onclick="toggleScalper()">
+                    Ligar Robô Scalper
+                  </button>
+                </div>
+              </div>
+
               <!-- Scanner Results removed from sidebar to align with metrics -->
 
               <!-- Scanner Modal -->
@@ -1705,7 +1735,7 @@
 
     // ============ LOGIC ============
     // Ajuste dinâmico: mostra menos velas no mobile para o gráfico não ficar espremido.
-    const INITIAL_ZOOM_CANDLES = window.innerWidth < 768 ? 60 : 200; 
+    const INITIAL_ZOOM_CANDLES = window.innerWidth < 768 ? 60 : 200;
 
     let SYMBOL = document.getElementById("ticker-input").value;
     let updateInterval = null;
@@ -2694,6 +2724,49 @@
       console.log("Candle count changed to:", val);
       loadHistory(); // Trigger Full Reload
     }
+
+    /* --- SCRIPT SCALPER UI --- */
+    function fetchScalperStats() {
+      fetch('/api/stats_scalper')
+        .then(res => res.json())
+        .then(data => {
+          const st = document.getElementById('scalper-status');
+          const btn = document.getElementById('btn-toggle-scalper');
+
+          if (data.status === "ON") {
+            st.textContent = "ON";
+            st.className = "badge bg-success";
+            btn.textContent = "🔴 Desligar Robô Scalper";
+            btn.style.background = "rgba(239, 68, 68, 0.1)";
+            btn.style.borderColor = "#ef4444";
+            btn.style.color = "#ef4444";
+          } else {
+            st.textContent = "OFF";
+            st.className = "badge bg-danger";
+            btn.textContent = "🟢 Ligar Robô Scalper";
+            btn.style.background = "rgba(16, 185, 129, 0.1)";
+            btn.style.borderColor = "#10b981";
+            btn.style.color = "#10b981";
+          }
+
+          document.getElementById('scalper-trades').textContent = data.trades_hoje;
+
+          let lucro = parseFloat(data.lucro_hoje);
+          let styleColor = lucro >= 0 ? "#10b981" : "#ef4444";
+          document.getElementById('scalper-lucro').innerHTML = `<span style="color: ${styleColor}">R$ ${lucro.toFixed(2)}</span>`;
+        })
+        .catch(err => console.error("Erro Scalper:", err));
+    }
+
+    function toggleScalper() {
+      fetch('/api/toggle_scalper', { method: 'POST' })
+        .then(r => r.json())
+        .then(d => { fetchScalperStats(); })
+        .catch(err => console.error("Erro toggle Scalper:", err));
+    }
+
+    setInterval(fetchScalperStats, 5000); // Atualiza dados ao vivo sem reload na página!
+    fetchScalperStats();
   </script>
 </body>
 
