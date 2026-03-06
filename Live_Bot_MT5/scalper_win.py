@@ -12,9 +12,11 @@ CONTROLE_FILE = "controle_scalper.json"
 SYMBOL = "WINJ26" # Ajuste para o contrato vigente do momento
 TIMEFRAME = mt5.TIMEFRAME_M5
 VOLUME = 1.0
-SL_POINTS = 150.0
-TP_POINTS = 150.0  
+SL_POINTS = 100.0
+TP_POINTS = 200.0  
 MAGIC_NUMBER = 777777 # Magic exclusivo para isolar as negociações do Scalper
+MAX_TRADES_DIA = 3
+
 
 def load_controle():
     if not os.path.exists(CONTROLE_FILE):
@@ -82,6 +84,11 @@ def iniciar_robo():
     while True:
         # 1. Regra de Ouro: Ler status antes de tudo
         controle = load_controle()
+        
+        if controle["trades_hoje"] >= MAX_TRADES_DIA:
+            time.sleep(60)
+            continue
+
         if controle["status"] == "OFF":
             # Sleep longo e PULA para reavaliar no proximo tick
             time.sleep(5)
