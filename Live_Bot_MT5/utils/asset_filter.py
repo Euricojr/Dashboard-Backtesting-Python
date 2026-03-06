@@ -3,31 +3,24 @@ import pandas as pd
 
 def load_clean_assets():
     """
-    Retorna lista dos ativos APROVADOS no Scanner Elite.
-    Caso não exista ou falhe, retorna uma lista padrão.
+    Retorna lista dos ativos filtrados no Screener Técnico.
+    Sempre garante a presença do mini índice (WIN) e mini dólar (WDO).
     """
-    csv_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'backtest_results.csv')
     
-    if os.path.exists(csv_path):
-        try:
-            df = pd.read_csv(csv_path, sep=';', decimal=',')
-            # Filtra apenas os aprovados
-            approved = df[df['Status'] == 'APROVADO']['Ticker'].tolist()
-            # Remove sufixo .SA
-            clean_list = [t.replace('.SA', '') for t in approved]
-            
-            # Garante que os futuros continuem na lista de monitoramento e front-end
-            if "WINJ26" not in clean_list: clean_list.insert(0, "WINJ26")
-            if "WDOG26" not in clean_list: clean_list.insert(0, "WDOG26")
-            
-            # Remove duplicatas e retorna
-            return sorted(list(set(clean_list)))
-        except Exception as e:
-            print(f"Erro ao ler os ativos filtrados: {e}")
-            
-    # Fallback default se o CSV não existir:
-    whitelist = [
-        "WINJ26", "WDOG26", "BOVA11", "SMAL11", "IVVB11",
-        "PETR4", "VALE3", "ITUB4", "BBDC4", "BBAS3"
+    # Ativos filtrados via screener_tecnico.py mais recente
+    ativos = [
+        'ABEV3', 'ALPA4', 'ASAI3', 'B3SA3', 'BBAS3', 'BEEF3', 'BRAP4', 'BRKM5', 
+        'COGN3', 'CSNA3', 'CYRE3', 'DXCO3', 'FLRY3', 'GGBR4', 'GOAU4', 'HAPV3', 
+        'IRBR3', 'ITSA4', 'ITUB4', 'JHSF3', 'KLBN11', 'MRVE3', 'MULT3', 'PCAR3', 
+        'PETR3', 'PETR4', 'PRIO3', 'QUAL3', 'RAIZ4', 'RECV3', 'RENT3', 'SBSP3', 
+        'SLCE3', 'SMTO3', 'SUZB3', 'TIMS3', 'TOTS3', 'UGPA3', 'VALE3', 'VBBR3', 
+        'VIVT3', 'WEGE3', 'ALOS3', 'ARML3', 'BOVA11', 'BRSR6', 'CURY3', 'FESA4', 
+        'GRND3', 'INTB3', 'KEPL3', 'MOVI3', 'ODPV3'
     ]
-    return sorted(list(set(whitelist)))
+    
+    # Adicionando WIN e WDO
+    if "WINJ26" not in ativos: ativos.insert(0, "WINJ26")
+    if "WDOG26" not in ativos: ativos.insert(0, "WDOG26")
+    
+    return ativos
+
