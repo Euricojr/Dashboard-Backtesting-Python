@@ -6,7 +6,15 @@ import pandas as pd
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 
+# Importa o notificador do Telegram do seu utils
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from utils.telegram_notifier import TelegramNotifier
+
 load_dotenv()
+
+# Instância do Telegram global para o Scalper
+telegram_bot = TelegramNotifier()
 
 CONTROLE_FILE = "controle_scalper.json"
 SYMBOL = "WINJ26" # Ajuste para o contrato vigente do momento
@@ -46,14 +54,21 @@ def ensure_mt5_connection():
                        password=os.getenv("XP_DEMO_PASSWORD", ""), 
                        server="XPMT5-DEMO")
         
-def wait_position_close(ticket):
+def wait_position_close(ticket, entrada_info):
     """Fica em loop até o SL ou TP bater na corretora e fechar a posição"""
     print(f"⏳ Aguardando fechamento da posição (Ticket: {ticket})...")
+    
+    hora_entrada = entrada_info['hora_entrada']
+    
     while True:
         pos = mt5.positions_get(ticket=ticket)
         if pos is None or len(pos) == 0:
             break
         time.sleep(2)
+        
+    hora_saida = datetime.now()
+    duracao = hora_saida - hora_entrada
+    minutos, segundos = divmod(duracao.total_seconds(), 60)
         
     print("🏁 Posição Encerrada! Compilando resultado...")
     time.sleep(2) # Buffer para o MT5 atualizar o History
@@ -73,7 +88,26 @@ def wait_position_close(ticket):
     data["trades_hoje"] += 1
     data["lucro_hoje"] += lucro
     save_controle(data)
+    
+    resultado_str = "🟢 GAIN" if lucro > 0 else "🔴 LOSS"
+    direcao_str = "COMPRA" if entrada_info['direcao'] == mt5.ORDER_TYPE_BUY else "VENDA"
+    pontos_estimados = abs(lucro) / 0.20 # 1 contrato WIN = R$ 0,20 por ponto
+    
+    msg_telegram = (
+        f"🧾 *RAIO-X DA OPERAÇÃO | {SYMBOL}*\n"
+        f"🧭 Direção: *{direcao_str}*\n"
+        f"⏰ Duração: {int(minutos)}m e {int(segundos)}s\n\n"
+        f"� *MOTIVO DA ENTRADA:*\n"
+        f"• Gatilho: {entrada_info['preco']}\n"
+        f"• EMA 9: {entrada_info['ema9']:.2f} | EMA 21: {entrada_info['ema21']:.2f}\n"
+        f"• VWAP: {entrada_info['vwap']:.2f}\n\n"
+        f"�💰 *RESULTADO FINAL:*\n"
+        f"{resultado_str} de R$ {lucro:.2f} ({int(pontos_estimados)} pts)\n"
+        f"📉 Status Dia: {data['trades_hoje']} trades (R$ {data['lucro_hoje']:.2f})"
+    )
+    
     print(f"💰 Trade fechado. Lucro/Prejuízo: R$ {lucro:.2f}")
+    telegram_bot.enviar_mensagem(msg_telegram)
 
 def iniciar_robo():
     ensure_mt5_connection()
@@ -167,7 +201,16 @@ def iniciar_robo():
                 print(f"📩 Enviando Ordem OCO: {'COMPRA' if action == mt5.ORDER_TYPE_BUY else 'VENDA'} | Price: {price} | SL: {sl} | TP: {tp}")
                 res = mt5.order_send(request)
                 if res.retcode == mt5.TRADE_RETCODE_DONE:
-                    wait_position_close(res.order)
+                    # Montando pacote de dados pro Raio-X
+                    entrada_info = {
+                        "hora_entrada": datetime.now(),
+                        "direcao": action,
+                        "preco": price,
+                        "ema9": current['EMA9'],
+                        "ema21": current['EMA21'],
+                        "vwap": current['VWAP']
+                    }
+                    wait_position_close(res.order, entrada_info)
                 else:
                     print(f"❌ Erro na Ordem: {res.comment}")
         
