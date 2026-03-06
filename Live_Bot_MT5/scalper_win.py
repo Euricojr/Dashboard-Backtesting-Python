@@ -3,7 +3,7 @@ import json
 import os
 import MetaTrader5 as mt5
 import pandas as pd
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time as dt_time
 from dotenv import load_dotenv
 
 # Importa o notificador do Telegram do seu utils
@@ -25,6 +25,9 @@ TP_POINTS = 200.0
 MAGIC_NUMBER = 777777 # Magic exclusivo para isolar as negociações do Scalper
 MAX_TRADES_DIA = 3
 
+# Filtro de Horário (Golden Zone)
+HORA_INICIO = dt_time(9, 15)
+HORA_FIM = dt_time(12, 30)
 
 def load_controle():
     if not os.path.exists(CONTROLE_FILE):
@@ -128,6 +131,12 @@ def iniciar_robo():
             time.sleep(5)
             continue
             
+        hora_atual = datetime.now().time()
+        if hora_atual < HORA_INICIO or hora_atual > HORA_FIM:
+            print(f"⏳ Fora da janela operacional ({HORA_INICIO.strftime('%H:%M')} - {HORA_FIM.strftime('%H:%M')}). A aguardar...")
+            time.sleep(60)
+            continue
+
         # 2. Status é ON. Seguir com análise
         ensure_mt5_connection()
         rates = mt5.copy_rates_from_pos(SYMBOL, TIMEFRAME, 0, 300)
