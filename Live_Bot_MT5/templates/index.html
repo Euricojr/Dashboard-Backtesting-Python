@@ -1364,28 +1364,32 @@
 
               <!-- MÓDULO SCALPER WIN UI -->
               <div class="card mt-3 mb-0" style="border: 1px solid rgba(0, 227, 150, 0.4);">
-                <div class="card-header border-0 pb-0 d-flex justify-content-between align-items-center">
-                  <h3 class="card-title text-uppercase font-weight-bold" style="font-size: 0.8rem; color: #00e396;">
-                    🤖 Scalper Automático WIN
+                <div class="card-header border-0 pb-0 pt-3 d-flex justify-content-between align-items-center">
+                  <h3 class="card-title text-uppercase font-weight-bold"
+                    style="font-size: 0.85rem; color: #00e396; margin-bottom: 0;">
+                    🤖 Scalper WIN
                   </h3>
-                  <span id="scalper-status" class="badge bg-danger">OFF</span>
+                  <span id="scalper-status" class="badge bg-danger"
+                    style="font-size: 0.70rem; padding: 0.3rem 0.5rem;">OFF</span>
                 </div>
-                <div class="card-body">
-                  <div class="row text-center mb-3">
+                <div class="card-body pb-3 pt-2">
+                  <div class="row text-center mb-2">
                     <div class="col-6">
-                      <div class="text-secondary small text-uppercase">Trades Hoje</div>
-                      <div id="scalper-trades" class="font-weight-bold" style="font-size: 1.2rem; color: #f4f4f5;">0
+                      <div class="text-secondary small text-uppercase" style="font-size: 0.7rem;">Trades Hoje</div>
+                      <div id="scalper-trades" class="font-weight-bold"
+                        style="font-size: 1.15rem; color: #f4f4f5; line-height: 1.2;">0
                       </div>
                     </div>
                     <div class="col-6 border-start" style="border-color: #27272a !important;">
-                      <div class="text-secondary small text-uppercase">Lucro Hoje</div>
-                      <div id="scalper-lucro" class="font-weight-bold" style="font-size: 1.2rem; color: #10b981;">R$
+                      <div class="text-secondary small text-uppercase" style="font-size: 0.7rem;">Lucro Hoje</div>
+                      <div id="scalper-lucro" class="font-weight-bold"
+                        style="font-size: 1.15rem; color: #10b981; line-height: 1.2;">R$
                         0.00</div>
                     </div>
                   </div>
 
-                  <button id="btn-toggle-scalper" class="btn w-100"
-                    style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444; font-weight: bold;"
+                  <button id="btn-toggle-scalper" class="btn w-100 py-2 mt-1"
+                    style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444; font-weight: bold; font-size: 0.85rem;"
                     onclick="toggleScalper()">
                     Ligar Robô Scalper
                   </button>
