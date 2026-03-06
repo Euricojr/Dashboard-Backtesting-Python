@@ -611,7 +611,7 @@ def handle_telegram_stats_scalper():
     )
 
 # Inicia o Listener de Comandos (/start) apenas no processo principal (não no reloader inicial)
-if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+if os.environ.get("WERKZEUG_RUN_MAIN") == "true" or __name__ == "__main__":
     global_notifier.start_listener(
         status_callback=get_bot_status_text, 
         toggle_callback=toggle_bot_from_telegram,
@@ -726,6 +726,9 @@ def run_telegram_monitor():
     from utils.asset_filter import load_clean_assets
     
     # Aguarda até o usuário ligar o BOT via API antes de conectar/monitorar
+    print("⏳ [Thread] Monitor Telegram carregado e aguardando ativação...", flush=True)
+    time.sleep(2) # Delay inicial para afastar da inicialização do Flask/MT5
+    
     while True:
         # Espera o botão ligar
         while not BOT_RUNNING:
@@ -929,7 +932,7 @@ def run_telegram_monitor():
                 time.sleep(1)
 
 # Inicia a thread de monitoramento apenas se não for o reloader do Flask (para não duplicar)
-if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+if os.environ.get("WERKZEUG_RUN_MAIN") == "true" or __name__ == "__main__":
     import atexit
     
     def on_shutdown():
@@ -1398,8 +1401,18 @@ if __name__ == '__main__':
         # e tratamos no atexit
         import os
         script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "scalper_win.py")
-        scalper_process = subprocess.Popen([sys.executable, script_path])
-        print(f"✅ Scalper iniciado com PID: {scalper_process.pid} ({script_path})")
+        
+        # Inicia o subprocesso forçando o flush do Python (unbuffered)
+        my_env = os.environ.copy()
+        my_env["PYTHONUNBUFFERED"] = "1"
+        
+        scalper_process = subprocess.Popen(
+            [sys.executable, script_path], 
+            env=my_env,
+            stdout=sys.stdout, 
+            stderr=sys.stderr
+        )
+        print(f"✅ Scalper iniciado com PID: {scalper_process.pid} ({script_path})", flush=True)
         
         # Sistema Anti-Zumbi
         def kill_scalper(*args):

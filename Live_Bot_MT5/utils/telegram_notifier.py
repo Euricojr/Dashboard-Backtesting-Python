@@ -154,12 +154,18 @@ class TelegramNotifier:
             url = f"https://api.telegram.org/bot{self.token}/getUpdates"
             while True:
                 try:
-                    params = {"timeout": 30, "offset": offset}
-                    # O timeout do request deve ser um pouco maior que o timeout do Telegram
-                    resp = requests.get(url, params=params, timeout=40)
+                    # Timeout curto para nao prender o GIL e travar o terminal (Bug do Windows)
+                    params = {"timeout": 5, "offset": offset}
+                    resp = requests.get(url, params=params, timeout=10)
                     
                     if resp.status_code == 200:
-                        data = resp.json()
+                        try:
+                            data = resp.json()
+                        except Exception as json_err:
+                            print(f"⚠️ [Telegram] Falha ao decodificar JSON do Telegram: {json_err}")
+                            time.sleep(1)
+                            continue
+                            
                         if data.get('ok'):
                             for update in data['result']:
                                 offset = update['update_id'] + 1
@@ -250,10 +256,15 @@ class TelegramNotifier:
                                         self.enviar_mensagem(res_text, target_chat_id=chat_id)
                                         
                 except requests.exceptions.Timeout:
-                    pass  # Timeout esperado do long polling
+                    pass  # Timeout esperado
+                except requests.exceptions.ReadTimeout:
+                    pass
                 except Exception as e:
                     print(f"Erro no listener do Telegram: {e}")
-                    time.sleep(5)
+                    time.sleep(2)
+                
+                # Respiro do loop para não torrar CPU
+                time.sleep(1)
 
         t = threading.Thread(target=poll, daemon=True)
         t.start()
