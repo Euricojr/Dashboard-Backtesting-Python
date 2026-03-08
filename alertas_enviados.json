@@ -74,5 +74,15 @@
         "data": "2026-03-05",
         "hora": "17:00",
         "sinal": "COMPRA"
+    },
+    "VBBR3": {
+        "data": "2026-03-06",
+        "hora": "12:00",
+        "sinal": "COMPRA"
+    },
+    "UGPA3": {
+        "data": "2026-03-06",
+        "hora": "13:00",
+        "sinal": "COMPRA"
     }
 }

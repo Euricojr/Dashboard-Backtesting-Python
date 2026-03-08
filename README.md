@@ -11,7 +11,10 @@ Bem-vindo ao **FinSense**, um ecossistema completo e avançado de trading quanti
 - **🔬 Motor de Backtesting e Análise Fundamentalista:** Ferramentas para validar se uma estratégia funcionou nos últimos anos, checando Métricas de Risco (Profit Factor, Win Rate, Drawdown) e dados de valuation.
 - **🤖 Execução Automática no MetaTrader 5:** Envio e gerenciamento de ordens automatizadas no mercado (B3/Forex).
 - **⚡ Scanner Elite Integrado:** Um script de inteligência de mercado (`scanner_elite.py`) que varre o histórico de mais de 120 ativos da B3 (via `yfinance` em timeframes como 1h ou Diário) buscando configurações otimizadas de cruzamento de médias, selecionando automaticamente os ativos mais lucrativos.
-- **📱 Monitoramento via Telegram Bot:** Receba alertas sobre oportunidades de mercado diretamente no seu celular. O status de funcionamento do Bot pode ser ligado e desligado (On/Off) com apenas um clique pelo painel de controle do Dashboard Web.
+- **📱 Monitoramento e Controle Avançado via Telegram Bot:** Receba alertas de oportunidades, status consolidado e o novo *Resumo Diário* em JSON diretamente no celular. Interaja de forma bidirecional com o robô via **Botões Inline** (ex: Ligar/Desligar Scalper WIN, visualizar Estatísticas), trabalhando em sincronia perfeita com o painel de controle do Dashboard Web.
+- **📱 Responsividade e Mobile-First:** Gráficos de Candlestick inteligentes que calibram a visibilidade de velas estritamente pela dimensão da tela (reduzindo carga visual no celular) de forma dinâmica.
+- **✨ Interface e UX Refinados:** Design otimizado no painel de controle do Scalper WIN (espaçamentos, glassmorphism e cores) e nova Landing Page enriquecida com copywriting de conversão e atalho vetorizado direto para o `@AlertaOperacoes_bot`.
+- **📈 Estabilidade e Alta Precisão:** Algoritmo revisado de cálculo de *Winrate*, e arquitetura "Thread-Safe" que protege o Core da plataforma contra quedas (`RuntimeError: main thread not in main loop`), garantindo operação ininterrupta, inclusive nos momentos de mercado fechado.
 
 ---
 
@@ -148,7 +151,8 @@ Strategy/
 ├── Live_Bot_MT5/              # Módulo de produção e ação rápida
 │   ├── app.py                 # Aplicação Central e Server Flask (porta 5002)
 │   ├── scanner_elite.py       # Peneira algorítmica de ativos em Python
-│   ├── bot_viagem.py          # Lógica do Telegram Bot de alertas de mercado
+│   ├── bot_viagem.py          # Lógica do Telegram Bot (Alertas, Botões Inline e Notificações)
+│   ├── alertas_enviados.json  # Persistência em cache de logs para geração do Resumo Diário
 │   ├── templates/             # HTML (+ Tailwind/Vanilha CSS) do Dashboard Moderno
 │   ├── static/                # ARquivos JS para atualizações em tempo real das SMAs e botões On/Off
 │   └── data/                  # Base de dados (e.g., backtest_results.csv)
@@ -183,5 +187,5 @@ Desenvolvido por **Eurico Júnior**.
 
 _Plataforma focada na convergência entre Data Science, Backend Avançado, Concepção Interfaces (UI/UX) e Execução Automatizada de Estratégias Institucionais._
 
-**Versão:** 1.1  
-**Última Atualização:** Fevereiro 2026
+**Versão:** 1.2  
+**Última Atualização:** Março 2026
