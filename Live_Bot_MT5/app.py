@@ -1264,6 +1264,237 @@ def run_backtest():
         "candles": candles_dict.to_dict('records') # Send Candle Data
     })
 
+@app.route('/api/backtest_scalper')
+def run_backtest_scalper():
+    symbol = request.args.get('symbol', 'WINJ26')
+    
+    connected, err = ensure_mt5_connected()
+    if not connected:
+        return jsonify({"error": f"Erro MT5: {err}"}), 503
+
+    mt5.symbol_select(symbol, True)
+    
+    # Baixa 5000 candles M1
+    rates = mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_M1, 0, 5000)
+    if rates is None or len(rates) == 0:
+        return jsonify({"error": "Sem dados suficientes para backtest."}), 404
+        
+    df = pd.DataFrame(rates)
+    df['time'] = pd.to_datetime(df['time'], unit='s')
+    
+    # Calcula EMA 9 e 21
+    df['EMA9'] = df['close'].ewm(span=9, adjust=False).mean()
+    df['EMA21'] = df['close'].ewm(span=21, adjust=False).mean()
+    
+    # Calcula VWAP Diária (Reset a cada dia)
+    df['date'] = df['time'].dt.date
+    df['Typical_Price'] = (df['high'] + df['low'] + df['close']) / 3
+    df['Vol_x_TP'] = df['tick_volume'] * df['Typical_Price']
+    
+    df['Cum_Vol_x_TP'] = df.groupby('date')['Vol_x_TP'].cumsum()
+    df['Cum_Vol'] = df.groupby('date')['tick_volume'].cumsum()
+    df['VWAP'] = df['Cum_Vol_x_TP'] / df['Cum_Vol']
+    
+    # Variáveis de Simulação (Iteração)
+    in_position = False
+    trade_type = None # 'BUY' ou 'SELL'
+    entry_price = 0.0
+    
+    total_trades = 0
+    win_count = 0
+    total_profit_pts = 0.0
+    
+    max_drawdown_rs = 0.0
+    peak_rs = 0.0
+    current_balance_rs = 0.0
+    
+    from datetime import time as dt_time
+    hora_inicio = dt_time(9, 15)
+    hora_fim = dt_time(12, 30)
+    
+    for i in range(2, len(df)):
+        row = df.iloc[i]
+        ts_current = int(row['time'].value // 10**9) if isinstance(row['time'], pd.Timestamp) else int(row['time'])
+        
+        if in_position:
+            # Check TP/SL
+            high = row['high']
+            low = row['low']
+            closed_trade = False
+            profit_pts = 0.0
+            
+            # SL = 100, TP = 200 (em simulação conservadora, se ambos atingirem, assumimos SL)
+            if trade_type == 'BUY':
+                if low <= entry_price - 100.0:
+                    profit_pts = -100.0
+                    closed_trade = True
+                    df.at[df.index[i], 'trade_signal'] = 'LOSS_BUY'
+                elif high >= entry_price + 200.0:
+                    profit_pts = 200.0
+                    closed_trade = True
+                    df.at[df.index[i], 'trade_signal'] = 'WIN_BUY'
+                    
+            elif trade_type == 'SELL':
+                if high >= entry_price + 100.0:
+                    profit_pts = -100.0
+                    closed_trade = True
+                    df.at[df.index[i], 'trade_signal'] = 'LOSS_SELL'
+                elif low <= entry_price - 200.0:
+                    profit_pts = 200.0
+                    closed_trade = True
+                    df.at[df.index[i], 'trade_signal'] = 'WIN_SELL'
+                    
+            if closed_trade:
+                in_position = False
+                total_trades += 1
+                if profit_pts > 0:
+                    win_count += 1
+                total_profit_pts += profit_pts
+                
+                # Atualiza Drawdown (em R$ 0.20 por ponto)
+                current_balance_rs = total_profit_pts * 0.20
+                if current_balance_rs > peak_rs:
+                    peak_rs = current_balance_rs
+                
+                dd = peak_rs - current_balance_rs
+                if dd > max_drawdown_rs:
+                    max_drawdown_rs = dd
+                    
+            continue 
+            
+        # Não posicionado: Procura entrada
+        hora_atual = row['time'].time()
+        
+        # Só opera na golden zone
+        if hora_inicio <= hora_atual <= hora_fim:
+            # Lógica da vela fechada (i-1 = vela que acabou de fechar, i-2 = anterior a ela)
+            current_closed = df.iloc[i-1]
+            prev_closed = df.iloc[i-2]
+            
+            c_ema9 = current_closed['EMA9']
+            c_ema21 = current_closed['EMA21']
+            p_ema9 = prev_closed['EMA9']
+            p_ema21 = prev_closed['EMA21']
+            
+            c_close = current_closed['close']
+            c_vwap = current_closed['VWAP']
+            
+            cross_up = (p_ema9 <= p_ema21) and (c_ema9 > c_ema21)
+            cross_down = (p_ema9 >= p_ema21) and (c_ema9 < c_ema21)
+            
+            # Usamos a abertura da vela "i" (atual real-time) como preço de entrada simulado
+            if cross_up and c_close > c_vwap:
+                in_position = True
+                trade_type = 'BUY'
+                entry_price = row['open']
+                df.at[df.index[i], 'trade_signal'] = 'BUY'
+            elif cross_down and c_close < c_vwap:
+                in_position = True
+                trade_type = 'SELL'
+                entry_price = row['open']
+                df.at[df.index[i], 'trade_signal'] = 'SELL'
+
+    lucro_total_rs = total_profit_pts * 0.20
+    winrate = (win_count / total_trades * 100) if total_trades > 0 else 0.0
+
+    # ----- PREPARAÇÃO DOS DADOS VISUAIS (CHART) -----
+    
+    # 1. Candles
+    candles_list = []
+    for _, row in df.iterrows():
+        ts = int(row['time'].value // 10**9) if isinstance(row['time'], pd.Timestamp) else int(row['time'])
+        candles_list.append({
+            "time": ts,
+            "open": float(row['open']),
+            "high": float(row['high']),
+            "low": float(row['low']),
+            "close": float(row['close'])
+        })
+        
+    # 2. Indicadores (EMA 9, EMA 21, VWAP)
+    indicators_list = []
+    for _, row in df.iterrows():
+        ts = int(row['time'].value // 10**9) if isinstance(row['time'], pd.Timestamp) else int(row['time'])
+        indicators_list.append({
+            "time": ts,
+            "ema9": float(row['EMA9']) if not pd.isna(row['EMA9']) else None,
+            "ema21": float(row['EMA21']) if not pd.isna(row['EMA21']) else None,
+            "vwap": float(row['VWAP']) if not pd.isna(row['VWAP']) else None
+        })
+        
+    # 3. Markers (Setas de Compra/Venda)
+    markers_list = []
+    if 'trade_signal' in df.columns:
+        trades_df = df.dropna(subset=['trade_signal'])
+        for _, row in trades_df.iterrows():
+            ts = int(row['time'].value // 10**9) if isinstance(row['time'], pd.Timestamp) else int(row['time'])
+            action = row['trade_signal']
+            
+            if action == 'BUY':
+                markers_list.append({
+                    "time": ts,
+                    "position": "belowBar",
+                    "color": "#00E676",
+                    "shape": "arrowUp",
+                    "text": "COMPRA",
+                    "size": 2
+                })
+            elif action == 'SELL':
+                markers_list.append({
+                    "time": ts,
+                    "position": "aboveBar",
+                    "color": "#FF5252",
+                    "shape": "arrowDown",
+                    "text": "VENDA",
+                    "size": 2
+                })
+            elif action == 'WIN_BUY':
+                markers_list.append({
+                    "time": ts,
+                    "position": "aboveBar",
+                    "color": "#00E676",
+                    "shape": "circle",
+                    "text": "TP (+R$ 40)",
+                    "size": 1
+                })
+            elif action == 'LOSS_BUY':
+                markers_list.append({
+                    "time": ts,
+                    "position": "belowBar",
+                    "color": "#FF5252",
+                    "shape": "circle",
+                    "text": "SL (-R$ 20)",
+                    "size": 1
+                })
+            elif action == 'WIN_SELL':
+                markers_list.append({
+                    "time": ts,
+                    "position": "belowBar",
+                    "color": "#00E676",
+                    "shape": "circle",
+                    "text": "TP (+R$ 40)",
+                    "size": 1
+                })
+            elif action == 'LOSS_SELL':
+                markers_list.append({
+                    "time": ts,
+                    "position": "aboveBar",
+                    "color": "#FF5252",
+                    "shape": "circle",
+                    "text": "SL (-R$ 20)",
+                    "size": 1
+                })
+
+    return jsonify({
+        "total_trades": total_trades,
+        "winrate": round(winrate, 1),
+        "lucro_total": round(lucro_total_rs, 2),
+        "max_drawdown": round(max_drawdown_rs, 2),
+        "candles": candles_list,
+        "indicators": indicators_list,
+        "markers": markers_list
+    })
+
 @app.route('/api/batch_backtest', methods=['POST'])
 def batch_backtest():
     import time

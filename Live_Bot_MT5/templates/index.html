@@ -1388,6 +1388,11 @@
                     </div>
                   </div>
 
+                  <button id="btn-backtest-scalper" class="btn w-100 py-2 mt-2 border-primary text-primary"
+                    style="font-weight: bold; font-size: 0.85rem;" onclick="runScalperBacktest()">
+                    📊 Backtest M1 (10 dias)
+                  </button>
+
                   <button id="btn-toggle-scalper" class="btn w-100 py-2 mt-1"
                     style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444; font-weight: bold; font-size: 0.85rem;"
                     onclick="toggleScalper()">
@@ -1728,6 +1733,24 @@
       title: "SMA Long",
     });
 
+    let ema9Series = chart.addLineSeries({
+      color: "#2962FF",
+      lineWidth: 2,
+      title: "EMA 9 (Scalper)",
+    });
+
+    let ema21Series = chart.addLineSeries({
+      color: "#FF6D00",
+      lineWidth: 2,
+      title: "EMA 21 (Scalper)",
+    });
+
+    let vwapSeries = chart.addLineSeries({
+      color: "#FFD600",
+      lineWidth: 2,
+      title: "VWAP Diária (Scalper)",
+    });
+
     // Resize
     new ResizeObserver((entries) => {
       if (entries.length === 0 || entries[0].target !== chartContainer) {
@@ -1866,6 +1889,9 @@
         if (candleSeries) chart.removeSeries(candleSeries);
         if (smaShortSeries) chart.removeSeries(smaShortSeries);
         if (smaLongSeries) chart.removeSeries(smaLongSeries);
+        if (ema9Series) chart.removeSeries(ema9Series);
+        if (ema21Series) chart.removeSeries(ema21Series);
+        if (vwapSeries) chart.removeSeries(vwapSeries);
 
         // 2. Recreate Series (Order Matters: Last added = Top Layer)
         // 2.1 Candles (Background Layer)
@@ -1889,6 +1915,10 @@
           lineWidth: 2,
           title: "SMA Long",
         });
+
+        ema9Series = chart.addLineSeries({ color: "rgba(0,0,0,0)", lineWidth: 0, crosshairMarkerVisible: false });
+        ema21Series = chart.addLineSeries({ color: "rgba(0,0,0,0)", lineWidth: 0, crosshairMarkerVisible: false });
+        vwapSeries = chart.addLineSeries({ color: "rgba(0,0,0,0)", lineWidth: 0, crosshairMarkerVisible: false });
 
         // 3. Set Data
         candleSeries.setData(data);
@@ -1957,6 +1987,9 @@
           if (candleSeries) chart.removeSeries(candleSeries);
           if (smaShortSeries) chart.removeSeries(smaShortSeries);
           if (smaLongSeries) chart.removeSeries(smaLongSeries);
+          if (ema9Series) chart.removeSeries(ema9Series);
+          if (ema21Series) chart.removeSeries(ema21Series);
+          if (vwapSeries) chart.removeSeries(vwapSeries);
 
           // 2. Recreate Series
           candleSeries = chart.addCandlestickSeries({
@@ -1978,6 +2011,10 @@
             lineWidth: 2,
             title: "SMA Long",
           });
+
+          ema9Series = chart.addLineSeries({ color: "rgba(0,0,0,0)", lineWidth: 0, crosshairMarkerVisible: false });
+          ema21Series = chart.addLineSeries({ color: "rgba(0,0,0,0)", lineWidth: 0, crosshairMarkerVisible: false });
+          vwapSeries = chart.addLineSeries({ color: "rgba(0,0,0,0)", lineWidth: 0, crosshairMarkerVisible: false });
 
           // 3. Set Data
           candleSeries.setData(candleData);
@@ -2767,6 +2804,98 @@
         .then(r => r.json())
         .then(d => { fetchScalperStats(); })
         .catch(err => console.error("Erro toggle Scalper:", err));
+    }
+
+    function renderScalperMetrics(data) {
+      const grid = document.getElementById("metrics-grid");
+      const fmtCurrency = (v) => "R$ " + v.toFixed(2);
+      const fmtPct = (v) => v.toFixed(1) + "%";
+
+      const createCard = (label, value, icon, valClass, accentClass) => `
+        <div class="metric-card ${accentClass}" style="cursor: default;">
+            <span class="metric-label"><i class="${icon}"></i>${label}</span>
+            <span class="metric-value ${valClass}">${value}</span>
+        </div>
+      `;
+
+      const lucroClass = data.lucro_total >= 0 ? "val-pos" : "val-neg";
+      const lucroAccent = data.lucro_total >= 0 ? "accent-green" : "accent-red";
+
+      grid.innerHTML = `
+        ${createCard("Lucro Total", fmtCurrency(data.lucro_total), "ri-funds-box-line", lucroClass, lucroAccent)}
+        ${createCard("Win Rate", fmtPct(data.winrate), "ri-crosshair-2-line", "val-neu", "accent-blue")}
+        ${createCard("Total Trades", data.total_trades, "ri-exchange-dollar-line", "val-neu", "accent-blue")}
+        ${createCard("Max Drawdown", fmtCurrency(data.max_drawdown), "ri-arrow-down-circle-line", "val-neg", "accent-red")}
+      `;
+    }
+
+    function runScalperBacktest() {
+      const btn = document.getElementById('btn-backtest-scalper');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = `<span class="spinner-border spinner-border-sm mr-2" role="status" aria-hidden="true"></span> Processando...`;
+      btn.disabled = true;
+
+      fetch('/api/backtest_scalper')
+        .then(res => res.json())
+        .then(data => {
+          if (data.error) {
+            alert("Erro no Backtest: " + data.error);
+            return;
+          }
+
+          // 1. Limpa o gráfico atual
+          if (candleSeries) chart.removeSeries(candleSeries);
+          if (smaShortSeries) chart.removeSeries(smaShortSeries);
+          if (smaLongSeries) chart.removeSeries(smaLongSeries);
+          if (ema9Series) chart.removeSeries(ema9Series);
+          if (ema21Series) chart.removeSeries(ema21Series);
+          if (vwapSeries) chart.removeSeries(vwapSeries);
+
+          // 2. Recria os Series
+          candleSeries = chart.addCandlestickSeries({
+            upColor: "#00E396", downColor: "#FF4560",
+            borderVisible: false, wickUpColor: "#00E396", wickDownColor: "#FF4560",
+          });
+
+          ema9Series = chart.addLineSeries({ color: "#2962FF", lineWidth: 2, title: "EMA 9" });
+          ema21Series = chart.addLineSeries({ color: "#FF6D00", lineWidth: 2, title: "EMA 21" });
+          vwapSeries = chart.addLineSeries({ color: "#FFD600", lineWidth: 2, title: "VWAP" });
+
+          // Mantém as da outra estratégia invisíveis para não dar crash se o usuário trocar
+          smaShortSeries = chart.addLineSeries({ color: "rgba(0,0,0,0)", lineWidth: 0, crosshairMarkerVisible: false });
+          smaLongSeries = chart.addLineSeries({ color: "rgba(0,0,0,0)", lineWidth: 0, crosshairMarkerVisible: false });
+
+          // 3. Popula com os dados do Backtest
+          candleSeries.setData(data.candles);
+
+          const ema9Data = data.indicators.filter(d => d.ema9 !== null).map(d => ({ time: d.time, value: d.ema9 }));
+          const ema21Data = data.indicators.filter(d => d.ema21 !== null).map(d => ({ time: d.time, value: d.ema21 }));
+          const vwapData = data.indicators.filter(d => d.vwap !== null).map(d => ({ time: d.time, value: d.vwap }));
+
+          ema9Series.setData(ema9Data);
+          ema21Series.setData(ema21Data);
+          vwapSeries.setData(vwapData);
+
+          candleSeries.setMarkers(data.markers);
+
+          // 4. Ajusta o Zoom
+          chart.priceScale("right").applyOptions({ autoScale: true, scaleMargins: { top: 0.1, bottom: 0.1 } });
+          const totalCandles = data.candles.length;
+          chart.timeScale().setVisibleLogicalRange({ from: totalCandles - INITIAL_ZOOM_CANDLES, to: totalCandles });
+
+          // 5. Exibe Resultado final pro Usuario escondendo os trades (pois nao retornamos arrays individuais agora)
+          document.getElementById("analysis-section").style.display = "flex";
+          document.getElementById("trade-history-section").style.display = "none";
+          renderScalperMetrics(data);
+        })
+        .catch(err => {
+          console.error(err);
+          alert("Erro ao comunicar com a API de backtest.");
+        })
+        .finally(() => {
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+        });
     }
 
     setInterval(fetchScalperStats, 5000); // Atualiza dados ao vivo sem reload na página!
