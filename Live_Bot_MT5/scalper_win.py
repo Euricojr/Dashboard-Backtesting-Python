@@ -164,8 +164,9 @@ def iniciar_robo():
         df['EMA9'] = df['close'].ewm(span=9, adjust=False).mean()
         df['EMA21'] = df['close'].ewm(span=21, adjust=False).mean()
         
-        current = df.iloc[-1]
-        prev = df.iloc[-2]
+        # Analisa a última vela fechada para evitar a "Síndrome da Vela Aberta"
+        current = df.iloc[-2]
+        prev = df.iloc[-3]
         
         vela_time = current['time']
         

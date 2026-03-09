@@ -783,9 +783,9 @@ def run_telegram_monitor():
                     df['SMA_Short'] = df['close'].rolling(window=20).mean()
                     df['SMA_Long'] = df['close'].rolling(window=50).mean()
                     
-                    # 3. Verifica Cruzamento
-                    current = df.iloc[-1]
-                    prev = df.iloc[-2]
+                    # 3. Verifica Cruzamento (usando apenas vela fechada para evitar sinais falsos)
+                    current = df.iloc[-2]
+                    prev = df.iloc[-3]
                     
                     c_short = current['SMA_Short']
                     c_long = current['SMA_Long']
