@@ -1304,6 +1304,11 @@ def run_backtest_scalper():
     win_count = 0
     total_profit_pts = 0.0
     
+    gross_profit_pts = 0.0
+    gross_loss_pts = 0.0
+    consecutive_losses = 0
+    max_consecutive_losses = 0
+    
     max_drawdown_rs = 0.0
     peak_rs = 0.0
     current_balance_rs = 0.0
@@ -1349,6 +1354,14 @@ def run_backtest_scalper():
                 total_trades += 1
                 if profit_pts > 0:
                     win_count += 1
+                    gross_profit_pts += profit_pts
+                    consecutive_losses = 0
+                else:
+                    gross_loss_pts += abs(profit_pts)
+                    consecutive_losses += 1
+                    if consecutive_losses > max_consecutive_losses:
+                        max_consecutive_losses = consecutive_losses
+                        
                 total_profit_pts += profit_pts
                 
                 # Atualiza Drawdown (em R$ 0.20 por ponto)
@@ -1395,7 +1408,12 @@ def run_backtest_scalper():
                 df.at[df.index[i], 'trade_signal'] = 'SELL'
 
     lucro_total_rs = total_profit_pts * 0.20
+    gross_profit_rs = gross_profit_pts * 0.20
+    gross_loss_rs = gross_loss_pts * 0.20
+    
     winrate = (win_count / total_trades * 100) if total_trades > 0 else 0.0
+    profit_factor = (gross_profit_rs / gross_loss_rs) if gross_loss_rs > 0 else (999.99 if gross_profit_rs > 0 else 0.0)
+    media_por_trade = (lucro_total_rs / total_trades) if total_trades > 0 else 0.0
 
     # ----- PREPARAÇÃO DOS DADOS VISUAIS (CHART) -----
     
@@ -1490,6 +1508,9 @@ def run_backtest_scalper():
         "winrate": round(winrate, 1),
         "lucro_total": round(lucro_total_rs, 2),
         "max_drawdown": round(max_drawdown_rs, 2),
+        "profit_factor": round(profit_factor, 2),
+        "media_por_trade": round(media_por_trade, 2),
+        "max_consecutive_losses": max_consecutive_losses,
         "candles": candles_list,
         "indicators": indicators_list,
         "markers": markers_list
