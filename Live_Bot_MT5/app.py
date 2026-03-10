@@ -1316,6 +1316,9 @@ def run_backtest_scalper():
     peak_rs = 0.0
     current_balance_rs = 0.0
     
+    current_trade_date = None
+    trades_today = 0
+    
     from datetime import time as dt_time
     hora_inicio = dt_time(9, 15)
     hora_fim = dt_time(12, 30)
@@ -1323,6 +1326,12 @@ def run_backtest_scalper():
     for i in range(2, len(df)):
         row = df.iloc[i]
         ts_current = int(row['time'].value // 10**9) if isinstance(row['time'], pd.Timestamp) else int(row['time'])
+        
+        # Reseta contador de trades diários
+        row_date = row['date']
+        if current_trade_date != row_date:
+            current_trade_date = row_date
+            trades_today = 0
         
         if in_position:
             # Check TP/SL
@@ -1381,8 +1390,8 @@ def run_backtest_scalper():
         # Não posicionado: Procura entrada
         hora_atual = row['time'].time()
         
-        # Só opera na golden zone
-        if hora_inicio <= hora_atual <= hora_fim:
+        # Só opera na golden zone e se não bateu o limite de 3 trades no dia
+        if hora_inicio <= hora_atual <= hora_fim and trades_today < 3:
             # Lógica da vela fechada (i-1 = vela que acabou de fechar, i-2 = anterior a ela)
             current_closed = df.iloc[i-1]
             prev_closed = df.iloc[i-2]
@@ -1403,11 +1412,13 @@ def run_backtest_scalper():
                 in_position = True
                 trade_type = 'BUY'
                 entry_price = row['open']
+                trades_today += 1
                 df.at[df.index[i], 'trade_signal'] = 'BUY'
             elif cross_down and c_close < c_vwap:
                 in_position = True
                 trade_type = 'SELL'
                 entry_price = row['open']
+                trades_today += 1
                 df.at[df.index[i], 'trade_signal'] = 'SELL'
 
     lucro_total_rs = total_profit_pts * 0.20
