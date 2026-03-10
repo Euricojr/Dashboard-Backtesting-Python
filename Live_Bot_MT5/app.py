@@ -1267,6 +1267,7 @@ def run_backtest():
 @app.route('/api/backtest_scalper')
 def run_backtest_scalper():
     symbol = request.args.get('symbol', 'WINJ26')
+    tf_str = request.args.get('timeframe', 'M1')
     
     connected, err = ensure_mt5_connected()
     if not connected:
@@ -1274,8 +1275,10 @@ def run_backtest_scalper():
 
     mt5.symbol_select(symbol, True)
     
-    # Baixa 5000 candles M1
-    rates = mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_M1, 0, 5000)
+    timeframe = TIMEFRAMES.get(tf_str, mt5.TIMEFRAME_M1)
+    
+    # Baixa 5000 candles
+    rates = mt5.copy_rates_from_pos(symbol, timeframe, 0, 5000)
     if rates is None or len(rates) == 0:
         return jsonify({"error": "Sem dados suficientes para backtest."}), 404
         

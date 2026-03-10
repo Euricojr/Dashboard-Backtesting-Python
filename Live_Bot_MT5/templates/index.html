@@ -1388,10 +1388,20 @@
                     </div>
                   </div>
 
-                  <button id="btn-backtest-scalper" class="btn w-100 py-2 mt-2 border-primary text-primary"
-                    style="font-weight: bold; font-size: 0.85rem;" onclick="runScalperBacktest()">
-                    📊 Backtest M1 (10 dias)
-                  </button>
+                  <div class="row g-2 mt-2">
+                    <div class="col-6">
+                      <button id="btn-backtest-scalper-m1" class="btn w-100 py-2 border-primary text-primary"
+                        style="font-weight: bold; font-size: 0.8rem;" onclick="runScalperBacktest('M1')">
+                        📊 Backtest M1
+                      </button>
+                    </div>
+                    <div class="col-6">
+                      <button id="btn-backtest-scalper-m5" class="btn w-100 py-2 border-primary text-primary"
+                        style="font-weight: bold; font-size: 0.8rem;" onclick="runScalperBacktest('M5')">
+                        📊 Backtest M5
+                      </button>
+                    </div>
+                  </div>
 
                   <button id="btn-toggle-scalper" class="btn w-100 py-2 mt-1"
                     style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444; font-weight: bold; font-size: 0.85rem;"
@@ -2835,15 +2845,17 @@
       `;
     }
 
-    function runScalperBacktest() {
-      const btn = document.getElementById('btn-backtest-scalper');
+    function runScalperBacktest(tf = 'M1') {
+      const btnId = tf === 'M5' ? 'btn-backtest-scalper-m5' : 'btn-backtest-scalper-m1';
+      const btn = document.getElementById(btnId);
       const originalText = btn.innerHTML;
-      btn.innerHTML = `<span class="spinner-border spinner-border-sm mr-2" role="status" aria-hidden="true"></span> Processando...`;
+      btn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> ...`;
       btn.disabled = true;
 
-      fetch('/api/backtest_scalper')
+      fetch(`/api/backtest_scalper?timeframe=${tf}`)
         .then(res => res.json())
         .then(data => {
+          console.log("Backtest Response Data:", data);
           if (data.error) {
             alert("Erro no Backtest: " + data.error);
             return;
@@ -2871,23 +2883,31 @@
           smaShortSeries = chart.addLineSeries({ color: "rgba(0,0,0,0)", lineWidth: 0, crosshairMarkerVisible: false });
           smaLongSeries = chart.addLineSeries({ color: "rgba(0,0,0,0)", lineWidth: 0, crosshairMarkerVisible: false });
 
-          // 3. Popula com os dados do Backtest
-          candleSeries.setData(data.candles);
+          try {
+            // 3. Popula com os dados do Backtest
+            // Sorting candles to ensure strictly ascending time (Lightweight Charts requirement)
+            data.candles.sort((a, b) => a.time - b.time);
+            candleSeries.setData(data.candles);
 
-          const ema9Data = data.indicators.filter(d => d.ema9 !== null).map(d => ({ time: d.time, value: d.ema9 }));
-          const ema21Data = data.indicators.filter(d => d.ema21 !== null).map(d => ({ time: d.time, value: d.ema21 }));
-          const vwapData = data.indicators.filter(d => d.vwap !== null).map(d => ({ time: d.time, value: d.vwap }));
+            const ema9Data = data.indicators.filter(d => d.ema9 !== null).map(d => ({ time: d.time, value: d.ema9 })).sort((a, b) => a.time - b.time);
+            const ema21Data = data.indicators.filter(d => d.ema21 !== null).map(d => ({ time: d.time, value: d.ema21 })).sort((a, b) => a.time - b.time);
+            const vwapData = data.indicators.filter(d => d.vwap !== null).map(d => ({ time: d.time, value: d.vwap })).sort((a, b) => a.time - b.time);
 
-          ema9Series.setData(ema9Data);
-          ema21Series.setData(ema21Data);
-          vwapSeries.setData(vwapData);
+            ema9Series.setData(ema9Data);
+            ema21Series.setData(ema21Data);
+            vwapSeries.setData(vwapData);
 
-          candleSeries.setMarkers(data.markers);
+            data.markers.sort((a, b) => a.time - b.time);
+            candleSeries.setMarkers(data.markers);
 
-          // 4. Ajusta o Zoom
-          chart.priceScale("right").applyOptions({ autoScale: true, scaleMargins: { top: 0.1, bottom: 0.1 } });
-          const totalCandles = data.candles.length;
-          chart.timeScale().setVisibleLogicalRange({ from: totalCandles - INITIAL_ZOOM_CANDLES, to: totalCandles });
+            // 4. Ajusta o Zoom
+            chart.priceScale("right").applyOptions({ autoScale: true, scaleMargins: { top: 0.1, bottom: 0.1 } });
+            const totalCandles = data.candles.length;
+            chart.timeScale().setVisibleLogicalRange({ from: totalCandles - INITIAL_ZOOM_CANDLES, to: totalCandles });
+          } catch (err) {
+            console.error("Erro ao renderizar gráfico do Scalper:", err);
+            alert("Erro ao desenhar o gráfico com os dados recebidos. Veja o console.");
+          }
 
           // 5. Exibe Resultado final pro Usuario escondendo os trades (pois nao retornamos arrays individuais agora)
           document.getElementById("analysis-section").style.display = "flex";
