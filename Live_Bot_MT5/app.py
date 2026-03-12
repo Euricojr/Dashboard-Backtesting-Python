@@ -1363,16 +1363,6 @@ def run_backtest_scalper():
                     closed_trade = True
                     df.at[df.index[i], 'trade_signal'] = 'WIN_BUY'
                     
-            elif trade_type == 'SELL':
-                if high >= entry_price + 100.0:
-                    profit_pts = -100.0
-                    closed_trade = True
-                    df.at[df.index[i], 'trade_signal'] = 'LOSS_SELL'
-                elif low <= entry_price - 200.0:
-                    profit_pts = 200.0
-                    closed_trade = True
-                    df.at[df.index[i], 'trade_signal'] = 'WIN_SELL'
-                    
             if closed_trade:
                 in_position = False
                 total_trades += 1
@@ -1417,21 +1407,14 @@ def run_backtest_scalper():
             c_vwap = current_closed['VWAP']
             
             cross_up = (p_ema9 <= p_ema21) and (c_ema9 > c_ema21)
-            cross_down = (p_ema9 >= p_ema21) and (c_ema9 < c_ema21)
             
-            # Usamos a abertura da vela "i" (atual real-time) como preço de entrada simulado
+            # Sinal de COMPRA: EMA9 passa pra cima E o preço atual está acima do VWAP
             if cross_up and c_close > c_vwap:
                 in_position = True
                 trade_type = 'BUY'
                 entry_price = row['open']
                 trades_today += 1
                 df.at[df.index[i], 'trade_signal'] = 'BUY'
-            elif cross_down and c_close < c_vwap:
-                in_position = True
-                trade_type = 'SELL'
-                entry_price = row['open']
-                trades_today += 1
-                df.at[df.index[i], 'trade_signal'] = 'SELL'
 
     lucro_total_rs = total_profit_pts * 0.20
     gross_profit_rs = gross_profit_pts * 0.20

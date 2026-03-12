@@ -93,7 +93,7 @@ def wait_position_close(ticket, entrada_info):
     save_controle(data)
     
     resultado_str = "🟢 GAIN" if lucro > 0 else "🔴 LOSS"
-    direcao_str = "COMPRA" if entrada_info['direcao'] == mt5.ORDER_TYPE_BUY else "VENDA"
+    direcao_str = "COMPRA"
     pontos_estimados = abs(lucro) / 0.20 # 1 contrato WIN = R$ 0,20 por ponto
     
     msg_telegram = (
@@ -170,9 +170,8 @@ def iniciar_robo():
         
         vela_time = current['time']
         
-        # Lógicas de Cruzamento
+        # Lógicas de Cruzamento (Apenas Compra)
         cross_up = prev['EMA9'] <= prev['EMA21'] and current['EMA9'] > current['EMA21']
-        cross_down = prev['EMA9'] >= prev['EMA21'] and current['EMA9'] < current['EMA21']
         
         # Só opera essa vela 1 vez
         if vela_time != ultima_vela_operada:
@@ -181,17 +180,14 @@ def iniciar_robo():
             # Sinal de COMPRA: EMA9 passa pra cima E o preço atual está acima do VWAP
             if cross_up and current['close'] > current['VWAP']:
                 action = mt5.ORDER_TYPE_BUY
-            # Sinal de VENDA: EMA9 passa pra baixo E o preço atual está abaixo do VWAP
-            elif cross_down and current['close'] < current['VWAP']:
-                action = mt5.ORDER_TYPE_SELL
                 
             if action is not None:
                 ultima_vela_operada = vela_time
-                price = mt5.symbol_info_tick(SYMBOL).ask if action == mt5.ORDER_TYPE_BUY else mt5.symbol_info_tick(SYMBOL).bid
+                price = mt5.symbol_info_tick(SYMBOL).ask
                 
-                # Para Win: preço + SL_POINTS faz sentido porque 1 ponto = 1 point no contrato cheio do indice
-                sl = price - SL_POINTS if action == mt5.ORDER_TYPE_BUY else price + SL_POINTS
-                tp = price + TP_POINTS if action == mt5.ORDER_TYPE_BUY else price - TP_POINTS
+                # SL/TP Para Compra
+                sl = price - SL_POINTS
+                tp = price + TP_POINTS
                 
                 request = {
                     "action": mt5.TRADE_ACTION_DEAL,
@@ -208,7 +204,7 @@ def iniciar_robo():
                     "type_filling": mt5.ORDER_FILLING_RETURN, # Comum B3
                 }
                 
-                print(f"📩 Enviando Ordem OCO: {'COMPRA' if action == mt5.ORDER_TYPE_BUY else 'VENDA'} | Price: {price} | SL: {sl} | TP: {tp}")
+                print(f"📩 Enviando Ordem OCO: COMPRA | Price: {price} | SL: {sl} | TP: {tp}")
                 res = mt5.order_send(request)
                 if res.retcode == mt5.TRADE_RETCODE_DONE:
                     # Montando pacote de dados pro Raio-X
