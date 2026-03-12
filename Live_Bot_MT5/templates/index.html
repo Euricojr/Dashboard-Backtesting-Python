@@ -48,10 +48,12 @@
     .card-header {
       background-color: transparent;
       border-bottom: 1px solid var(--border-color);
+      padding-top: 0.5rem !important;
+      padding-bottom: 0.5rem !important;
     }
 
-    .card-title {
-      color: var(--text-primary);
+    .card-body {
+      padding: 0.75rem !important;
     }
 
     .form-control,
@@ -59,6 +61,8 @@
       background-color: #09090b;
       border-color: var(--border-color);
       color: var(--text-primary);
+      padding: 0.35rem 0.75rem !important;
+      font-size: 0.85rem !important;
     }
 
     .form-control:focus,
@@ -218,12 +222,17 @@
 
     /* --- CARBON OVERRIDES (Remove Blues) --- */
 
-    /* 1. Buttons (Green Primary) */
+    /* 1. Buttons (Green Primary) - Compact */
+    .btn {
+      padding: 0.4rem 0.8rem !important;
+      font-size: 0.8rem !important;
+    }
+
     .btn-primary {
       background: linear-gradient(135deg, #10b981, #059669) !important;
       border: 1px solid #10b981 !important;
       color: #ffffff !important;
-      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4) !important;
+      box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2) !important;
       font-weight: 700;
       transition: all 0.3s ease;
     }
@@ -232,8 +241,8 @@
     .btn-primary:focus,
     .btn-primary:active {
       background: linear-gradient(135deg, #059669, #047857) !important;
-      transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(16, 185, 129, 0.6) !important;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 12px rgba(16, 185, 129, 0.4) !important;
     }
 
     /* 2. Forms (Inputs/Selects) */
@@ -293,12 +302,19 @@
       color: #ffffff !important;
     }
 
-    /* 5. Scrollbar (Universal Fix) */
-    /* 5. Scrollbar (Universal & Firefox Support) */
-    /* Firefox Default */
+    /* 5. Scrollbar Hide */
+    .scrollbar-hide::-webkit-scrollbar {
+      display: none;
+    }
+
+    .scrollbar-hide {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
     * {
       scrollbar-width: thin;
-      scrollbar-color: #3f3f46 #09090b;
+      scrollbar-color: #3f3f46 transparent;
     }
 
     /* Webkit (Chrome/Edge/Safari) */
@@ -1285,11 +1301,12 @@
           <!-- Main Content Row (Equal Height Columns) -->
           <div class="row g-3 align-items-stretch">
             <!-- Sidebar / Controls -->
-            <div class="col-md-3 d-flex flex-column">
+            <div class="col-md-3 d-flex flex-column scrollbar-hide"
+              style="max-height: calc(100vh - 4.5rem); overflow-y: auto;">
               <!-- Ativo & Preço (Mini destaque) -->
-              <div class="card mb-3 flex-shrink-0">
+              <div class="card mb-2 flex-shrink-0">
                 <div class="card-body text-center">
-                  <div class="text-secondary text-uppercase small mb-3">
+                  <div class="text-secondary text-uppercase small mb-2">
                     Ativo Atual
                   </div>
 
@@ -1299,7 +1316,7 @@
                   </div>
 
                   <!-- Input Pesquisável (Refined Wrapper) -->
-                  <div class="mb-3">
+                  <div class="mb-2">
                     <div class="neon-search-wrapper">
                       <input type="text" id="ticker-input" class="clean-input" placeholder="Buscar Ativo (ex: WIN)"
                         value="WINJ26" list="assetsList" autocomplete="off" />
@@ -1399,19 +1416,19 @@
               </div>
 
               <!-- MÓDULO SCALPER WIN UI -->
-              <div class="card mt-3 mb-0" style="border: 1px solid rgba(0, 227, 150, 0.4)">
-                <div class="card-header border-0 pb-0 pt-3 d-flex justify-content-between align-items-center">
+              <div class="card mt-2 mb-0" style="border: 1px solid rgba(0, 227, 150, 0.4)">
+                <div class="card-header border-0 pb-0 pt-2 d-flex justify-content-between align-items-center">
                   <h3 class="card-title text-uppercase font-weight-bold" style="
-                        font-size: 0.85rem;
+                        font-size: 0.8rem;
                         color: #00e396;
                         margin-bottom: 0;
                       ">
                     🤖 Scalper WIN
                   </h3>
                   <span id="scalper-status" class="badge bg-danger"
-                    style="font-size: 0.7rem; padding: 0.3rem 0.5rem">OFF</span>
+                    style="font-size: 0.65rem; padding: 0.2rem 0.4rem">OFF</span>
                 </div>
-                <div class="card-body pb-3 pt-2">
+                <div class="card-body pb-2 pt-1">
                   <div class="row text-center mb-2">
                     <div class="col-6">
                       <div class="text-secondary small text-uppercase" style="font-size: 0.7rem">
@@ -1635,8 +1652,8 @@
               <div class="card h-100" style="background: transparent; border: none">
                 <div class="card-body p-0 h-100">
                   <div class="table-responsive" style="
-                        height: 335px;
-                        max-height: 335px;
+                        height: 250px;
+                        max-height: 250px;
                         overflow-y: auto;
                         border-radius: 4px;
                         border: 1px solid #27272a;
@@ -1706,7 +1723,7 @@
                 </div>
                 <div class="card-body p-0">
                   <div class="table-responsive" style="
-                        max-height: 400px;
+                        max-height: 300px;
                         overflow-y: auto;
                         border-radius: 4px;
                         border: 1px solid #27272a;
