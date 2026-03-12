@@ -1288,31 +1288,10 @@ def run_backtest_scalper():
     df = pd.DataFrame(rates)
     df['time'] = pd.to_datetime(df['time'], unit='s')
     
-    # 1. Análise de Volatilidade (Tamanho Médio do Candle)
     df['time_only'] = df['time'].dt.time
     from datetime import time as dt_time
     hora_inicio = dt_time(9, 15)
     hora_fim = dt_time(12, 30)
-    
-    # Filtra candles pelo horário operacional
-    df_operacional = df[(df['time_only'] >= hora_inicio) & (df['time_only'] <= hora_fim)].copy()
-    if not df_operacional.empty:
-        df_operacional['candle_size'] = df_operacional['high'] - df_operacional['low']
-        tamanho_medio_candle = round(df_operacional['candle_size'].mean(), 2)
-    else:
-        tamanho_medio_candle = 0.0
-
-    # 2. Otimizador de Parâmetros (Grid Search Simplificado)
-    # Busca a melhor combinação de Fast EMA e Slow EMA
-    fast_emas = [5, 9, 12, 17]
-    slow_emas = [21, 26, 34, 50]
-    best_score = -1.0
-    setup_otimizado = {
-        "ema_curta": 9,
-        "ema_longa": 21,
-        "lucro_projetado": 0.0,
-        "drawdown_projetado": 0.0
-    }
 
     # Calcula VWAP Diária (Reset a cada dia) para usar no backtest
     df['date'] = df['time'].dt.date
@@ -1322,57 +1301,7 @@ def run_backtest_scalper():
     df['Cum_Vol'] = df.groupby('date')['tick_volume'].cumsum()
     df['VWAP'] = df['Cum_Vol_x_TP'] / df['Cum_Vol']
 
-    # Grid Search Vetorizado (Simplificado para velocidade)
-    prices = df['close'].values
-    vwaps = df['VWAP'].values
-    times = df['time_only'].values
-    dates = df['date'].values
-    
-    for f_ema in fast_emas:
-        for s_ema in slow_emas:
-            if f_ema >= s_ema: continue
-            
-            # Usando Pandas para EWM para não reinventar a roda
-            ema_f = df['close'].ewm(span=f_ema, adjust=False).mean()
-            ema_s = df['close'].ewm(span=s_ema, adjust=False).mean()
-            
-            # Lógica simplificada de sinais (usando shift para evitar look-ahead)
-            cross_up = (ema_f.shift(1) <= ema_s.shift(1)) & (ema_f > ema_s) & (df['close'] > df['VWAP'])
-            cross_down = (ema_f.shift(1) >= ema_s.shift(1)) & (ema_f < ema_s) & (df['close'] < df['VWAP'])
-            
-            signals = np.zeros(len(df))
-            signals[cross_up] = 1 # BUY
-            signals[cross_down] = -1 # SELL
-            
-            # Filtro Operacional
-            mask_hora = (df['time_only'] >= hora_inicio) & (df['time_only'] <= hora_fim)
-            signals = np.where(mask_hora, signals, 0)
-            
-            # Simulação Simples de Resultado Fixo (Target 200 pts, SL 100 pts)
-            # Como é uma simulação muito rápida para otimização, vamos assumir win-rate baseado na direção da vela seguinte:
-            # Shift na direção (Close de t+5 min) - Se favorável em até 200 pts, conta como Win.
-            # Aqui simplificamos assumindo o valor de um "trade ideal" (Winrate fixo baseado na assertividade direcional)
-            future_close = df['close'].shift(-5)
-            direction_diff = future_close - df['open'].shift(-1)
-            
-            sim_wins = np.sum((signals == 1) & (direction_diff > 20)) + np.sum((signals == -1) & (direction_diff < -20))
-            sim_losses = np.sum((signals == 1) & (direction_diff <= 20)) + np.sum((signals == -1) & (direction_diff >= -20))
-            
-            lucro_sim = (sim_wins * 200.0 - sim_losses * 100.0) * 0.20 # R$ 0.20 o ponto
-            drawdown_sim = (sim_losses * 100.0) * 0.20 # Drawdown agressivo baseado nas perdas totais
-            
-            score = lucro_sim / max(abs(drawdown_sim), 1.0)
-            
-            if score > best_score and lucro_sim > 0:
-                best_score = score
-                setup_otimizado = {
-                    "ema_curta": f_ema,
-                    "ema_longa": s_ema,
-                    "lucro_projetado": round(lucro_sim, 2),
-                    "drawdown_projetado": round(drawdown_sim, 2)
-                }
-
-    # Calcula EMA 9 e 21 (Padrão para rodar a simulação visual final)
+    # Calcula as EMAs padrão para rodar a simulação visual e final
     df['EMA9'] = df['close'].ewm(span=9, adjust=False).mean()
     df['EMA21'] = df['close'].ewm(span=21, adjust=False).mean()
     
@@ -1517,7 +1446,7 @@ def run_backtest_scalper():
             "close": float(row['close'])
         })
         
-    # 2. Indicadores (EMA 9, EMA 21, VWAP)
+    # 2. Indicadores (EMA Fast, EMA Slow, VWAP)
     indicators_list = []
     for _, row in df.iterrows():
         ts = int(row['time'].value // 10**9) if isinstance(row['time'], pd.Timestamp) else int(row['time'])
@@ -1599,8 +1528,7 @@ def run_backtest_scalper():
         "profit_factor": round(profit_factor, 2),
         "media_por_trade": round(media_por_trade, 2),
         "max_consecutive_losses": max_consecutive_losses,
-        "tamanho_medio_candle": tamanho_medio_candle,
-        "setup_otimizado": setup_otimizado,
+
         "candles": candles_list,
         "indicators": indicators_list,
         "markers": markers_list

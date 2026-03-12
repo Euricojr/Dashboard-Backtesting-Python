@@ -3244,59 +3244,11 @@
         ${createCard("Max Losing Streak", data.max_consecutive_losses, "ri-arrow-down-line", "val-neg", "accent-red")}
       `;
 
-        // Se viemos do Backtest do Scalper (que agora traz novos insights)
-        if (
-          data.tamanho_medio_candle !== undefined &&
-          data.setup_otimizado !== undefined
-        ) {
-          let insightsContainer = document.getElementById(
-            "scalper-insights-container",
-          );
 
-          // Se não existir na tela, cria dinamicamente logo abaixo do grid de métricas
-          if (!insightsContainer) {
-            insightsContainer = document.createElement("div");
-            insightsContainer.id = "scalper-insights-container";
-            insightsContainer.className = "mt-4 p-3 rounded";
-            insightsContainer.style.backgroundColor = "rgba(41, 98, 255, 0.05)";
-            insightsContainer.style.border = "1px solid rgba(41, 98, 255, 0.2)";
-            grid.parentNode.appendChild(insightsContainer);
-          }
-
-          const opt = data.setup_otimizado;
-          const optLucroClass =
-            opt.lucro_projetado >= 0 ? "val-pos" : "val-neg";
-
-          insightsContainer.innerHTML = `
-            <h4 class="text-uppercase text-secondary small font-weight-bold mb-3 d-flex align-items-center gap-2">
-                <i class="ri-lightbulb-flash-line text-warning"></i> Insights do Algoritmo
-            </h4>
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <div class="p-2 rounded bg-dark" style="border-left: 3px solid #FFD600;">
-                        <span class="d-block text-muted small mb-1">Volatilidade (09:15-12:30)</span>
-                        <span class="fs-4 fw-bold text-white">${data.tamanho_medio_candle} pontos</span>
-                        <span class="d-block text-secondary small" style="font-size: 0.75rem;">Tamanho médio do candle</span>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="p-2 rounded bg-dark" style="border-left: 3px solid #2962FF;">
-                        <span class="d-block text-muted small mb-1">Setup Otimizado Sugerido</span>
-                        <span class="fs-4 fw-bold text-white">EMA ${opt.ema_curta} <span class="text-muted fs-6 mx-1">x</span> EMA ${opt.ema_longa}</span>
-                        <div class="d-flex justify-content-between mt-1" style="font-size: 0.8rem;">
-                            <span class="text-muted">Projeção: <span class="${optLucroClass} fw-bold">R$ ${opt.lucro_projetado.toFixed(2)}</span></span>
-                            <span class="text-danger">DD: R$ ${opt.drawdown_projetado.toFixed(2)}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-         `;
-          insightsContainer.style.display = "block";
-        } else {
-          const insightsContainer = document.getElementById(
-            "scalper-insights-container",
-          );
-          if (insightsContainer) insightsContainer.style.display = "none";
+        // Limpa insights se existirem
+        const insightsContainer = document.getElementById("scalper-insights-container");
+        if (insightsContainer) {
+            insightsContainer.style.display = "none";
         }
       }
 
