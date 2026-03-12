@@ -1288,10 +1288,19 @@ def run_backtest_scalper():
     df = pd.DataFrame(rates)
     df['time'] = pd.to_datetime(df['time'], unit='s')
     
+    # 1. Análise de Volatilidade (Tamanho Médio do Candle)
     df['time_only'] = df['time'].dt.time
     from datetime import time as dt_time
     hora_inicio = dt_time(9, 15)
     hora_fim = dt_time(12, 30)
+
+    # Filtra candles pelo horário operacional
+    df_operacional = df[(df['time_only'] >= hora_inicio) & (df['time_only'] <= hora_fim)].copy()
+    if not df_operacional.empty:
+        df_operacional['candle_size'] = df_operacional['high'] - df_operacional['low']
+        tamanho_medio_candle = round(df_operacional['candle_size'].mean(), 2)
+    else:
+        tamanho_medio_candle = 0.0
 
     # Calcula VWAP Diária (Reset a cada dia) para usar no backtest
     df['date'] = df['time'].dt.date
@@ -1528,6 +1537,7 @@ def run_backtest_scalper():
         "profit_factor": round(profit_factor, 2),
         "media_por_trade": round(media_por_trade, 2),
         "max_consecutive_losses": max_consecutive_losses,
+        "tamanho_medio_candle": tamanho_medio_candle,
 
         "candles": candles_list,
         "indicators": indicators_list,
