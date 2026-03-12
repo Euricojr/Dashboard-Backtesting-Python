@@ -1175,6 +1175,44 @@
       text-transform: uppercase !important;
       margin-top: 2px !important;
     }
+
+    /* Premium Inputs */
+    .premium-input-group {
+      background-color: #1a1a1e;
+      border: 1px solid #00e396;
+      border-radius: 8px;
+      padding: 6px 10px;
+      transition: all 0.2s ease;
+    }
+
+    .premium-input-group:focus-within {
+      box-shadow: 0 0 12px rgba(0, 227, 150, 0.3);
+    }
+
+    .premium-input {
+      background: transparent !important;
+      border: none !important;
+      color: #fff !important;
+      font-size: 1rem !important;
+      font-weight: 600 !important;
+      padding: 0 !important;
+      text-align: center;
+      box-shadow: none !important;
+      outline: none !important;
+    }
+
+    /* Hide Spinners */
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      appearance: none;
+      margin: 0;
+    }
+
+    input[type=number] {
+      -moz-appearance: textfield;
+      appearance: textfield;
+    }
   </style>
   <!-- Lightweight Charts -->
   <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
@@ -1397,6 +1435,27 @@
                             line-height: 1.2;
                           ">
                         R$ 0.00
+                      </div>
+                    </div>
+                  </div>
+
+
+
+                  <div class="row g-2 mb-2 px-1">
+                    <div class="col-6">
+                      <label class="text-secondary small text-uppercase d-block mb-1"
+                        style="font-size: 0.6rem; letter-spacing: 0.5px;">Stop Loss</label>
+                      <div class="premium-input-group">
+                        <input type="number" id="custom_sl_input" class="form-control premium-input" value="150"
+                          placeholder="SL">
+                      </div>
+                    </div>
+                    <div class="col-6">
+                      <label class="text-secondary small text-uppercase d-block mb-1"
+                        style="font-size: 0.6rem; letter-spacing: 0.5px;">Take Profit</label>
+                      <div class="premium-input-group">
+                        <input type="number" id="custom_tp_input" class="form-control premium-input" value="300"
+                          placeholder="TP">
                       </div>
                     </div>
                   </div>
@@ -2911,7 +2970,10 @@
       btn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> ...`;
       btn.disabled = true;
 
-      fetch(`/api/backtest_scalper?timeframe=${tf}`)
+      const customSL = document.getElementById('custom_sl_input').value || 150;
+      const customTP = document.getElementById('custom_tp_input').value || 300;
+
+      fetch(`/api/backtest_scalper?timeframe=${tf}&sl=${customSL}&tp=${customTP}`)
         .then((res) => res.json())
         .then((data) => {
           console.log("Backtest Response Data:", data);

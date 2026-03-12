@@ -1310,6 +1310,14 @@ def run_backtest_scalper():
     df['Cum_Vol'] = df.groupby('date')['tick_volume'].cumsum()
     df['VWAP'] = df['Cum_Vol_x_TP'] / df['Cum_Vol']
 
+    # Captura Stop Loss e Take Profit manuais do usuário
+    try:
+        sl_manual = float(request.args.get('sl', 150))
+        tp_manual = float(request.args.get('tp', 300))
+    except (ValueError, TypeError):
+        sl_manual = 150.0
+        tp_manual = 300.0
+
     # Calcula as EMAs padrão para rodar a simulação visual e final
     df['EMA9'] = df['close'].ewm(span=9, adjust=False).mean()
     df['EMA21'] = df['close'].ewm(span=21, adjust=False).mean()
@@ -1354,12 +1362,12 @@ def run_backtest_scalper():
             
             # SL = 100, TP = 200 (em simulação conservadora, se ambos atingirem, assumimos SL)
             if trade_type == 'BUY':
-                if low <= entry_price - 100.0:
-                    profit_pts = -100.0
+                if low <= entry_price - sl_manual:
+                    profit_pts = -sl_manual
                     closed_trade = True
                     df.at[df.index[i], 'trade_signal'] = 'LOSS_BUY'
-                elif high >= entry_price + 200.0:
-                    profit_pts = 200.0
+                elif high >= entry_price + tp_manual:
+                    profit_pts = tp_manual
                     closed_trade = True
                     df.at[df.index[i], 'trade_signal'] = 'WIN_BUY'
                     
@@ -1481,7 +1489,7 @@ def run_backtest_scalper():
                     "position": "aboveBar",
                     "color": "#00E676",
                     "shape": "circle",
-                    "text": "TP (+R$ 40)",
+                    "text": f"TP (+R$ {tp_manual * 0.20:.0f})",
                     "size": 1
                 })
             elif action == 'LOSS_BUY':
@@ -1490,7 +1498,7 @@ def run_backtest_scalper():
                     "position": "belowBar",
                     "color": "#FF5252",
                     "shape": "circle",
-                    "text": "SL (-R$ 20)",
+                    "text": f"SL (-R$ {sl_manual * 0.20:.0f})",
                     "size": 1
                 })
             elif action == 'WIN_SELL':
@@ -1499,7 +1507,7 @@ def run_backtest_scalper():
                     "position": "belowBar",
                     "color": "#00E676",
                     "shape": "circle",
-                    "text": "TP (+R$ 40)",
+                    "text": f"TP (+R$ {tp_manual * 0.20:.0f})",
                     "size": 1
                 })
             elif action == 'LOSS_SELL':
@@ -1508,7 +1516,7 @@ def run_backtest_scalper():
                     "position": "aboveBar",
                     "color": "#FF5252",
                     "shape": "circle",
-                    "text": "SL (-R$ 20)",
+                    "text": f"SL (-R$ {sl_manual * 0.20:.0f})",
                     "size": 1
                 })
 
