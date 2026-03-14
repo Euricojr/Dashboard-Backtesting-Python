@@ -3020,6 +3020,7 @@
         ${createCard("Max Drawdown", fmtCurrency(data.max_drawdown), "ri-arrow-down-circle-line", "val-neg", "accent-red")}
         ${createCard("Profit Factor", data.profit_factor.toFixed(2), "ri-scales-3-line", pFactClass, pFactAccent)}
         ${createCard("Média por Trade", fmtCurrency(data.media_por_trade), "ri-coin-line", "val-neu", "accent-blue")}
+        ${createCard("Tempo Médio", (data.avg_duration_mins || 0) + " min", "ri-time-line", "val-neu", "accent-purple")}
         ${createCard("Max Losing Streak", data.max_consecutive_losses, "ri-arrow-down-line", "val-neg", "accent-red")}
         ${createCard("Tam. Médio Candle", data.tamanho_medio_candle + " pts", "ri-stock-line", "val-neu", "accent-warn")}
       `;

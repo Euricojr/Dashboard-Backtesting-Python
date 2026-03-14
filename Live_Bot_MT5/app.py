@@ -1357,6 +1357,9 @@ def run_backtest_scalper():
     current_trade_date = None
     trades_today = 0
     
+    total_duration_candles = 0
+    entry_index = 0
+    
     for i in range(2, len(df)):
         row = df.iloc[i]
         ts_current = int(row['time'].value // 10**9) if isinstance(row['time'], pd.Timestamp) else int(row['time'])
@@ -1398,6 +1401,7 @@ def run_backtest_scalper():
             if closed_trade:
                 in_position = False
                 total_trades += 1
+                total_duration_candles += (i - entry_index)
                 if profit_pts > 0:
                     win_count += 1
                     gross_profit_pts += profit_pts
@@ -1446,6 +1450,7 @@ def run_backtest_scalper():
                 in_position = True
                 trade_type = 'BUY'
                 entry_price = row['open']
+                entry_index = i
                 trades_today += 1
                 df.at[df.index[i], 'trade_signal'] = 'BUY'
 
@@ -1454,6 +1459,7 @@ def run_backtest_scalper():
                 in_position = True
                 trade_type = 'SELL'
                 entry_price = row['open']
+                entry_index = i
                 trades_today += 1
                 df.at[df.index[i], 'trade_signal'] = 'SELL'
 
@@ -1464,6 +1470,17 @@ def run_backtest_scalper():
     winrate = (win_count / total_trades * 100) if total_trades > 0 else 0.0
     profit_factor = (gross_profit_rs / gross_loss_rs) if gross_loss_rs > 0 else (999.99 if gross_profit_rs > 0 else 0.0)
     media_por_trade = (lucro_total_rs / total_trades) if total_trades > 0 else 0.0
+
+    # Cálculo do Tempo Médio em Minutos
+    # Extrai o número do timeframe (ex: 'M5' -> 5, 'M1' -> 1)
+    try:
+        tf_mins = int(tf_str.replace('M', '')) if 'M' in tf_str else 1
+    except:
+        tf_mins = 1
+    
+    avg_duration_mins = (total_duration_candles / total_trades * tf_mins) if total_trades > 0 else 0.0
+    
+    print(f"DEBUG DURAÇÃO: Total Candles={total_duration_candles}, Trades={total_trades}, TF Mins={tf_mins}, Avg Mins={avg_duration_mins}")
 
     # ----- PREPARAÇÃO DOS DADOS VISUAIS (CHART) -----
     
@@ -1562,6 +1579,7 @@ def run_backtest_scalper():
         "media_por_trade": round(media_por_trade, 2),
         "max_consecutive_losses": max_consecutive_losses,
         "tamanho_medio_candle": tamanho_medio_candle,
+        "avg_duration_mins": round(avg_duration_mins, 1),
 
         "candles": candles_list,
         "indicators": indicators_list,
