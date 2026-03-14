@@ -84,5 +84,10 @@
         "data": "2026-03-06",
         "hora": "13:00",
         "sinal": "COMPRA"
+    },
+    "ABEV3": {
+        "data": "2026-03-12",
+        "hora": "15:00",
+        "sinal": "VENDA"
     }
 }

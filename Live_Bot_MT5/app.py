@@ -15,6 +15,11 @@ import mplfinance as mpf
 from dotenv import load_dotenv
 import numpy as np
 
+
+###### 9 exponencial
+
+
+
 # Carrega variáveis de ambiente (incluindo XP_DEMO_PASSWORD e XP_DEMO_LOGIN)
 load_dotenv()
 
@@ -1280,13 +1285,22 @@ def run_backtest_scalper():
     
     timeframe = TIMEFRAMES.get(tf_str, mt5.TIMEFRAME_M1)
     
-    # Baixa 5000 candles
-    rates = mt5.copy_rates_from_pos(symbol, timeframe, 0, 5000)
+    # Define data_inicio como 18/02/2026 00:00 (UTC do terminal geralmente)
+    # data_fim como o momento atual
+    data_inicio = datetime(2026, 2, 18, 0, 0)
+    data_fim = datetime.now()
+
+    # Busca dados por Range
+    rates = mt5.copy_rates_range(symbol, timeframe, data_inicio, data_fim)
     if rates is None or len(rates) == 0:
-        return jsonify({"error": "Sem dados suficientes para backtest."}), 404
+        err = mt5.last_error()
+        return jsonify({"error": f"Sem dados para o período selecionado ({data_inicio} até {data_fim}). MT5 Error: {err}"}), 404
         
     df = pd.DataFrame(rates)
     df['time'] = pd.to_datetime(df['time'], unit='s')
+
+    # Auditoria de Retorno
+    print(f"[{datetime.now().strftime('%H:%M:%S')}] Buscando dados de {data_inicio} até {data_fim}. Velas encontradas: {len(df)}")
     
     # 1. Análise de Volatilidade (Tamanho Médio do Candle)
     df['time_only'] = df['time'].dt.time
@@ -1318,7 +1332,7 @@ def run_backtest_scalper():
         sl_manual = 150.0
         tp_manual = 300.0
 
-    # Calcula as EMAs padrão para rodar a simulação visual e final
+    # Calcula as EMAs padrão usando a matemática Exponencial verdadeira (ewm)
     df['EMA9'] = df['close'].ewm(span=9, adjust=False).mean()
     df['EMA21'] = df['close'].ewm(span=21, adjust=False).mean()
     
