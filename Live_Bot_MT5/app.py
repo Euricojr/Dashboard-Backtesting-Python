@@ -1274,317 +1274,346 @@ def run_backtest():
 
 @app.route('/api/backtest_scalper')
 def run_backtest_scalper():
-    symbol = request.args.get('symbol', 'WINJ26')
-    tf_str = request.args.get('timeframe', 'M1')
-    
-    connected, err = ensure_mt5_connected()
-    if not connected:
-        return jsonify({"error": f"Erro MT5: {err}"}), 503
-
-    mt5.symbol_select(symbol, True)
-    
-    timeframe = TIMEFRAMES.get(tf_str, mt5.TIMEFRAME_M1)
-    
-    # Define data_inicio como 18/02/2026 00:00 (UTC do terminal geralmente)
-    # data_fim como o momento atual
-    data_inicio = datetime(2026, 2, 18, 0, 0)
-    data_fim = datetime.now()
-
-    # Busca dados por Range
-    rates = mt5.copy_rates_range(symbol, timeframe, data_inicio, data_fim)
-    if rates is None or len(rates) == 0:
-        err = mt5.last_error()
-        return jsonify({"error": f"Sem dados para o período selecionado ({data_inicio} até {data_fim}). MT5 Error: {err}"}), 404
-        
-    df = pd.DataFrame(rates)
-    df['time'] = pd.to_datetime(df['time'], unit='s')
-
-    # Auditoria de Retorno
-    print(f"[{datetime.now().strftime('%H:%M:%S')}] Buscando dados de {data_inicio} até {data_fim}. Velas encontradas: {len(df)}")
-    
-    # 1. Análise de Volatilidade (Tamanho Médio do Candle)
-    df['time_only'] = df['time'].dt.time
-    from datetime import time as dt_time
-    hora_inicio = dt_time(9, 15)
-    hora_fim = dt_time(12, 30)
-
-    # Filtra candles pelo horário operacional
-    df_operacional = df[(df['time_only'] >= hora_inicio) & (df['time_only'] <= hora_fim)].copy()
-    if not df_operacional.empty:
-        df_operacional['candle_size'] = df_operacional['high'] - df_operacional['low']
-        tamanho_medio_candle = round(df_operacional['candle_size'].mean(), 2)
-    else:
-        tamanho_medio_candle = 0.0
-
-    # Calcula VWAP Diária (Reset a cada dia) para usar no backtest
-    df['date'] = df['time'].dt.date
-    df['Typical_Price'] = (df['high'] + df['low'] + df['close']) / 3
-    df['Vol_x_TP'] = df['tick_volume'] * df['Typical_Price']
-    df['Cum_Vol_x_TP'] = df.groupby('date')['Vol_x_TP'].cumsum()
-    df['Cum_Vol'] = df.groupby('date')['tick_volume'].cumsum()
-    df['VWAP'] = df['Cum_Vol_x_TP'] / df['Cum_Vol']
-
-    # Captura Stop Loss e Take Profit manuais do usuário
     try:
-        sl_manual = float(request.args.get('sl', 150))
-        tp_manual = float(request.args.get('tp', 300))
-    except (ValueError, TypeError):
-        sl_manual = 150.0
-        tp_manual = 300.0
+        symbol = request.args.get('symbol', 'WINJ26')
+        tf_str = request.args.get('timeframe', 'M1')
+        
+        connected, err = ensure_mt5_connected()
+        if not connected:
+            return jsonify({"error": f"Erro MT5: {err}"}), 503
 
-    # Média de 9 (Exponencial) e 21 (Simples)
-    df['EMA9'] = df['close'].ewm(span=9, adjust=False).mean()
-    df['SMA21'] = df['close'].rolling(window=21).mean()
-    
-    # Variáveis de Simulação (Iteração Visual Original)
-    in_position = False
-    trade_type = None # 'BUY' ou 'SELL'
-    entry_price = 0.0
-    
-    total_trades = 0
-    win_count = 0
-    total_profit_pts = 0.0
-    
-    gross_profit_pts = 0.0
-    gross_loss_pts = 0.0
-    consecutive_losses = 0
-    max_consecutive_losses = 0
-    
-    max_drawdown_rs = 0.0
-    peak_rs = 0.0
-    current_balance_rs = 0.0
-    
-    current_trade_date = None
-    trades_today = 0
-    
-    total_duration_candles = 0
-    entry_index = 0
-    
-    for i in range(2, len(df)):
-        row = df.iloc[i]
-        ts_current = int(row['time'].value // 10**9) if isinstance(row['time'], pd.Timestamp) else int(row['time'])
+        mt5.symbol_select(symbol, True)
         
-        # Reseta contador de trades diários
-        row_date = row['date']
-        if current_trade_date != row_date:
-            current_trade_date = row_date
-            trades_today = 0
+        timeframe = TIMEFRAMES.get(tf_str, mt5.TIMEFRAME_M1)
         
-        if in_position:
-            # Check TP/SL
-            high = row['high']
-            low = row['low']
-            closed_trade = False
-            profit_pts = 0.0
+        # Define data_inicio como 18/02/2026 00:00 (UTC do terminal geralmente)
+        # data_fim como o momento atual
+        data_inicio = datetime(2026, 2, 18, 0, 0)
+        data_fim = datetime.now()
+
+        # Busca dados por Range
+        rates = mt5.copy_rates_range(symbol, timeframe, data_inicio, data_fim)
+        if rates is None or len(rates) == 0:
+            err = mt5.last_error()
+            return jsonify({"error": f"Sem dados para o período selecionado ({data_inicio} até {data_fim}). MT5 Error: {err}"}), 404
             
-            # SL = 100, TP = 200 (em simulação conservadora, se ambos atingirem, assumimos SL)
-            if trade_type == 'BUY':
-                if low <= entry_price - sl_manual:
-                    profit_pts = -sl_manual
-                    closed_trade = True
-                    df.at[df.index[i], 'trade_signal'] = 'LOSS_BUY'
-                elif high >= entry_price + tp_manual:
-                    profit_pts = tp_manual
-                    closed_trade = True
-                    df.at[df.index[i], 'trade_signal'] = 'WIN_BUY'
+        df = pd.DataFrame(rates)
+        df['time'] = pd.to_datetime(df['time'], unit='s')
+
+        # Auditoria de Retorno
+        print(f"[{datetime.now().strftime('%H:%M:%S')}] RUNNING BACKTEST v2 (INSTITUTIONAL METRICS)")
+        print(f"[{datetime.now().strftime('%H:%M:%S')}] Buscando dados de {data_inicio} até {data_fim}. Velas encontradas: {len(df)}")
+        
+        # 1. Análise de Volatilidade (Tamanho Médio do Candle)
+        df['time_only'] = df['time'].dt.time
+        from datetime import time as dt_time
+        hora_inicio = dt_time(9, 15)
+        hora_fim = dt_time(12, 30)
+
+        # Filtra candles pelo horário operacional
+        df_operacional = df[(df['time_only'] >= hora_inicio) & (df['time_only'] <= hora_fim)].copy()
+        if not df_operacional.empty:
+            df_operacional['candle_size'] = df_operacional['high'] - df_operacional['low']
+            tamanho_medio_candle = round(df_operacional['candle_size'].mean(), 2)
+        else:
+            tamanho_medio_candle = 0.0
+
+        # Calcula VWAP Diária (Reset a cada dia) para usar no backtest
+        df['date'] = df['time'].dt.date
+        df['Typical_Price'] = (df['high'] + df['low'] + df['close']) / 3
+        df['Vol_x_TP'] = df['tick_volume'] * df['Typical_Price']
+        df['Cum_Vol_x_TP'] = df.groupby('date')['Vol_x_TP'].cumsum()
+        df['Cum_Vol'] = df.groupby('date')['tick_volume'].cumsum()
+        df['VWAP'] = df['Cum_Vol_x_TP'] / df['Cum_Vol']
+
+        # Captura Stop Loss e Take Profit manuais do usuário
+        try:
+            sl_manual = float(request.args.get('sl', 150))
+            tp_manual = float(request.args.get('tp', 300))
+        except (ValueError, TypeError):
+            sl_manual = 150.0
+            tp_manual = 300.0
+
+        # Média de 9 (Exponencial) e 21 (Simples)
+        df['EMA9'] = df['close'].ewm(span=9, adjust=False).mean()
+        df['SMA21'] = df['close'].rolling(window=21).mean()
+        
+        # Variáveis de Simulação (Iteração Visual Original)
+        in_position = False
+        trade_type = None # 'BUY' ou 'SELL'
+        entry_price = 0.0
+        
+        total_trades = 0
+        win_count = 0
+        total_profit_pts = 0.0
+        
+        gross_profit_pts = 0.0
+        gross_loss_pts = 0.0
+        loss_count = 0
+        consecutive_losses = 0
+        max_consecutive_losses = 0
+        consecutive_wins = 0
+        max_winning_streak = 0
+        
+        max_drawdown_rs = 0.0
+        peak_rs = 0.0
+        current_balance_rs = 0.0
+        
+        current_trade_date = None
+        trades_today = 0
+        
+        total_duration_candles = 0
+        entry_index = 0
+        
+        for i in range(2, len(df)):
+            row = df.iloc[i]
+            ts_current = int(row['time'].value // 10**9) if isinstance(row['time'], pd.Timestamp) else int(row['time'])
             
-            elif trade_type == 'SELL':
-                if high >= entry_price + sl_manual:
-                    profit_pts = -sl_manual
-                    closed_trade = True
-                    df.at[df.index[i], 'trade_signal'] = 'LOSS_SELL'
-                elif low <= entry_price - tp_manual:
-                    profit_pts = tp_manual
-                    closed_trade = True
-                    df.at[df.index[i], 'trade_signal'] = 'WIN_SELL'
-                    
-            if closed_trade:
-                in_position = False
-                total_trades += 1
-                total_duration_candles += (i - entry_index)
-                if profit_pts > 0:
-                    win_count += 1
-                    gross_profit_pts += profit_pts
-                    consecutive_losses = 0
-                else:
-                    gross_loss_pts += abs(profit_pts)
-                    consecutive_losses += 1
-                    if consecutive_losses > max_consecutive_losses:
-                        max_consecutive_losses = consecutive_losses
+            # Reseta contador de trades diários
+            row_date = row['date']
+            if current_trade_date != row_date:
+                current_trade_date = row_date
+                trades_today = 0
+            
+            if in_position:
+                # Check TP/SL
+                high = row['high']
+                low = row['low']
+                closed_trade = False
+                profit_pts = 0.0
+                
+                # SL = 100, TP = 200 (em simulação conservadora, se ambos atingirem, assumimos SL)
+                if trade_type == 'BUY':
+                    if low <= entry_price - sl_manual:
+                        profit_pts = -sl_manual
+                        closed_trade = True
+                        df.at[df.index[i], 'trade_signal'] = 'LOSS_BUY'
+                    elif high >= entry_price + tp_manual:
+                        profit_pts = tp_manual
+                        closed_trade = True
+                        df.at[df.index[i], 'trade_signal'] = 'WIN_BUY'
+                
+                elif trade_type == 'SELL':
+                    if high >= entry_price + sl_manual:
+                        profit_pts = -sl_manual
+                        closed_trade = True
+                        df.at[df.index[i], 'trade_signal'] = 'LOSS_SELL'
+                    elif low <= entry_price - tp_manual:
+                        profit_pts = tp_manual
+                        closed_trade = True
+                        df.at[df.index[i], 'trade_signal'] = 'WIN_SELL'
                         
-                total_profit_pts += profit_pts
-                
-                # Atualiza Drawdown (em R$ 0.20 por ponto)
-                current_balance_rs = total_profit_pts * 0.20
-                if current_balance_rs > peak_rs:
-                    peak_rs = current_balance_rs
-                
-                dd = peak_rs - current_balance_rs
-                if dd > max_drawdown_rs:
-                    max_drawdown_rs = dd
+                if closed_trade:
+                    in_position = False
+                    total_trades += 1
+                    total_duration_candles += (i - entry_index)
+                    if profit_pts > 0:
+                        win_count += 1
+                        gross_profit_pts += profit_pts
+                        consecutive_losses = 0
+                        consecutive_wins += 1
+                        if consecutive_wins > max_winning_streak:
+                            max_winning_streak = consecutive_wins
+                    else:
+                        loss_count += 1
+                        gross_loss_pts += abs(profit_pts)
+                        consecutive_losses += 1
+                        consecutive_wins = 0
+                        if consecutive_losses > max_consecutive_losses:
+                            max_consecutive_losses = consecutive_losses
+                            
+                    total_profit_pts += profit_pts
                     
-            continue 
+                    # Atualiza Drawdown (em R$ 0.20 por ponto)
+                    current_balance_rs = total_profit_pts * 0.20
+                    if current_balance_rs > peak_rs:
+                        peak_rs = current_balance_rs
+                    
+                    dd = peak_rs - current_balance_rs
+                    if dd > max_drawdown_rs:
+                        max_drawdown_rs = dd
+                        
+                continue 
+                
+            # Não posicionado: Procura entrada
+            hora_atual = row['time_only']
             
-        # Não posicionado: Procura entrada
-        hora_atual = row['time_only']
+            # Só opera na golden zone e se não bateu o limite de 3 trades no dia
+            if hora_inicio <= hora_atual <= hora_fim and trades_today < 3:
+                # Lógica da vela fechada (i-1 = vela que acabou de fechar, i-2 = anterior a ela)
+                current_closed = df.iloc[i-1]
+                prev_closed = df.iloc[i-2]
+                
+                c_ema9 = current_closed['EMA9']
+                c_sma21 = current_closed['SMA21']
+                p_ema9 = prev_closed['EMA9']
+                p_sma21 = prev_closed['SMA21']
+                
+                c_close = current_closed['close']
+                c_vwap = current_closed['VWAP']
+                
+                cross_up = (p_ema9 <= p_sma21) and (c_ema9 > c_sma21)
+                cross_down = (p_ema9 >= p_sma21) and (c_ema9 < c_sma21)
+                
+                # Sinal de COMPRA: EMA9 passa pra cima E o preço atual está acima do VWAP
+                if cross_up and c_close > c_vwap:
+                    in_position = True
+                    trade_type = 'BUY'
+                    entry_price = row['open']
+                    entry_index = i
+                    trades_today += 1
+                    df.at[df.index[i], 'trade_signal'] = 'BUY'
+
+                # Sinal de VENDA: EMA9 passa pra baixo E o preço atual está abaixo do VWAP
+                elif cross_down and c_close < c_vwap:
+                    in_position = True
+                    trade_type = 'SELL'
+                    entry_price = row['open']
+                    entry_index = i
+                    trades_today += 1
+                    df.at[df.index[i], 'trade_signal'] = 'SELL'
+
+        lucro_total_rs = total_profit_pts * 0.20
+        gross_profit_rs = gross_profit_pts * 0.20
+        gross_loss_rs = gross_loss_pts * 0.20
         
-        # Só opera na golden zone e se não bateu o limite de 3 trades no dia
-        if hora_inicio <= hora_atual <= hora_fim and trades_today < 3:
-            # Lógica da vela fechada (i-1 = vela que acabou de fechar, i-2 = anterior a ela)
-            current_closed = df.iloc[i-1]
-            prev_closed = df.iloc[i-2]
-            
-            c_ema9 = current_closed['EMA9']
-            c_sma21 = current_closed['SMA21']
-            p_ema9 = prev_closed['EMA9']
-            p_sma21 = prev_closed['SMA21']
-            
-            c_close = current_closed['close']
-            c_vwap = current_closed['VWAP']
-            
-            cross_up = (p_ema9 <= p_sma21) and (c_ema9 > c_sma21)
-            cross_down = (p_ema9 >= p_sma21) and (c_ema9 < c_sma21)
-            
-            # Sinal de COMPRA: EMA9 passa pra cima E o preço atual está acima do VWAP
-            if cross_up and c_close > c_vwap:
-                in_position = True
-                trade_type = 'BUY'
-                entry_price = row['open']
-                entry_index = i
-                trades_today += 1
-                df.at[df.index[i], 'trade_signal'] = 'BUY'
+        winrate = (win_count / total_trades * 100) if total_trades > 0 else 0.0
+        profit_factor = (gross_profit_rs / gross_loss_rs) if gross_loss_rs > 0 else (999.99 if gross_profit_rs > 0 else 0.0)
+        media_por_trade = (lucro_total_rs / total_trades) if total_trades > 0 else 0.0
 
-            # Sinal de VENDA: EMA9 passa pra baixo E o preço atual está abaixo do VWAP
-            elif cross_down and c_close < c_vwap:
-                in_position = True
-                trade_type = 'SELL'
-                entry_price = row['open']
-                entry_index = i
-                trades_today += 1
-                df.at[df.index[i], 'trade_signal'] = 'SELL'
-
-    lucro_total_rs = total_profit_pts * 0.20
-    gross_profit_rs = gross_profit_pts * 0.20
-    gross_loss_rs = gross_loss_pts * 0.20
-    
-    winrate = (win_count / total_trades * 100) if total_trades > 0 else 0.0
-    profit_factor = (gross_profit_rs / gross_loss_rs) if gross_loss_rs > 0 else (999.99 if gross_profit_rs > 0 else 0.0)
-    media_por_trade = (lucro_total_rs / total_trades) if total_trades > 0 else 0.0
-
-    # Cálculo do Tempo Médio em Minutos
-    # Extrai o número do timeframe (ex: 'M5' -> 5, 'M1' -> 1)
-    try:
-        tf_mins = int(tf_str.replace('M', '')) if 'M' in tf_str else 1
-    except:
-        tf_mins = 1
-    
-    avg_duration_mins = (total_duration_candles / total_trades * tf_mins) if total_trades > 0 else 0.0
-    
-    print(f"DEBUG DURAÇÃO: Total Candles={total_duration_candles}, Trades={total_trades}, TF Mins={tf_mins}, Avg Mins={avg_duration_mins}")
-
-    # ----- PREPARAÇÃO DOS DADOS VISUAIS (CHART) -----
-    
-    # 1. Candles
-    candles_list = []
-    for _, row in df.iterrows():
-        ts = int(row['time'].value // 10**9) if isinstance(row['time'], pd.Timestamp) else int(row['time'])
-        candles_list.append({
-            "time": ts,
-            "open": float(row['open']),
-            "high": float(row['high']),
-            "low": float(row['low']),
-            "close": float(row['close'])
-        })
+        # Cálculo do Tempo Médio em Minutos
+        # Extrai o número do timeframe (ex: 'M5' -> 5, 'M1' -> 1)
+        try:
+            tf_mins = int(tf_str.replace('M', '')) if 'M' in tf_str else 1
+        except:
+            tf_mins = 1
         
-    # 2. Indicadores (EMA Fast, EMA Slow, VWAP)
-    indicators_list = []
-    for _, row in df.iterrows():
-        ts = int(row['time'].value // 10**9) if isinstance(row['time'], pd.Timestamp) else int(row['time'])
-        indicators_list.append({
-            "time": ts,
-            "ema9": float(row['EMA9']) if not pd.isna(row['EMA9']) else None,
-            "sma21": float(row['SMA21']) if not pd.isna(row['SMA21']) else None,
-            "vwap": float(row['VWAP']) if not pd.isna(row['VWAP']) else None
-        })
+        avg_duration_mins = (total_duration_candles / total_trades * tf_mins) if total_trades > 0 else 0.0
         
-    # 3. Markers (Setas de Compra/Venda)
-    markers_list = []
-    if 'trade_signal' in df.columns:
-        trades_df = df.dropna(subset=['trade_signal'])
-        for _, row in trades_df.iterrows():
+        # Métricas Institucionais Avançadas
+        avg_win_pts = (gross_profit_pts / win_count) if win_count > 0 else 0.0
+        avg_loss_pts = (gross_loss_pts / loss_count) if loss_count > 0 else 0.0
+        payoff = (avg_win_pts / abs(avg_loss_pts)) if avg_loss_pts > 0 else (999.99 if avg_win_pts > 0 else 0.0)
+        recovery_factor = (lucro_total_rs / abs(max_drawdown_rs)) if max_drawdown_rs > 0 else (999.99 if lucro_total_rs > 0 else 0.0)
+        
+        print(f"DEBUG FINAL MÉTRIQUES:")
+        print(f" - Lucro Total RS: {lucro_total_rs}, Max DD RS: {max_drawdown_rs}")
+        print(f" - Recovery Factor: {recovery_factor}")
+        print(f" - Gross Profit Pts: {gross_profit_pts}, Win Count: {win_count}, Avg Win: {avg_win_pts}")
+        print(f" - Gross Loss Pts: {gross_loss_pts}, Loss Count: {loss_count}, Avg Loss: {avg_loss_pts}")
+        print(f" - Payoff: {payoff}")
+        print(f" - Max Winning Streak: {max_winning_streak}")
+
+        # ----- PREPARAÇÃO DOS DADOS VISUAIS (CHART) -----
+        
+        # 1. Candles
+        candles_list = []
+        for _, row in df.iterrows():
             ts = int(row['time'].value // 10**9) if isinstance(row['time'], pd.Timestamp) else int(row['time'])
-            action = row['trade_signal']
+            candles_list.append({
+                "time": ts,
+                "open": float(row['open']),
+                "high": float(row['high']),
+                "low": float(row['low']),
+                "close": float(row['close'])
+            })
             
-            if action == 'BUY':
-                markers_list.append({
-                    "time": ts,
-                    "position": "belowBar",
-                    "color": "#00E676",
-                    "shape": "arrowUp",
-                    "text": "COMPRA",
-                    "size": 2
-                })
-            elif action == 'SELL':
-                markers_list.append({
-                    "time": ts,
-                    "position": "aboveBar",
-                    "color": "#FF5252",
-                    "shape": "arrowDown",
-                    "text": "VENDA",
-                    "size": 2
-                })
-            elif action == 'WIN_BUY':
-                markers_list.append({
-                    "time": ts,
-                    "position": "aboveBar",
-                    "color": "#00E676",
-                    "shape": "circle",
-                    "text": f"TP (+R$ {tp_manual * 0.20:.0f})",
-                    "size": 1
-                })
-            elif action == 'LOSS_BUY':
-                markers_list.append({
-                    "time": ts,
-                    "position": "belowBar",
-                    "color": "#FF5252",
-                    "shape": "circle",
-                    "text": f"SL (-R$ {sl_manual * 0.20:.0f})",
-                    "size": 1
-                })
-            elif action == 'WIN_SELL':
-                markers_list.append({
-                    "time": ts,
-                    "position": "belowBar",
-                    "color": "#00E676",
-                    "shape": "circle",
-                    "text": f"TP (+R$ {tp_manual * 0.20:.0f})",
-                    "size": 1
-                })
-            elif action == 'LOSS_SELL':
-                markers_list.append({
-                    "time": ts,
-                    "position": "aboveBar",
-                    "color": "#FF5252",
-                    "shape": "circle",
-                    "text": f"SL (-R$ {sl_manual * 0.20:.0f})",
-                    "size": 1
-                })
+        # 2. Indicadores (EMA Fast, EMA Slow, VWAP)
+        indicators_list = []
+        for _, row in df.iterrows():
+            ts = int(row['time'].value // 10**9) if isinstance(row['time'], pd.Timestamp) else int(row['time'])
+            indicators_list.append({
+                "time": ts,
+                "ema9": float(row['EMA9']) if not pd.isna(row['EMA9']) else None,
+                "sma21": float(row['SMA21']) if not pd.isna(row['SMA21']) else None,
+                "vwap": float(row['VWAP']) if not pd.isna(row['VWAP']) else None
+            })
+            
+        # 3. Markers (Setas de Compra/Venda)
+        markers_list = []
+        if 'trade_signal' in df.columns:
+            trades_df = df.dropna(subset=['trade_signal'])
+            for _, row in trades_df.iterrows():
+                ts = int(row['time'].value // 10**9) if isinstance(row['time'], pd.Timestamp) else int(row['time'])
+                action = row['trade_signal']
+                
+                if action == 'BUY':
+                    markers_list.append({
+                        "time": ts,
+                        "position": "belowBar",
+                        "color": "#00E676",
+                        "shape": "arrowUp",
+                        "text": "COMPRA",
+                        "size": 2
+                    })
+                elif action == 'SELL':
+                    markers_list.append({
+                        "time": ts,
+                        "position": "aboveBar",
+                        "color": "#FF5252",
+                        "shape": "arrowDown",
+                        "text": "VENDA",
+                        "size": 2
+                    })
+                elif action == 'WIN_BUY':
+                    markers_list.append({
+                        "time": ts,
+                        "position": "aboveBar",
+                        "color": "#00E676",
+                        "shape": "circle",
+                        "text": f"TP (+R$ {tp_manual * 0.20:.0f})",
+                        "size": 1
+                    })
+                elif action == 'LOSS_BUY':
+                    markers_list.append({
+                        "time": ts,
+                        "position": "belowBar",
+                        "color": "#FF5252",
+                        "shape": "circle",
+                        "text": f"SL (-R$ {sl_manual * 0.20:.0f})",
+                        "size": 1
+                    })
+                elif action == 'WIN_SELL':
+                    markers_list.append({
+                        "time": ts,
+                        "position": "belowBar",
+                        "color": "#00E676",
+                        "shape": "circle",
+                        "text": f"TP (+R$ {tp_manual * 0.20:.0f})",
+                        "size": 1
+                    })
+                elif action == 'LOSS_SELL':
+                    markers_list.append({
+                        "time": ts,
+                        "position": "aboveBar",
+                        "color": "#FF5252",
+                        "shape": "circle",
+                        "text": f"SL (-R$ {sl_manual * 0.20:.0f})",
+                        "size": 1
+                    })
 
-    return jsonify({
-        "total_trades": total_trades,
-        "winrate": round(winrate, 1),
-        "lucro_total": round(lucro_total_rs, 2),
-        "max_drawdown": round(max_drawdown_rs, 2),
-        "profit_factor": round(profit_factor, 2),
-        "media_por_trade": round(media_por_trade, 2),
-        "max_consecutive_losses": max_consecutive_losses,
-        "tamanho_medio_candle": tamanho_medio_candle,
-        "avg_duration_mins": round(avg_duration_mins, 1),
+        return jsonify({
+            "total_trades": total_trades,
+            "winrate": round(winrate, 1),
+            "lucro_total": round(lucro_total_rs, 2),
+            "max_drawdown": round(max_drawdown_rs, 2),
+            "profit_factor": round(profit_factor, 2),
+            "media_por_trade": round(media_por_trade, 2),
+            "max_consecutive_losses": max_consecutive_losses,
+            "tamanho_medio_candle": tamanho_medio_candle,
+            "avg_duration_mins": round(avg_duration_mins, 1),
+            "payoff": round(payoff, 2),
+            "recovery_factor": round(recovery_factor, 2),
+            "max_winning_streak": max_winning_streak,
 
-        "candles": candles_list,
-        "indicators": indicators_list,
-        "markers": markers_list
-    })
+            "candles": candles_list,
+            "indicators": indicators_list,
+            "markers": markers_list
+        })
+    except Exception as e:
+        import traceback
+        print(traceback.format_exc())
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/api/batch_backtest', methods=['POST'])
 def batch_backtest():
