@@ -1332,9 +1332,9 @@ def run_backtest_scalper():
         sl_manual = 150.0
         tp_manual = 300.0
 
-    # Calcula as EMAs padrão usando a matemática Exponencial verdadeira (ewm)
+    # Média de 9 (Exponencial) e 21 (Simples)
     df['EMA9'] = df['close'].ewm(span=9, adjust=False).mean()
-    df['EMA21'] = df['close'].ewm(span=21, adjust=False).mean()
+    df['SMA21'] = df['close'].rolling(window=21).mean()
     
     # Variáveis de Simulação (Iteração Visual Original)
     in_position = False
@@ -1384,6 +1384,16 @@ def run_backtest_scalper():
                     profit_pts = tp_manual
                     closed_trade = True
                     df.at[df.index[i], 'trade_signal'] = 'WIN_BUY'
+            
+            elif trade_type == 'SELL':
+                if high >= entry_price + sl_manual:
+                    profit_pts = -sl_manual
+                    closed_trade = True
+                    df.at[df.index[i], 'trade_signal'] = 'LOSS_SELL'
+                elif low <= entry_price - tp_manual:
+                    profit_pts = tp_manual
+                    closed_trade = True
+                    df.at[df.index[i], 'trade_signal'] = 'WIN_SELL'
                     
             if closed_trade:
                 in_position = False
@@ -1421,14 +1431,15 @@ def run_backtest_scalper():
             prev_closed = df.iloc[i-2]
             
             c_ema9 = current_closed['EMA9']
-            c_ema21 = current_closed['EMA21']
+            c_sma21 = current_closed['SMA21']
             p_ema9 = prev_closed['EMA9']
-            p_ema21 = prev_closed['EMA21']
+            p_sma21 = prev_closed['SMA21']
             
             c_close = current_closed['close']
             c_vwap = current_closed['VWAP']
             
-            cross_up = (p_ema9 <= p_ema21) and (c_ema9 > c_ema21)
+            cross_up = (p_ema9 <= p_sma21) and (c_ema9 > c_sma21)
+            cross_down = (p_ema9 >= p_sma21) and (c_ema9 < c_sma21)
             
             # Sinal de COMPRA: EMA9 passa pra cima E o preço atual está acima do VWAP
             if cross_up and c_close > c_vwap:
@@ -1437,6 +1448,14 @@ def run_backtest_scalper():
                 entry_price = row['open']
                 trades_today += 1
                 df.at[df.index[i], 'trade_signal'] = 'BUY'
+
+            # Sinal de VENDA: EMA9 passa pra baixo E o preço atual está abaixo do VWAP
+            elif cross_down and c_close < c_vwap:
+                in_position = True
+                trade_type = 'SELL'
+                entry_price = row['open']
+                trades_today += 1
+                df.at[df.index[i], 'trade_signal'] = 'SELL'
 
     lucro_total_rs = total_profit_pts * 0.20
     gross_profit_rs = gross_profit_pts * 0.20
@@ -1467,7 +1486,7 @@ def run_backtest_scalper():
         indicators_list.append({
             "time": ts,
             "ema9": float(row['EMA9']) if not pd.isna(row['EMA9']) else None,
-            "ema21": float(row['EMA21']) if not pd.isna(row['EMA21']) else None,
+            "sma21": float(row['SMA21']) if not pd.isna(row['SMA21']) else None,
             "vwap": float(row['VWAP']) if not pd.isna(row['VWAP']) else None
         })
         

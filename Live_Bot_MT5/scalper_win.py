@@ -93,7 +93,7 @@ def wait_position_close(ticket, entrada_info):
     save_controle(data)
     
     resultado_str = "🟢 GAIN" if lucro > 0 else "🔴 LOSS"
-    direcao_str = "COMPRA"
+    direcao_str = "COMPRA" if entrada_info['direcao'] == mt5.ORDER_TYPE_BUY else "VENDA"
     pontos_estimados = abs(lucro) / 0.20 # 1 contrato WIN = R$ 0,20 por ponto
     
     msg_telegram = (
@@ -160,9 +160,9 @@ def iniciar_robo():
         else:
             df['VWAP'] = df['close']
 
-        # Calculo das Médias Exponenciais
+        # Calculo das Médias (EMA 9 e SMA 21 para consistência)
         df['EMA9'] = df['close'].ewm(span=9, adjust=False).mean()
-        df['EMA21'] = df['close'].ewm(span=21, adjust=False).mean()
+        df['SMA21'] = df['close'].rolling(window=21).mean()
         
         # Analisa a última vela fechada para evitar a "Síndrome da Vela Aberta"
         current = df.iloc[-2]
@@ -170,8 +170,9 @@ def iniciar_robo():
         
         vela_time = current['time']
         
-        # Lógicas de Cruzamento (Apenas Compra)
-        cross_up = prev['EMA9'] <= prev['EMA21'] and current['EMA9'] > current['EMA21']
+        # Lógicas de Cruzamento (Compra e Venda)
+        cross_up = prev['EMA9'] <= prev['SMA21'] and current['EMA9'] > current['SMA21']
+        cross_down = prev['EMA9'] >= prev['SMA21'] and current['EMA9'] < current['SMA21']
         
         # Só opera essa vela 1 vez
         if vela_time != ultima_vela_operada:
@@ -180,14 +181,22 @@ def iniciar_robo():
             # Sinal de COMPRA: EMA9 passa pra cima E o preço atual está acima do VWAP
             if cross_up and current['close'] > current['VWAP']:
                 action = mt5.ORDER_TYPE_BUY
+            # Sinal de VENDA: EMA9 passa pra baixo E o preço atual está abaixo do VWAP
+            elif cross_down and current['close'] < current['VWAP']:
+                action = mt5.ORDER_TYPE_SELL
                 
             if action is not None:
                 ultima_vela_operada = vela_time
-                price = mt5.symbol_info_tick(SYMBOL).ask
-                
-                # SL/TP Para Compra
-                sl = price - SL_POINTS
-                tp = price + TP_POINTS
+                if action == mt5.ORDER_TYPE_BUY:
+                    price = mt5.symbol_info_tick(SYMBOL).ask
+                    sl = price - SL_POINTS
+                    tp = price + TP_POINTS
+                    msg_label = "COMPRA"
+                else: # SELL
+                    price = mt5.symbol_info_tick(SYMBOL).bid
+                    sl = price + SL_POINTS
+                    tp = price - TP_POINTS
+                    msg_label = "VENDA"
                 
                 request = {
                     "action": mt5.TRADE_ACTION_DEAL,
@@ -204,7 +213,7 @@ def iniciar_robo():
                     "type_filling": mt5.ORDER_FILLING_RETURN, # Comum B3
                 }
                 
-                print(f"📩 Enviando Ordem OCO: COMPRA | Price: {price} | SL: {sl} | TP: {tp}")
+                print(f"📩 Enviando Ordem OCO: {msg_label} | Price: {price} | SL: {sl} | TP: {tp}")
                 res = mt5.order_send(request)
                 if res.retcode == mt5.TRADE_RETCODE_DONE:
                     # Montando pacote de dados pro Raio-X
@@ -213,7 +222,7 @@ def iniciar_robo():
                         "direcao": action,
                         "preco": price,
                         "ema9": current['EMA9'],
-                        "ema21": current['EMA21'],
+                        "sma21": current['SMA21'],
                         "vwap": current['VWAP']
                     }
                     wait_position_close(res.order, entrada_info)

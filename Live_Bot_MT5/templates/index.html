@@ -3082,7 +3082,7 @@
           ema21Series = chart.addLineSeries({
             color: "#FF6D00",
             lineWidth: 2,
-            title: "EMA 21",
+            title: "SMA 21",
           });
           vwapSeries = chart.addLineSeries({
             color: "#FFD600",
@@ -3113,8 +3113,8 @@
               .map((d) => ({ time: d.time, value: d.ema9 }))
               .sort((a, b) => a.time - b.time);
             const ema21Data = data.indicators
-              .filter((d) => d.ema21 !== null)
-              .map((d) => ({ time: d.time, value: d.ema21 }))
+              .filter((d) => d.sma21 !== null)
+              .map((d) => ({ time: d.time, value: d.sma21 }))
               .sort((a, b) => a.time - b.time);
             const vwapData = data.indicators
               .filter((d) => d.vwap !== null)
