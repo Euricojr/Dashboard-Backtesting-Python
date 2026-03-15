@@ -18,7 +18,7 @@ telegram_bot = TelegramNotifier()
 
 CONTROLE_FILE = "controle_scalper.json"
 SYMBOL = "WINJ26" # Ajuste para o contrato vigente do momento
-TIMEFRAME = mt5.TIMEFRAME_M5
+DEFAULT_TIMEFRAME = mt5.TIMEFRAME_M5
 VOLUME = 1.0
 SL_POINTS = 100.0
 TP_POINTS = 200.0  
@@ -38,9 +38,10 @@ def load_controle():
             data = json.load(f)
             hoje_str = datetime.now().strftime('%Y-%m-%d')
             
-            # Garante que SL e TP existam no dicionário
+            # Garante que SL, TP e Timeframe existam no dicionário
             if "sl_points" not in data: data["sl_points"] = SL_POINTS
             if "tp_points" not in data: data["tp_points"] = TP_POINTS
+            if "timeframe" not in data: data["timeframe"] = "M5"
             
             # Reset diário dos lucros e trades se virou o dia
             if data.get("data") != hoje_str:
@@ -56,7 +57,8 @@ def load_controle():
             "lucro_hoje": 0.0, 
             "data": datetime.now().strftime('%Y-%m-%d'),
             "sl_points": SL_POINTS,
-            "tp_points": TP_POINTS
+            "tp_points": TP_POINTS,
+            "timeframe": "M5"
         }
 
 def save_controle(data):
@@ -151,7 +153,12 @@ def iniciar_robo():
 
         # 2. Status é ON. Seguir com análise
         ensure_mt5_connection()
-        rates = mt5.copy_rates_from_pos(SYMBOL, TIMEFRAME, 0, 300)
+        
+        # Mapeia timeframe do JSON para constante MT5
+        tf_str = controle.get("timeframe", "M5")
+        mt5_tf = mt5.TIMEFRAME_M1 if tf_str == "M1" else mt5.TIMEFRAME_M5
+        
+        rates = mt5.copy_rates_from_pos(SYMBOL, mt5_tf, 0, 300)
         if rates is None or len(rates) < 50:
             time.sleep(5)
             continue

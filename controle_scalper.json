@@ -2,9 +2,10 @@
     "status": "OFF",
     "trades_hoje": 0,
     "lucro_hoje": 0.0,
-    "data": "2026-03-14",
+    "data": "2026-03-15",
     "sl": 150.0,
     "tp": 300.0,
-    "sl_points": "150",
-    "tp_points": "300"
+    "sl_points": 50.0,
+    "tp_points": 300.0,
+    "timeframe": "M5"
 }

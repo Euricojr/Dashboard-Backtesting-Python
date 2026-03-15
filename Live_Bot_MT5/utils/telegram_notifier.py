@@ -130,13 +130,17 @@ class TelegramNotifier:
             else:
                 resp_json = response.json()
                 # Se o erro for de que não há texto para editar, significa que é uma foto/mídia com caption
-                if resp_json.get("description") == "Bad Request: there is no text in the message to edit":
+                description = resp_json.get("description", "")
+                if description == "Bad Request: there is no text in the message to edit":
                     response_caption = requests.post(url_caption, json=payload_caption, timeout=10)
                     if response_caption.status_code == 200:
                         return True
                     else:
                         print(f"⚠️ Falha ao editar caption: {response_caption.text}")
                         return False
+                elif "message is not modified" in description:
+                    # Se a mensagem já é igual à que queremos colocar, ignoramos o erro (comum em botões clicados rápido ou instâncias duplas)
+                    return True
                 else:
                     print(f"⚠️ Falha ao editar mensagem: {response.text}")
                     return False
@@ -258,8 +262,15 @@ class TelegramNotifier:
                                             self.enviar_mensagem(res_text, target_chat_id=chat_id)
                                         else:
                                             # Se está desligado, entra na máquina de estados
-                                            self.user_states[chat_id] = {'state': 'WAITING_SL'}
-                                            self.enviar_mensagem("🎯 *Configuração do Scalper*\n\nQual o *Stop Loss* (em pontos)?\n(Ex: 100)", target_chat_id=chat_id)
+                                            self.user_states[chat_id] = {'state': 'WAITING_TIMEFRAME'}
+                                            inline_kb = [
+                                                [
+                                                    {"text": "M1", "callback_data": "tf_M1"},
+                                                    {"text": "M5", "callback_data": "tf_M5"}
+                                                ],
+                                                [{"text": "❌ Cancelar", "callback_data": "cancel"}]
+                                            ]
+                                            self.enviar_mensagem("⏱️ *Qual o Timeframe da operação?*", target_chat_id=chat_id, inline_keyboard=inline_kb)
                                     
                                 elif text == '📊 Stats Scalper' and chat_id:
                                     if stats_scalper_cb:
@@ -287,7 +298,8 @@ class TelegramNotifier:
                                                 
                                                 # Finaliza e liga o robô
                                                 if toggle_scalper_cb:
-                                                    res_text = toggle_scalper_cb(turn_on=True, sl=sl_val, tp=tp_val)
+                                                    tf_val = u_state.get('timeframe', 'M5')
+                                                    res_text = toggle_scalper_cb(turn_on=True, sl=sl_val, tp=tp_val, timeframe=tf_val)
                                                     self.enviar_mensagem(res_text, target_chat_id=chat_id)
                                                 
                                                 # Limpa estado

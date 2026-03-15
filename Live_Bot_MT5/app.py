@@ -77,9 +77,13 @@ def ensure_mt5_connected():
         print(f"[ERROR] Exception MT5: {e}")
         return False, str(e)
 
-# 🚨 CHAMA IMEDIATAMENTE NA INICIALIZAÇÃO DO APP 🚨
-# Para garantir que as threads do Flask/Telegram não usem a conta de Produção (BTG)
-if os.environ.get("WERKZEUG_RUN_MAIN") == "true" or __name__ == "__main__":
+# 🚨 CHAMA NA INICIALIZAÇÃO DO APP 🚨
+# Evita iniciar duplicado se o reloader do Flask estiver ativo
+is_reloader_parent = os.environ.get("WERKZEUG_RUN_MAIN") is None and __name__ == "__main__"
+
+# Se o reloader estiver ativo, o pai não deve iniciar as threads/MT5, apenas o filho
+# Se o reloader NÃO estiver ativo (use_reloader=False), então o processo principal inicia
+if os.environ.get("WERKZEUG_RUN_MAIN") == "true" or (__name__ == "__main__" and not os.environ.get("WERKZEUG_RUN_MAIN")):
     ensure_mt5_connected()
 
 # --- GLOBAL CONFIG & STATE ---
@@ -516,6 +520,16 @@ def handle_telegram_callback(data, chat_id, message_id):
         
         success, result_msg = fechar_posicao_mt5(ticket)
         global_notifier.editar_mensagem(chat_id, message_id, result_msg)
+        
+    elif len(parts) >= 2 and parts[0] == "tf":
+        tf = parts[1]
+        if chat_id in global_notifier.user_states:
+            global_notifier.user_states[chat_id]['timeframe'] = tf
+            global_notifier.user_states[chat_id]['state'] = 'WAITING_SL'
+            
+            # Remove os botões e avança
+            global_notifier.editar_mensagem(chat_id, message_id, f"✅ Timeframe *{tf}* selecionado.")
+            global_notifier.enviar_mensagem(f"🎯 *Configuração do Scalper ({tf})*\n\nQual o *Stop Loss* (em pontos)?\n(Ex: 100)", target_chat_id=chat_id)
 
 def enviar_alerta_teste(chat_id):
     symbol = "PETR4F"
@@ -601,7 +615,7 @@ def toggle_scalper():
         
     return jsonify({"success": True, "new_status": "ON" if "🟢 LIGADO" in msg else "OFF"})
 
-def handle_telegram_toggle_scalper(turn_on=None, sl=None, tp=None):
+def handle_telegram_toggle_scalper(turn_on=None, sl=None, tp=None, timeframe=None):
     state = get_scalper_state()
     
     if turn_on is not None:
@@ -611,14 +625,19 @@ def handle_telegram_toggle_scalper(turn_on=None, sl=None, tp=None):
         
     if sl is not None: state['sl_points'] = sl
     if tp is not None: state['tp_points'] = tp
+    if timeframe is not None: state['timeframe'] = timeframe
     
     with open(CONTROLE_SCALPER_FILE, "w") as f:
         json.dump(state, f, indent=4)
         
     status_msg = "🟢 LIGADO" if state['status'] == 'ON' else "🔴 DESLIGADO"
-    msg = f"O Robô Scalper de Índice foi {status_msg} com sucesso."
-    if state['status'] == 'ON' and sl is not None and tp is not None:
-        msg += f"\n🎯 Config: SL {sl} pts | TP {tp} pts"
+    if state['status'] == 'ON':
+        tf_show = state.get('timeframe', 'M5')
+        sl_show = state.get('sl_points', 0)
+        tp_show = state.get('tp_points', 0)
+        msg = f"✅ Robô Scalper {status_msg}!\n⏱️ TF: {tf_show} | 🛑 SL: {sl_show} pts | 🎯 TP: {tp_show} pts"
+    else:
+        msg = f"O Robô Scalper de Índice foi {status_msg} com sucesso."
     
     return msg
 
@@ -638,8 +657,8 @@ def handle_telegram_stats_scalper():
         f"Lucro/Prej: R$ {float(state.get('lucro_hoje', 0.0)):.2f}"
     )
 
-# Inicia o Listener de Comandos (/start) apenas no processo principal (não no reloader inicial)
-if os.environ.get("WERKZEUG_RUN_MAIN") == "true" or __name__ == "__main__":
+# Inicia o Listener de Comandos (/start) apenas no processo final (não no reloader pai)
+if os.environ.get("WERKZEUG_RUN_MAIN") == "true" or (__name__ == "__main__" and not os.environ.get("WERKZEUG_RUN_MAIN")):
     global_notifier.start_listener(
         status_callback=get_bot_status_text, 
         toggle_callback=toggle_bot_from_telegram,
