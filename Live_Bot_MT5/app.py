@@ -588,24 +588,44 @@ def get_scalper_state():
 
 @app.route('/api/toggle_scalper', methods=['POST'])
 def toggle_scalper():
+    data = request.json or {}
+    sl = data.get('sl')
+    tp = data.get('tp')
+    
+    # Reutiliza a lógica que já criamos para o Telegram
+    msg = handle_telegram_toggle_scalper(sl=sl, tp=tp)
+    
+    # Envia o alerta para o Telegram informando que a ação veio da Web
+    msg_web = f"🌐 *Ação via Painel Web*\n{msg}"
+    global_notifier.enviar_mensagem(msg_web)
+        
+    return jsonify({"success": True, "new_status": "ON" if "🟢 LIGADO" in msg else "OFF"})
+
+def handle_telegram_toggle_scalper(turn_on=None, sl=None, tp=None):
     state = get_scalper_state()
-    state['status'] = "ON" if state['status'] == "OFF" else "OFF"
+    
+    if turn_on is not None:
+        state['status'] = "ON" if turn_on else "OFF"
+    else:
+        state['status'] = "ON" if state['status'] == "OFF" else "OFF"
+        
+    if sl is not None: state['sl_points'] = sl
+    if tp is not None: state['tp_points'] = tp
     
     with open(CONTROLE_SCALPER_FILE, "w") as f:
         json.dump(state, f, indent=4)
         
-    return jsonify({"success": True, "new_status": state['status']})
+    status_msg = "🟢 LIGADO" if state['status'] == 'ON' else "🔴 DESLIGADO"
+    msg = f"O Robô Scalper de Índice foi {status_msg} com sucesso."
+    if state['status'] == 'ON' and sl is not None and tp is not None:
+        msg += f"\n🎯 Config: SL {sl} pts | TP {tp} pts"
+    
+    return msg
 
 @app.route('/api/stats_scalper', methods=['GET'])
 def stats_scalper():
     return jsonify(get_scalper_state())
 
-def handle_telegram_toggle_scalper():
-    state = get_scalper_state()
-    state['status'] = "ON" if state['status'] == "OFF" else "OFF"
-    with open(CONTROLE_SCALPER_FILE, "w") as f:
-        json.dump(state, f, indent=4)
-        
     return f"O Robô Scalper de Índice foi {'🟢 LIGADO' if state['status'] == 'ON' else '🔴 DESLIGADO'} com sucesso."
 
 def handle_telegram_stats_scalper():
@@ -629,7 +649,8 @@ if os.environ.get("WERKZEUG_RUN_MAIN") == "true" or __name__ == "__main__":
         teste_callback=enviar_alerta_teste,
         historico_callback=ver_historico_mt5,
         toggle_scalper_cb=handle_telegram_toggle_scalper,
-        stats_scalper_cb=handle_telegram_stats_scalper
+        stats_scalper_cb=handle_telegram_stats_scalper,
+        get_scalper_state_cb=get_scalper_state
     )
 
 def sincronizar_historico_hoje():

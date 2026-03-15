@@ -9,6 +9,7 @@ class TelegramNotifier:
         self.token = token or os.getenv("TELEGRAM_TOKEN")
         self.chat_id = chat_id or os.getenv("TELEGRAM_CHAT_ID")
         self.base_url = f"https://api.telegram.org/bot{self.token}/sendMessage"
+        self.user_states = {}  # {chat_id: {'state': '...', 'sl': ..., 'tp': ...}}
 
     def enviar_mensagem(self, texto, target_chat_id=None, inline_keyboard=None):
         chat = target_chat_id or self.chat_id
@@ -143,7 +144,10 @@ class TelegramNotifier:
             print(f"❌ Erro de conexão com Telegram ao editar: {e}")
             return False
 
-    def start_listener(self, status_callback=None, toggle_callback=None, summary_callback=None, carteira_callback=None, callback_query_handler=None, teste_callback=None, historico_callback=None, toggle_scalper_cb=None, stats_scalper_cb=None):
+    def start_listener(self, status_callback=None, toggle_callback=None, summary_callback=None, 
+                       carteira_callback=None, callback_query_handler=None, teste_callback=None, 
+                       historico_callback=None, toggle_scalper_cb=None, stats_scalper_cb=None,
+                       get_scalper_state_cb=None):
         """Inicia uma thread para ouvir comandos do Telegram (como /start)"""
         if not self.token:
             print("❌ Listener do Telegram cancelado: TOKEN não encontrado.")
@@ -246,14 +250,50 @@ class TelegramNotifier:
                                     self.enviar_mensagem(hist_text, target_chat_id=chat_id)
                                         
                                 elif text == '🤖 Ligar/Desligar Scalper' and chat_id:
-                                    if toggle_scalper_cb:
-                                        res_text = toggle_scalper_cb()
-                                        self.enviar_mensagem(res_text, target_chat_id=chat_id)
-                                        
+                                    if toggle_scalper_cb and get_scalper_state_cb:
+                                        state = get_scalper_state_cb()
+                                        if state.get("status") == "ON":
+                                            # Se está ligado, apenas desliga direto
+                                            res_text = toggle_scalper_cb(turn_on=False)
+                                            self.enviar_mensagem(res_text, target_chat_id=chat_id)
+                                        else:
+                                            # Se está desligado, entra na máquina de estados
+                                            self.user_states[chat_id] = {'state': 'WAITING_SL'}
+                                            self.enviar_mensagem("🎯 *Configuração do Scalper*\n\nQual o *Stop Loss* (em pontos)?\n(Ex: 100)", target_chat_id=chat_id)
+                                    
                                 elif text == '📊 Stats Scalper' and chat_id:
                                     if stats_scalper_cb:
                                         res_text = stats_scalper_cb()
                                         self.enviar_mensagem(res_text, target_chat_id=chat_id)
+                                        
+                                # Lógica da Máquina de Estados para mensagens de texto genéricas
+                                else:
+                                    if chat_id in self.user_states:
+                                        u_state = self.user_states[chat_id]
+                                        
+                                        if u_state['state'] == 'WAITING_SL':
+                                            try:
+                                                sl_val = float(text.replace(',', '.'))
+                                                u_state['sl'] = sl_val
+                                                u_state['state'] = 'WAITING_TP'
+                                                self.enviar_mensagem("✅ SL definido. Agora, qual o *Take Profit* (em pontos)?\n(Ex: 200)", target_chat_id=chat_id)
+                                            except ValueError:
+                                                self.enviar_mensagem("⚠️ Valor inválido. Digite apenas números para o Stop Loss.", target_chat_id=chat_id)
+                                                
+                                        elif u_state['state'] == 'WAITING_TP':
+                                            try:
+                                                tp_val = float(text.replace(',', '.'))
+                                                sl_val = u_state['sl']
+                                                
+                                                # Finaliza e liga o robô
+                                                if toggle_scalper_cb:
+                                                    res_text = toggle_scalper_cb(turn_on=True, sl=sl_val, tp=tp_val)
+                                                    self.enviar_mensagem(res_text, target_chat_id=chat_id)
+                                                
+                                                # Limpa estado
+                                                del self.user_states[chat_id]
+                                            except ValueError:
+                                                self.enviar_mensagem("⚠️ Valor inválido. Digite apenas números para o Take Profit.", target_chat_id=chat_id)
                                         
                 except requests.exceptions.Timeout:
                     pass  # Timeout esperado

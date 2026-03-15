@@ -226,7 +226,9 @@
     }
 
     @keyframes spin {
-      to { transform: rotate(360deg); }
+      to {
+        transform: rotate(360deg);
+      }
     }
 
     .loader-text {
@@ -2985,7 +2987,14 @@
     }
 
     function toggleScalper() {
-      fetch("/api/toggle_scalper", { method: "POST" })
+      const sl = document.getElementById('custom_sl_input')?.value || null;
+      const tp = document.getElementById('custom_tp_input')?.value || null;
+
+      fetch("/api/toggle_scalper", { 
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sl: sl, tp: tp })
+      })
         .then((r) => r.json())
         .then((d) => {
           fetchScalperStats();
@@ -3041,7 +3050,7 @@
         tf === "M5" ? "btn-backtest-scalper-m5" : "btn-backtest-scalper-m1";
       const btn = document.getElementById(btnId);
       const originalText = btn.innerHTML;
-      
+
       // Spinner no botão
       btn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> ...`;
       btn.disabled = true;

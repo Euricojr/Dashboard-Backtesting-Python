@@ -37,6 +37,11 @@ def load_controle():
         with open(CONTROLE_FILE, "r") as f:
             data = json.load(f)
             hoje_str = datetime.now().strftime('%Y-%m-%d')
+            
+            # Garante que SL e TP existam no dicionário
+            if "sl_points" not in data: data["sl_points"] = SL_POINTS
+            if "tp_points" not in data: data["tp_points"] = TP_POINTS
+            
             # Reset diário dos lucros e trades se virou o dia
             if data.get("data") != hoje_str:
                 data["trades_hoje"] = 0
@@ -45,7 +50,14 @@ def load_controle():
                 save_controle(data)
             return data
     except Exception:
-        return {"status": "OFF", "trades_hoje": 0, "lucro_hoje": 0.0, "data": datetime.now().strftime('%Y-%m-%d')}
+        return {
+            "status": "OFF", 
+            "trades_hoje": 0, 
+            "lucro_hoje": 0.0, 
+            "data": datetime.now().strftime('%Y-%m-%d'),
+            "sl_points": SL_POINTS,
+            "tp_points": TP_POINTS
+        }
 
 def save_controle(data):
     with open(CONTROLE_FILE, "w") as f:
@@ -189,13 +201,13 @@ def iniciar_robo():
                 ultima_vela_operada = vela_time
                 if action == mt5.ORDER_TYPE_BUY:
                     price = mt5.symbol_info_tick(SYMBOL).ask
-                    sl = price - SL_POINTS
-                    tp = price + TP_POINTS
+                    sl = price - float(controle.get("sl_points", SL_POINTS))
+                    tp = price + float(controle.get("tp_points", TP_POINTS))
                     msg_label = "COMPRA"
                 else: # SELL
                     price = mt5.symbol_info_tick(SYMBOL).bid
-                    sl = price + SL_POINTS
-                    tp = price - TP_POINTS
+                    sl = price + float(controle.get("sl_points", SL_POINTS))
+                    tp = price - float(controle.get("tp_points", TP_POINTS))
                     msg_label = "VENDA"
                 
                 request = {
