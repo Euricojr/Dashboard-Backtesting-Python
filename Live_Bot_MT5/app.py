@@ -158,95 +158,101 @@ def get_bot_status_text():
 def gerar_resumo_diario_ativo():
     """
     Realiza um Scanner Ativo de Fim de Dia:
-    Varre todos os ativos, puxa os candles de hoje e verifica 
+    Varre todos os ativos, puxa os candles de hoje e verifica
     se houve algum cruzamento de médias independentemente do JSON.
     """
-    print("🔄 [Scanner] Iniciando Varredura Ativa para o Resumo Diário...")
-    
-    # 1. Garante que o MT5 está conectado
-    ensure_mt5_connected()
-    
-    # 2. Carrega a lista de ativos
-    from utils.asset_filter import load_clean_assets
-    assets_data = load_clean_assets()
-    if isinstance(assets_data, dict):
-        assets = assets_data.get("Indices", []) + assets_data.get("Acoes", [])
-    else:
-        assets = assets_data
-        
-    mt5_tf = TIMEFRAMES.get(MONITOR_TIMEFRAME, mt5.TIMEFRAME_M5)
-    start_hoje = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-    
-    compras_hoje = []
-    vendas_hoje = []
-    
-    for symbol in assets:
-        try:
-            rates = mt5.copy_rates_from_pos(symbol, mt5_tf, 0, 100)
-            if rates is None or len(rates) < 55:
-                continue
-                
-            df = pd.DataFrame(rates)
-            df['time'] = pd.to_datetime(df['time'], unit='s')
-            
-            df['SMA_Short'] = df['close'].rolling(window=20).mean()
-            df['SMA_Long'] = df['close'].rolling(window=50).mean()
-            
-            df_hoje = df[df['time'] >= start_hoje]
-            if df_hoje.empty or len(df_hoje) < 2:
-                continue
-                
-            ultimo_cruzamento = None
-            hora_cruzamento = None
-            
-            for i in range(1, len(df_hoje)):
-                idx_current = df_hoje.index[i]
-                idx_prev = df_hoje.index[i-1]
-                
-                c_short = df.loc[idx_current, 'SMA_Short']
-                c_long = df.loc[idx_current, 'SMA_Long']
-                p_short = df.loc[idx_prev, 'SMA_Short']
-                p_long = df.loc[idx_prev, 'SMA_Long']
-                
-                if pd.isna(c_short) or pd.isna(c_long):
+    try:
+        print("🔄 [Scanner] Iniciando Varredura Ativa para o Resumo Diário...")
+
+        # 1. Garante que o MT5 está conectado
+        ensure_mt5_connected()
+
+        # 2. Carrega a lista de ativos
+        from utils.asset_filter import load_clean_assets
+        assets_data = load_clean_assets()
+        if isinstance(assets_data, dict):
+            assets = assets_data.get("Indices", []) + assets_data.get("Acoes", [])
+        else:
+            assets = assets_data
+
+        mt5_tf = TIMEFRAMES.get(MONITOR_TIMEFRAME, mt5.TIMEFRAME_M5)
+        start_hoje = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+
+        compras_hoje = []
+        vendas_hoje = []
+
+        for symbol in assets:
+            try:
+                rates = mt5.copy_rates_from_pos(symbol, mt5_tf, 0, 100)
+                if rates is None or len(rates) < 55:
                     continue
-                    
-                if p_short <= p_long and c_short > c_long:
-                    ultimo_cruzamento = "COMPRA"
-                    hora_cruzamento = df.loc[idx_current, 'time'].strftime('%H:%M')
-                elif p_short >= p_long and c_short < c_long:
-                    ultimo_cruzamento = "VENDA"
-                    hora_cruzamento = df.loc[idx_current, 'time'].strftime('%H:%M')
-                    
-            if ultimo_cruzamento == "COMPRA":
-                compras_hoje.append(f"🔹 {symbol} - COMPRA (às {hora_cruzamento})")
-            elif ultimo_cruzamento == "VENDA":
-                vendas_hoje.append(f"🔹 {symbol} - VENDA (às {hora_cruzamento})")
-                
-        except Exception as e:
-            pass
-            
-    # 3. Formatação da Mensagem
-    total = len(compras_hoje) + len(vendas_hoje)
-    
-    if total == 0:
-        return "Nenhum cruzamento de médias foi detectado no mercado hoje."
-        
-    final_text = (
-        f"📊 *Scanner de Fim de Dia (Hoje):*\n"
-        f"O mercado apresentou os seguintes cruzamentos hoje:\n\n"
-    )
-    
-    if compras_hoje:
-        final_text += "🟢 *COMPRAS (Golden Cross):*\n"
-        final_text += "\n".join(compras_hoje) + "\n\n"
-        
-    if vendas_hoje:
-        final_text += "🔴 *VENDAS (Death Cross):*\n"
-        final_text += "\n".join(vendas_hoje) + "\n"
-        
-    print("✅ [Scanner] Resumo Diário gerado com sucesso!")
-    return final_text
+
+                df = pd.DataFrame(rates)
+                df['time'] = pd.to_datetime(df['time'], unit='s')
+
+                df['SMA_Short'] = df['close'].rolling(window=20).mean()
+                df['SMA_Long'] = df['close'].rolling(window=50).mean()
+
+                df_hoje = df[df['time'] >= start_hoje]
+                if df_hoje.empty or len(df_hoje) < 2:
+                    continue
+
+                ultimo_cruzamento = None
+                hora_cruzamento = None
+
+                for i in range(1, len(df_hoje)):
+                    idx_current = df_hoje.index[i]
+                    idx_prev = df_hoje.index[i-1]
+
+                    c_short = df.loc[idx_current, 'SMA_Short']
+                    c_long = df.loc[idx_current, 'SMA_Long']
+                    p_short = df.loc[idx_prev, 'SMA_Short']
+                    p_long = df.loc[idx_prev, 'SMA_Long']
+
+                    if pd.isna(c_short) or pd.isna(c_long):
+                        continue
+
+                    if p_short <= p_long and c_short > c_long:
+                        ultimo_cruzamento = "COMPRA"
+                        hora_cruzamento = df.loc[idx_current, 'time'].strftime('%H:%M')
+                    elif p_short >= p_long and c_short < c_long:
+                        ultimo_cruzamento = "VENDA"
+                        hora_cruzamento = df.loc[idx_current, 'time'].strftime('%H:%M')
+
+                if ultimo_cruzamento == "COMPRA":
+                    compras_hoje.append(f"🔹 {symbol} - COMPRA (às {hora_cruzamento})")
+                elif ultimo_cruzamento == "VENDA":
+                    vendas_hoje.append(f"🔹 {symbol} - VENDA (às {hora_cruzamento})")
+
+            except Exception:
+                pass  # Erros individuais blindados no loop de scan
+
+        # 3. Formatação da Mensagem
+        total = len(compras_hoje) + len(vendas_hoje)
+
+        if total == 0:
+            return "Nenhum cruzamento de médias foi detectado no mercado hoje."
+
+        final_text = (
+            f"📊 *Scanner de Fim de Dia (Hoje):*\n"
+            f"O mercado apresentou os seguintes cruzamentos hoje:\n\n"
+        )
+
+        if compras_hoje:
+            final_text += "🟢 *COMPRAS (Golden Cross):*\n"
+            final_text += "\n".join(compras_hoje) + "\n\n"
+
+        if vendas_hoje:
+            final_text += "🔴 *VENDAS (Death Cross):*\n"
+            final_text += "\n".join(vendas_hoje) + "\n"
+
+        print("✅ [Scanner] Resumo Diário gerado com sucesso!")
+        return final_text
+
+    except Exception as e:
+        ts = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
+        print(f"[{ts}] ❌ [gerar_resumo_diario_ativo] Erro inesperado: {e}")
+        return "⚠️ Erro ao buscar dados no MT5. Verifique a conexão da corretora."
 
 def toggle_bot_from_telegram(turn_on: bool):
     global BOT_RUNNING, BOT_START_TIME, TOTAL_ALERTS, ALERTS_PER_ASSET
@@ -266,44 +272,50 @@ def toggle_bot_from_telegram(turn_on: bool):
         return "⏸️ O robô foi 🔴 DESLIGADO pelo Telegram. O monitoramento parou."
 
 def ver_carteira_mt5():
-    connected, err = ensure_mt5_connected()
-    if not connected:
-        return f"❌ Erro de conexão com MT5: {err}", None
-        
-    positions = mt5.positions_get()
-    if positions is None or len(positions) == 0:
-        return "💼 *Sua Carteira está vazia!*\nNenhuma posição aberta no momento.", None
-        
-    text = "💼 *Sua Carteira (Posições Abertas)*\n\n"
-    total_profit = 0.0
-    inline_kb = []
-    
-    for pos in positions:
-        ticker = pos.symbol
-        volume = pos.volume
-        price_open = pos.price_open
-        price_current = pos.price_current
-        profit = pos.profit
-        ticket = pos.ticket
-        total_profit += profit
-        
-        tipo = "🟢 COMPRA" if pos.type == mt5.ORDER_TYPE_BUY else "🔴 VENDA"
-        text += f"*{ticker}* ({tipo})\n"
-        text += f"Volume: {volume}\n"
-        text += f"Preço Médio: R$ {price_open:.2f}\n"
-        text += f"Preço Atual: R$ {price_current:.2f}\n"
-        text += f"Lucro/Prej: R$ {profit:.2f}\n"
-        text += "------------------------\n"
-        
-        # Add a close button for this position
-        inline_kb.append([{"text": f"❌ Fechar {ticker} ({volume}x)", "callback_data": f"close_{ticket}"}])
-        
-    text += f"\n📊 *Resultado Aberto Total:* R$ {total_profit:.2f}"
-    
-    # Add a global cancel button to dismiss the menu
-    inline_kb.append([{"text": "Esconder", "callback_data": "cancel"}])
-    
-    return text, inline_kb
+    try:
+        connected, err = ensure_mt5_connected()
+        if not connected:
+            return f"⚠️ Erro ao buscar dados no MT5. Verifique a conexão da corretora.\n_(Detalhe: {err})_", None
+
+        positions = mt5.positions_get()
+        if positions is None or len(positions) == 0:
+            return "💼 *Sua Carteira está vazia!*\nNenhuma posição aberta no momento.", None
+
+        text = "💼 *Sua Carteira (Posições Abertas)*\n\n"
+        total_profit = 0.0
+        inline_kb = []
+
+        for pos in positions:
+            ticker = pos.symbol
+            volume = pos.volume
+            price_open = pos.price_open
+            price_current = pos.price_current
+            profit = pos.profit
+            ticket = pos.ticket
+            total_profit += profit
+
+            tipo = "🟢 COMPRA" if pos.type == mt5.ORDER_TYPE_BUY else "🔴 VENDA"
+            text += f"*{ticker}* ({tipo})\n"
+            text += f"Volume: {volume}\n"
+            text += f"Preço Médio: R$ {price_open:.2f}\n"
+            text += f"Preço Atual: R$ {price_current:.2f}\n"
+            text += f"Lucro/Prej: R$ {profit:.2f}\n"
+            text += "------------------------\n"
+
+            # Add a close button for this position
+            inline_kb.append([{"text": f"❌ Fechar {ticker} ({volume}x)", "callback_data": f"close_{ticket}"}])
+
+        text += f"\n📊 *Resultado Aberto Total:* R$ {total_profit:.2f}"
+
+        # Add a global cancel button to dismiss the menu
+        inline_kb.append([{"text": "Esconder", "callback_data": "cancel"}])
+
+        return text, inline_kb
+
+    except Exception as e:
+        ts = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
+        print(f"[{ts}] ❌ [ver_carteira_mt5] Erro inesperado: {e}")
+        return "⚠️ Erro ao buscar dados no MT5. Verifique a conexão da corretora.", None
 
 def fechar_posicao_mt5(ticket):
     connected, err = ensure_mt5_connected()
@@ -348,95 +360,101 @@ def fechar_posicao_mt5(ticket):
     return True, f"✅ Posição de {symbol} (Ticket {ticket}) fechada com sucesso!"
 
 def ver_historico_mt5():
-    connected, err = ensure_mt5_connected()
-    if not connected:
-        return f"❌ Erro de conexão com MT5: {err}"
-        
-    agora = datetime.now()
-    hoje_inicio = agora.replace(hour=0, minute=0, second=0, microsecond=0)
-    hoje_fim = hoje_inicio + timedelta(days=1)
-    
-    # Busca histórico dos últimos 30 dias para ter uma visão ampla
-    inicio_historico = hoje_inicio - timedelta(days=30)
-    
-    deals = mt5.history_deals_get(inicio_historico, hoje_fim)
-    if deals is None or len(deals) == 0:
-        return "📜 *Histórico Vazio*\nNenhuma operação foi encontrada nos últimos 30 dias."
-        
-    deals_hoje = []
-    deals_passado = []
-    
-    for deal in deals:
-        if getattr(deal, 'entry', 0) == 1 or deal.profit != 0:
-            if deal.symbol == "":
-                continue
-                
-            deal_time = datetime.utcfromtimestamp(deal.time)
-            if deal_time >= hoje_inicio:
-                deals_hoje.append(deal)
-            else:
-                deals_passado.append(deal)
+    try:
+        connected, err = ensure_mt5_connected()
+        if not connected:
+            return f"⚠️ Erro ao buscar dados no MT5. Verifique a conexão da corretora.\n_(Detalhe: {err})_"
 
-    def formatar_deals(deal_list, titulo, mostrar_data=False, limit_display=None):
-        if not deal_list:
-            return f"_{titulo}_\nNenhuma operação.\n\n", 0, 0, 0, 0
-            
-        texto = f"*{titulo}*\n"
-        total_profit = 0.0
-        trades_count = 0
-        gain_count = 0
-        loss_count = 0
-        
-        # Inverter para mostrar os mais recentes primeiro
-        for deal in reversed(deal_list):
-            ticker = deal.symbol
-            profit = deal.profit
-            dt = datetime.utcfromtimestamp(deal.time)
-            
-            hora = dt.strftime('%d/%m %H:%M') if mostrar_data else dt.strftime('%H:%M:%S')
-            
-            total_profit += profit
-            trades_count += 1
-            if profit >= 0:
-                gain_count += 1
-                icon = "✅"
-            else:
-                loss_count += 1
-                icon = "❌"
-                
-            if limit_display is None or trades_count <= limit_display:
-                texto += f"{icon} {ticker} ({hora}) ➔ R$ {profit:.2f}\n"
-                
-        if limit_display is not None and len(deal_list) > limit_display:
-            ocultos = len(deal_list) - limit_display
-            texto += f"...e mais {ocultos} operações ocultas.\n"
-            
-        texto += f"\n📊 *Resumo ({titulo.lower()}):*\n"
-        texto += f"Trades: {trades_count} ({gain_count} Gain / {loss_count} Loss)\n"
-        texto += f"Resultado: *R$ {total_profit:.2f}*\n\n"
-        
-        return texto, total_profit, trades_count, gain_count, loss_count
+        agora = datetime.now()
+        hoje_inicio = agora.replace(hour=0, minute=0, second=0, microsecond=0)
+        hoje_fim = hoje_inicio + timedelta(days=1)
 
-    txt_hoje, p_h, t_h, g_h, l_h = formatar_deals(deals_hoje, "Hoje", mostrar_data=False)
-    
-    # Passa todos os trades, mas limita a exibição aos últimos 15
-    txt_passado, p_p, t_p, g_p, l_p = formatar_deals(deals_passado, "Últimos Dias (Até 15 mostrados)", mostrar_data=True, limit_display=15)
-    
-    final_text = "📜 *SEU HISTÓRICO DE TRADES*\n━━━━━━━━━━━━━━━━━━\n\n"
-    final_text += txt_hoje
-    final_text += "━━━━━━━━━━━━━━━━━━\n\n"
-    final_text += txt_passado
-    final_text += "━━━━━━━━━━━━━━━━━━\n"
-    
-    total_geral = p_h + p_p
-    total_trades = t_h + t_p
-    
-    winrate_valor = ((g_h + g_p) / total_trades * 100) if total_trades > 0 else 0.0
-    
-    final_text += f"🏆 *SALDO TOTAL (30 dias):* R$ {total_geral:.2f}\n"
-    final_text += f"📈 *Winrate:* {winrate_valor:.1f}%"
-    
-    return final_text
+        # Busca histórico dos últimos 30 dias para ter uma visão ampla
+        inicio_historico = hoje_inicio - timedelta(days=30)
+
+        deals = mt5.history_deals_get(inicio_historico, hoje_fim)
+        if deals is None or len(deals) == 0:
+            return "📜 *Histórico Vazio*\nNenhuma operação foi encontrada nos últimos 30 dias."
+
+        deals_hoje = []
+        deals_passado = []
+
+        for deal in deals:
+            if getattr(deal, 'entry', 0) == 1 or deal.profit != 0:
+                if deal.symbol == "":
+                    continue
+
+                deal_time = datetime.utcfromtimestamp(deal.time)
+                if deal_time >= hoje_inicio:
+                    deals_hoje.append(deal)
+                else:
+                    deals_passado.append(deal)
+
+        def formatar_deals(deal_list, titulo, mostrar_data=False, limit_display=None):
+            if not deal_list:
+                return f"_{titulo}_\nNenhuma operação.\n\n", 0, 0, 0, 0
+
+            texto = f"*{titulo}*\n"
+            total_profit = 0.0
+            trades_count = 0
+            gain_count = 0
+            loss_count = 0
+
+            # Inverter para mostrar os mais recentes primeiro
+            for deal in reversed(deal_list):
+                ticker = deal.symbol
+                profit = deal.profit
+                dt = datetime.utcfromtimestamp(deal.time)
+
+                hora = dt.strftime('%d/%m %H:%M') if mostrar_data else dt.strftime('%H:%M:%S')
+
+                total_profit += profit
+                trades_count += 1
+                if profit >= 0:
+                    gain_count += 1
+                    icon = "✅"
+                else:
+                    loss_count += 1
+                    icon = "❌"
+
+                if limit_display is None or trades_count <= limit_display:
+                    texto += f"{icon} {ticker} ({hora}) ➔ R$ {profit:.2f}\n"
+
+            if limit_display is not None and len(deal_list) > limit_display:
+                ocultos = len(deal_list) - limit_display
+                texto += f"...e mais {ocultos} operações ocultas.\n"
+
+            texto += f"\n📊 *Resumo ({titulo.lower()}):*\n"
+            texto += f"Trades: {trades_count} ({gain_count} Gain / {loss_count} Loss)\n"
+            texto += f"Resultado: *R$ {total_profit:.2f}*\n\n"
+
+            return texto, total_profit, trades_count, gain_count, loss_count
+
+        txt_hoje, p_h, t_h, g_h, l_h = formatar_deals(deals_hoje, "Hoje", mostrar_data=False)
+
+        # Passa todos os trades, mas limita a exibição aos últimos 15
+        txt_passado, p_p, t_p, g_p, l_p = formatar_deals(deals_passado, "Últimos Dias (Até 15 mostrados)", mostrar_data=True, limit_display=15)
+
+        final_text = "📜 *SEU HISTÓRICO DE TRADES*\n━━━━━━━━━━━━━━━━━━\n\n"
+        final_text += txt_hoje
+        final_text += "━━━━━━━━━━━━━━━━━━\n\n"
+        final_text += txt_passado
+        final_text += "━━━━━━━━━━━━━━━━━━\n"
+
+        total_geral = p_h + p_p
+        total_trades = t_h + t_p
+
+        winrate_valor = ((g_h + g_p) / total_trades * 100) if total_trades > 0 else 0.0
+
+        final_text += f"🏆 *SALDO TOTAL (30 dias):* R$ {total_geral:.2f}\n"
+        final_text += f"📈 *Winrate:* {winrate_valor:.1f}%"
+
+        return final_text
+
+    except Exception as e:
+        ts = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
+        print(f"[{ts}] ❌ [ver_historico_mt5] Erro inesperado: {e}")
+        return "⚠️ Erro ao buscar dados no MT5. Verifique a conexão da corretora."
 
 def executar_ordem_mt5(action, symbol, volume):
     connected, err = ensure_mt5_connected()

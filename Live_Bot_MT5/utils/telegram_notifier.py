@@ -156,7 +156,8 @@ class TelegramNotifier:
             return
 
         def handle_update(update):
-            """Processa um único update em uma thread separada"""
+            """Processa um único update em uma thread separada — blindado contra falhas MT5/rede."""
+            chat_id_for_error = None  # Usado para enviar erro amigável ao usuário se necessário
             try:
                 if 'callback_query' in update:
                     cq = update['callback_query']
@@ -164,10 +165,18 @@ class TelegramNotifier:
                     cb_msg = cq.get('message', {})
                     cb_chat_id = cb_msg.get('chat', {}).get('id')
                     cb_msg_id = cb_msg.get('message_id')
-                    
-                    # Answer callback query IMEDATAMENTE para remover o loading do botão
+                    chat_id_for_error = cb_chat_id
+
+                    # Answer callback query IMEDIATAMENTE para remover o loading do botão
                     cb_id = cq.get('id')
-                    self.session.post(f"https://api.telegram.org/bot{self.token}/answerCallbackQuery", json={"callback_query_id": cb_id})
+                    try:
+                        self.session.post(
+                            f"https://api.telegram.org/bot{self.token}/answerCallbackQuery",
+                            json={"callback_query_id": cb_id},
+                            timeout=5
+                        )
+                    except Exception:
+                        pass
 
                     if callbacks.get('callback_query_handler'):
                         callbacks['callback_query_handler'](data_cb, cb_chat_id, cb_msg_id)
@@ -176,6 +185,7 @@ class TelegramNotifier:
                 msg = update.get('message', {})
                 text = msg.get('text', '')
                 chat_id = msg.get('chat', {}).get('id')
+                chat_id_for_error = chat_id
                 if not chat_id: return
 
                 if text == '/start':
@@ -190,36 +200,37 @@ class TelegramNotifier:
                         "Para gerenciar, basta acessar o painel pelo navegador."
                     )
                     self.enviar_mensagem(welcome_text, target_chat_id=chat_id)
+
                 elif text in ('/status', '📊 Status'):
                     status_cb = callbacks.get('status_callback')
                     self.enviar_mensagem(status_cb() if status_cb else "Estado do sistema não configurado.", target_chat_id=chat_id)
-                    
+
                 elif text in ('/resumo', '📊 Resumo Diário'):
                     sum_cb = callbacks.get('summary_callback')
                     self.enviar_mensagem(sum_cb() if sum_cb else "Resumo indisponível.", target_chat_id=chat_id)
-                    
+
                 elif text == '🟢 Ligar Robô':
                     tog_cb = callbacks.get('toggle_callback')
                     if tog_cb: self.enviar_mensagem(tog_cb(True), target_chat_id=chat_id)
-                        
+
                 elif text == '🔴 Desligar Robô':
                     tog_cb = callbacks.get('toggle_callback')
                     if tog_cb: self.enviar_mensagem(tog_cb(False), target_chat_id=chat_id)
-                        
+
                 elif text in ('/carteira', '💼 Minha Carteira'):
                     cart_cb = callbacks.get('carteira_callback')
                     if cart_cb:
                         cart_text, inline_kb = cart_cb()
                         self.enviar_mensagem(cart_text, target_chat_id=chat_id, inline_keyboard=inline_kb)
-                    
+
                 elif text == '/teste_compra':
                     tst_cb = callbacks.get('teste_callback')
                     if tst_cb: tst_cb(chat_id)
-                        
+
                 elif text in ('/historico', '📜 Histórico Hoje'):
                     hist_cb = callbacks.get('historico_callback')
                     if hist_cb: self.enviar_mensagem(hist_cb(), target_chat_id=chat_id)
-                        
+
                 elif text == '🤖 Ligar/Desligar Scalper':
                     ts_cb = callbacks.get('toggle_scalper_cb')
                     gs_cb = callbacks.get('get_scalper_state_cb')
@@ -229,13 +240,16 @@ class TelegramNotifier:
                             self.enviar_mensagem(ts_cb(turn_on=False), target_chat_id=chat_id)
                         else:
                             self.user_states[chat_id] = {'state': 'WAITING_TIMEFRAME'}
-                            inline_kb = [[{"text": "M1", "callback_data": "tf_M1"}, {"text": "M5", "callback_data": "tf_M5"}], [{"text": "❌ Cancelar", "callback_data": "cancel"}]]
+                            inline_kb = [
+                                [{"text": "M1", "callback_data": "tf_M1"}, {"text": "M5", "callback_data": "tf_M5"}],
+                                [{"text": "❌ Cancelar", "callback_data": "cancel"}]
+                            ]
                             self.enviar_mensagem("⏱️ *Qual o Timeframe da operação?*", target_chat_id=chat_id, inline_keyboard=inline_kb)
-                    
+
                 elif text == '📊 Stats Scalper':
                     sts_cb = callbacks.get('stats_scalper_cb')
                     if sts_cb: self.enviar_mensagem(sts_cb(), target_chat_id=chat_id)
-                        
+
                 # Lógica da Máquina de Estados
                 elif chat_id in self.user_states:
                     u_state = self.user_states[chat_id]
@@ -251,16 +265,33 @@ class TelegramNotifier:
                             tp_val = float(text.replace(',', '.'))
                             ts_cb = callbacks.get('toggle_scalper_cb')
                             if ts_cb:
-                                self.enviar_mensagem(ts_cb(turn_on=True, sl=u_state['sl'], tp=tp_val, timeframe=u_state.get('timeframe', 'M5')), target_chat_id=chat_id)
+                                self.enviar_mensagem(
+                                    ts_cb(turn_on=True, sl=u_state['sl'], tp=tp_val, timeframe=u_state.get('timeframe', 'M5')),
+                                    target_chat_id=chat_id
+                                )
                             del self.user_states[chat_id]
                         except ValueError:
                             self.enviar_mensagem("⚠️ Valor inválido. Digite apenas números.", target_chat_id=chat_id)
+
             except Exception as e:
-                print(f"❌ Erro ao processar update: {e}")
+                # 🛡️ Blindagem final: NUNCA deixa o bot travar silenciosamente
+                ts = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
+                print(f"[{ts}] ❌ [Handler] Erro ao processar update: {e}")
+                if chat_id_for_error:
+                    try:
+                        self.enviar_mensagem(
+                            "⚠️ *Erro ao buscar dados no MT5.*\nVerifique a conexão da corretora e tente novamente em instantes.",
+                            target_chat_id=chat_id_for_error
+                        )
+                    except Exception:
+                        pass
 
         def poll():
+            """Loop de polling com auto-recovery e log de sobrevivência."""
             offset = None
+            restart_count = 0  # 🛡️ Contador de recuperações
             url = f"https://api.telegram.org/bot{self.token}/getUpdates"
+
             while True:
                 try:
                     # Long Polling: timeout de 20s para resposta quase instantânea sem queimar CPU
@@ -273,19 +304,41 @@ class TelegramNotifier:
                                 offset = update['update_id'] + 1
                                 # Despachar cada update para uma thread separada
                                 threading.Thread(target=handle_update, args=(update,), daemon=True).start()
+
                 except requests.exceptions.ReadTimeout:
-                    # Timeout esperado no Long Polling (20s)
+                    # Timeout esperado no Long Polling (20s) — comportamento normal
                     continue
+
                 except requests.exceptions.ConnectTimeout:
-                    # Timeout de conexão, tenta novamente
-                    time.sleep(2)
+                    restart_count += 1
+                    ts = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
+                    print(f"[{ts}] ⚠️ [Telegram] ConnectTimeout #{restart_count} — Reconectando em 5s...")
+                    time.sleep(5)
                     continue
+
+                except requests.exceptions.ConnectionError as e:
+                    restart_count += 1
+                    ts = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
+                    print(f"[{ts}] 🔴 [Telegram] QUEDA DE REDE detectada (recovery #{restart_count}): {e}")
+                    print(f"[{ts}] 🔄 [Telegram] Bot se auto-recuperando em 5s... (Total de quedas: {restart_count})")
+                    # Recria sessão para limpar conexões stale
+                    try:
+                        self.session.close()
+                    except Exception:
+                        pass
+                    self.session = requests.Session()
+                    time.sleep(5)
+                    continue
+
                 except Exception as e:
-                    # Só loga erro se NÃO for timeout da conexão/leitura
+                    restart_count += 1
+                    ts = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
                     if "timeout" not in str(e).lower():
-                        print(f"⚠️ Erro no polling: {e}")
-                    time.sleep(2)
-                time.sleep(0.1) # Respiro mínimo
+                        print(f"[{ts}] ❌ [Telegram] Erro inesperado no polling (recovery #{restart_count}): {e}")
+                        print(f"[{ts}] 🔄 [Telegram] Bot reiniciado após falha: {e}")
+                    time.sleep(5)
+
+                time.sleep(0.1)  # Respiro mínimo entre ciclos
 
         threading.Thread(target=poll, daemon=True).start()
-        print("🎧 [Telegram] Listener otimizado iniciado (Multi-threading + Long Polling)...")
+        print("🎧 [Telegram] Listener resiliente iniciado (Auto-Recovery + Long Polling + Log de Sobrevivência)...")
