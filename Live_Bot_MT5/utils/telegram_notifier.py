@@ -273,8 +273,17 @@ class TelegramNotifier:
                                 offset = update['update_id'] + 1
                                 # Despachar cada update para uma thread separada
                                 threading.Thread(target=handle_update, args=(update,), daemon=True).start()
+                except requests.exceptions.ReadTimeout:
+                    # Timeout esperado no Long Polling (20s)
+                    continue
+                except requests.exceptions.ConnectTimeout:
+                    # Timeout de conexão, tenta novamente
+                    time.sleep(2)
+                    continue
                 except Exception as e:
-                    print(f"⚠️ Erro no polling: {e}")
+                    # Só loga erro se NÃO for timeout da conexão/leitura
+                    if "timeout" not in str(e).lower():
+                        print(f"⚠️ Erro no polling: {e}")
                     time.sleep(2)
                 time.sleep(0.1) # Respiro mínimo
 
