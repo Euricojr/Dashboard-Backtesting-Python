@@ -1535,6 +1535,11 @@
                     </div>
                   </div>
 
+                  <button id="btn_limpar_backtest" class="btn btn-outline-secondary w-100 mt-2" 
+                    style="font-weight: bold; font-size: 0.8rem" onclick="voltarGraficoAoVivo()">
+                    🧹 Voltar ao Gráfico Ao Vivo
+                  </button>
+
                   <button id="btn-toggle-scalper" class="btn w-100 py-2 mt-1" style="
                         background: rgba(239, 68, 68, 0.1);
                         border: 1px solid #ef4444;
@@ -3178,6 +3183,28 @@
           // Esconde overlay de carregamento
           document.getElementById("backtest-loading").style.display = "none";
         });
+    }
+
+    function voltarGraficoAoVivo() {
+      logStatus("Limpando backtest e voltando ao vivo...", "neutral");
+      
+      // 1. Limpa Markers (Setas)
+      if (candleSeries) candleSeries.setMarkers([]);
+      
+      // 2. Desativa lógica de strategy live (SMA)
+      isStrategyActive = false;
+      
+      // 3. Oculta relatórios de performance e histórico
+      const analysisSection = document.getElementById("analysis-section");
+      if (analysisSection) analysisSection.style.display = "none";
+      
+      const historySection = document.getElementById("trade-history-section");
+      if (historySection) historySection.style.display = "none";
+      
+      // 4. Recarrega histórico padrão e reinicia polling
+      loadHistory();
+      
+      showToast("Voltando ao gráfico em tempo real", { bg: "#6c757d" });
     }
 
     setInterval(fetchScalperStats, 5000); // Atualiza dados ao vivo sem reload na página!
