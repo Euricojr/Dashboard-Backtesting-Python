@@ -10,6 +10,7 @@ load_dotenv()
 
 # Lê o token do bot de emergência
 WATCHDOG_TOKEN = os.getenv('WATCHDOG_TOKEN')
+TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 
 if not WATCHDOG_TOKEN:
     print("Erro: A variável de ambiente WATCHDOG_TOKEN não foi definida.")
@@ -19,72 +20,131 @@ if not WATCHDOG_TOKEN:
 # Inicializa o bot do watchdog
 bot = telebot.TeleBot(WATCHDOG_TOKEN)
 
-from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+from telebot.types import ReplyKeyboardMarkup, KeyboardButton
 
-def execute_kill_switch(chat_id):
+def kill_processes():
+    killed_any = False
+    # Itera sobre todos os processos abertos no Windows
+    for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
+        try:
+            name = proc.info.get('name')
+            cmdline = proc.info.get('cmdline')
+            
+            # Verifica se é executável Python
+            if name and name.lower() in ('python.exe', 'pythonw.exe') and cmdline:
+                # Verifica se o script alvo (app.py ou scalper_win.py) está na linha de comando
+                if any('app.py' in cmd for cmd in cmdline) or any('scalper_win.py' in cmd for cmd in cmdline):
+                    print(f"Matando processo {proc.info['pid']} - Cmd: {cmdline}")
+                    proc.kill() # Termina o processo à força
+                    killed_any = True
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+            continue
+    return killed_any
+
+def check_is_running():
+    for proc in psutil.process_iter(['name', 'cmdline']):
+        try:
+            name = proc.info.get('name')
+            cmdline = proc.info.get('cmdline')
+            if name and name.lower() in ('python.exe', 'pythonw.exe') and cmdline:
+                if any('app.py' in cmd for cmd in cmdline) or any('scalper_win.py' in cmd for cmd in cmdline):
+                    return True
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+            continue
+    return False
+
+@bot.message_handler(commands=['ligar'])
+def handle_ligar(message):
+    execute_ligar(message.chat.id)
+
+def execute_ligar(chat_id):
     try:
-        # Avisa que iniciou o protocolo
-        bot.send_message(chat_id, "🚨 Falha detectada. Iniciando protocolo de emergência (Kill Switch)...")
+        if check_is_running():
+            bot.send_message(chat_id, "⚠️ O sistema já está rodando. Use /reiniciar se quiser reiniciar.")
+            return
+            
+        bot.send_message(chat_id, "🟢 Ligando o sistema principal...")
         
-        killed_any = False
-        
-        # Itera sobre todos os processos abertos no Windows
-        for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
-            try:
-                name = proc.info.get('name')
-                cmdline = proc.info.get('cmdline')
-                
-                # Verifica se é executável Python
-                if name and name.lower() in ('python.exe', 'pythonw.exe') and cmdline:
-                    # Verifica se o script alvo (app.py ou scalper_win.py) está na linha de comando
-                    if any('app.py' in cmd for cmd in cmdline) or any('scalper_win.py' in cmd for cmd in cmdline):
-                        print(f"Matando processo {proc.info['pid']} - Cmd: {cmdline}")
-                        proc.kill() # Termina o processo à força
-                        killed_any = True
-            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-                continue
-                
-        if killed_any:
-            # Dá o sleep de 3 segundos
-            time.sleep(3)
-            
-            import sys
-            
-            # Obtém a pasta onde está este script (Live_Bot_MT5) para referenciar o app.py corretamente
-            script_dir = os.path.dirname(os.path.abspath(__file__))
-            
-            # Reinicia o sistema principal (app.py) silenciosamente no mesmo terminal
-            subprocess.Popen([sys.executable, 'app.py'], cwd=script_dir)
-            
-            # Envia a mensagem final de ressurreição
-            bot.send_message(chat_id, "✅ Sistema principal e submódulos degolados com sucesso! O Scalper foi reiniciado e está de volta à vida.")
-        else:
-            bot.send_message(chat_id, "⚠️ Nenhum processo do robô (`app.py` ou `scalper_win.py`) foi encontrado rodando.")
-            
+        import sys
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        subprocess.Popen([sys.executable, 'app.py'], cwd=script_dir)
+        bot.send_message(chat_id, "✅ Sistema ligado e operando!")
     except Exception as e:
-        error_msg = f"❌ Erro ao executar o Kill Switch: {e}"
+        error_msg = f"❌ Erro ao ligar o sistema: {e}"
+        print(error_msg)
+        bot.send_message(chat_id, error_msg)
+
+@bot.message_handler(commands=['desligar'])
+def handle_desligar(message):
+    chat_id = message.chat.id
+    execute_desligar(chat_id)
+
+def execute_desligar(chat_id):
+    try:
+        bot.send_message(chat_id, "🛑 Desligando o sistema principal...")
+        killed = kill_processes()
+        
+        if killed:
+            bot.send_message(chat_id, "✅ Sistema principal desligado com sucesso. O robô está inativo.")
+        else:
+            bot.send_message(chat_id, "⚠️ Nenhum processo do robô foi encontrado rodando.")
+    except Exception as e:
+        error_msg = f"❌ Erro ao desligar o sistema: {e}"
+        print(error_msg)
+        bot.send_message(chat_id, error_msg)
+
+@bot.message_handler(commands=['reiniciar'])
+def handle_reiniciar(message):
+    chat_id = message.chat.id
+    execute_reiniciar(chat_id)
+
+def execute_reiniciar(chat_id):
+    try:
+        bot.send_message(chat_id, "🔄 Reiniciando o sistema...")
+        killed = kill_processes()
+        
+        if killed:
+            time.sleep(3)
+            import sys
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            subprocess.Popen([sys.executable, 'app.py'], cwd=script_dir)
+            bot.send_message(chat_id, "✅ Sistema reiniciado e operando!")
+        else:
+            bot.send_message(chat_id, "⚠️ Nenhum processo do robô foi encontrado rodando.")
+    except Exception as e:
+        error_msg = f"❌ Erro ao reiniciar o sistema: {e}"
         print(error_msg)
         bot.send_message(chat_id, error_msg)
 
 @bot.message_handler(commands=['start', 'menu'])
 def handle_start(message):
-    markup = InlineKeyboardMarkup()
-    btn_emergency = InlineKeyboardButton("🚨 Acionar Kill Switch", callback_data="btn_emergencia")
-    markup.add(btn_emergency)
-    bot.send_message(message.chat.id, "🛡️ Painel do Watchdog.\n\nUse o botão abaixo para reiniciar o sistema principal em caso de travamento:", reply_markup=markup)
+    markup = ReplyKeyboardMarkup(resize_keyboard=True)
+    markup.row(KeyboardButton("🟢 Ligar"), KeyboardButton("🔄 Reiniciar"))
+    markup.row(KeyboardButton("🛑 Desligar"))
+    bot.send_message(message.chat.id, "🛡️ Painel do Watchdog.\n\nEscolha uma das opções no teclado abaixo:", reply_markup=markup)
 
-@bot.message_handler(commands=['emergencia'])
-def handle_emergencia(message):
-    execute_kill_switch(message.chat.id)
-
-@bot.callback_query_handler(func=lambda call: call.data == "btn_emergencia")
-def callback_emergencia(call):
-    bot.answer_callback_query(call.id, "Iniciando protocolo...")
-    bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=None) # remove o botão clicado
-    execute_kill_switch(call.message.chat.id)
+@bot.message_handler(func=lambda message: message.text in ["🟢 Ligar", "🔄 Reiniciar", "🛑 Desligar"])
+def handle_teclado(message):
+    chat_id = message.chat.id
+    if message.text == "🟢 Ligar":
+        execute_ligar(chat_id)
+    elif message.text == "🔄 Reiniciar":
+        execute_reiniciar(chat_id)
+    elif message.text == "🛑 Desligar":
+        execute_desligar(chat_id)
 
 if __name__ == '__main__':
-    print("🛡️ Watchdog está ON e vigiando! Aguardando o comando /emergencia no Telegram...")
+    print("🛡️ Watchdog está ON e vigiando! Envie /start no Telegram para acessar as opções.")
+    
+    # Enviar mensagem inicial pro Admin
+    if TELEGRAM_CHAT_ID:
+        try:
+            markup = ReplyKeyboardMarkup(resize_keyboard=True)
+            markup.row(KeyboardButton("🟢 Ligar"), KeyboardButton("🔄 Reiniciar"))
+            markup.row(KeyboardButton("🛑 Desligar"))
+            bot.send_message(TELEGRAM_CHAT_ID, "🛡️ **Watchdog Iniciado e Online!**\n\nUse o teclado abaixo fixado no seu chat para controlar o robô de forma rápida e segura.", reply_markup=markup, parse_mode="Markdown")
+        except Exception as e:
+            print(f"Erro ao enviar mensagem inicial: {e}")
     
     # 4. Blindagem: Loop eterno para o bot ser imortal contra quedas de internet
     while True:
