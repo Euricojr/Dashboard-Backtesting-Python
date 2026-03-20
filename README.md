@@ -52,7 +52,14 @@ python -m venv venv
 # (Opcional) Ativação no Windows (CMD)
 venv\Scripts\activate.bat
 ```
+#################################################
+cd Live_Bot_MT5
+python app.py
 
+cd Live_Bot_MT5
+python watchdog.py
+
+###############################################
 ### 3. Instalando as Dependências
 
 Com o ambiente ativado, instale todos os pacotes:

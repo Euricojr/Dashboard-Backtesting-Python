@@ -1601,7 +1601,7 @@ def run_backtest_scalper():
                         "position": "belowBar",
                         "color": "#00E676",
                         "shape": "arrowUp",
-                        "text": "COMPRA",
+                        "text": " \nCOMPRA",
                         "size": 2
                     })
                 elif action == 'SELL':
@@ -1610,7 +1610,7 @@ def run_backtest_scalper():
                         "position": "aboveBar",
                         "color": "#FF5252",
                         "shape": "arrowDown",
-                        "text": "VENDA",
+                        "text": "VENDA\n ",
                         "size": 2
                     })
                 elif action == 'WIN_BUY':
@@ -1619,7 +1619,7 @@ def run_backtest_scalper():
                         "position": "aboveBar",
                         "color": "#00E676",
                         "shape": "circle",
-                        "text": f"TP (+R$ {tp_manual * 0.20:.0f})",
+                        "text": f"TP (+R$ {tp_manual * 0.20:.0f})\n ",
                         "size": 1
                     })
                 elif action == 'LOSS_BUY':
@@ -1628,7 +1628,7 @@ def run_backtest_scalper():
                         "position": "belowBar",
                         "color": "#FF5252",
                         "shape": "circle",
-                        "text": f"SL (-R$ {sl_manual * 0.20:.0f})",
+                        "text": f" \nSL (-R$ {sl_manual * 0.20:.0f})",
                         "size": 1
                     })
                 elif action == 'WIN_SELL':
@@ -1637,7 +1637,7 @@ def run_backtest_scalper():
                         "position": "belowBar",
                         "color": "#00E676",
                         "shape": "circle",
-                        "text": f"TP (+R$ {tp_manual * 0.20:.0f})",
+                        "text": f" \nTP (+R$ {tp_manual * 0.20:.0f})",
                         "size": 1
                     })
                 elif action == 'LOSS_SELL':
@@ -1646,7 +1646,7 @@ def run_backtest_scalper():
                         "position": "aboveBar",
                         "color": "#FF5252",
                         "shape": "circle",
-                        "text": f"SL (-R$ {sl_manual * 0.20:.0f})",
+                        "text": f"SL (-R$ {sl_manual * 0.20:.0f})\n ",
                         "size": 1
                     })
 

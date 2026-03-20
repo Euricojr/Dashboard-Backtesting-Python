@@ -1894,20 +1894,20 @@
     });
 
     let ema9Series = chart.addLineSeries({
-      color: "#2962FF",
-      lineWidth: 2,
+      color: "#00E5FF", // Neon Cyan
+      lineWidth: 3,
       title: "EMA 9 (Scalper)",
     });
 
     let ema21Series = chart.addLineSeries({
-      color: "#FF6D00",
-      lineWidth: 2,
+      color: "#FF00FF", // Neon Magenta
+      lineWidth: 3,
       title: "EMA 21 (Scalper)",
     });
 
     let vwapSeries = chart.addLineSeries({
-      color: "#FFD600",
-      lineWidth: 2,
+      color: "#FFFF00", // Neon Yellow
+      lineWidth: 3,
       title: "VWAP Diária (Scalper)",
     });
 
@@ -2053,15 +2053,7 @@
         if (ema21Series) chart.removeSeries(ema21Series);
         if (vwapSeries) chart.removeSeries(vwapSeries);
 
-        // 2. Recreate Series (Order Matters: Last added = Top Layer)
-        // 2.1 Candles (Background Layer)
-        candleSeries = chart.addCandlestickSeries({
-          upColor: "#00E396",
-          downColor: "#FF4560",
-          borderVisible: false,
-          wickUpColor: "#00E396",
-          wickDownColor: "#FF4560",
-        });
+        // 2.1 Indicators (Background Layer)
 
         // 2.2 SMAs (Overlay Layer)
         smaShortSeries = chart.addLineSeries({
@@ -2090,6 +2082,15 @@
           color: "rgba(0,0,0,0)",
           lineWidth: 0,
           crosshairMarkerVisible: false,
+        });
+
+        // 2.2 Candles (Top Layer - ensures markers are above lines)
+        candleSeries = chart.addCandlestickSeries({
+          upColor: "#00E396",
+          downColor: "#FF4560",
+          borderVisible: false,
+          wickUpColor: "#00E396",
+          wickDownColor: "#FF4560",
         });
 
         // 3. Set Data
@@ -3056,6 +3057,13 @@
       const btn = document.getElementById(btnId);
       const originalText = btn.innerHTML;
 
+      // Atualiza visualmente o seletor lá de cima para não te confundir!
+      const tfValueEl = document.getElementById("tf-value");
+      if (tfValueEl) {
+        tfValueEl.innerText = tf;
+        tfValueEl.setAttribute("data-value", tf);
+      }
+
       // Spinner no botão
       btn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> ...`;
       btn.disabled = true;
@@ -3083,28 +3091,21 @@
           if (ema21Series) chart.removeSeries(ema21Series);
           if (vwapSeries) chart.removeSeries(vwapSeries);
 
-          // 2. Recria os Series
-          candleSeries = chart.addCandlestickSeries({
-            upColor: "#00E396",
-            downColor: "#FF4560",
-            borderVisible: false,
-            wickUpColor: "#00E396",
-            wickDownColor: "#FF4560",
-          });
+          // 2. Recria os Series (Indicadores primeiro para ficarem no fundo)
 
           ema9Series = chart.addLineSeries({
-            color: "#2962FF",
-            lineWidth: 2,
+            color: "#00E5FF",
+            lineWidth: 3,
             title: "EMA 9",
           });
           ema21Series = chart.addLineSeries({
-            color: "#FF6D00",
-            lineWidth: 2,
+            color: "#FF00FF",
+            lineWidth: 3,
             title: "SMA 21",
           });
           vwapSeries = chart.addLineSeries({
-            color: "#FFD600",
-            lineWidth: 2,
+            color: "#FFFF00",
+            lineWidth: 3,
             title: "VWAP",
           });
 
@@ -3118,6 +3119,15 @@
             color: "rgba(0,0,0,0)",
             lineWidth: 0,
             crosshairMarkerVisible: false,
+          });
+
+          // Candles por último para que eles e seus markers (setas) fiquem por cima das linhas
+          candleSeries = chart.addCandlestickSeries({
+            upColor: "#00E396",
+            downColor: "#FF4560",
+            borderVisible: false,
+            wickUpColor: "#00E396",
+            wickDownColor: "#FF4560",
           });
 
           try {
