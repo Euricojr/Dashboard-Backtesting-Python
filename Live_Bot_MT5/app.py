@@ -91,6 +91,8 @@ TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 MONITOR_SYMBOL = "WINJ26" # Default monitored symbol (Deprecated in favor of full list)
 MONITOR_TIMEFRAME = "H1" # Timeframe do Monitoramento (M1, M5, H1, etc)
+SMA_SHORT = 20 # Média Curta padrão
+SMA_LONG = 50  # Média Longa padrão
 LAST_SIGNAL_STATE = {} # Dict para guardar estado de cada ativo: { "WINJ26": 1, ... }
 # Novo dict de persistência
 SENT_ALERTS_TODAY = {} # {"PETR4F": "2026-03-02"}
@@ -254,16 +256,26 @@ def gerar_resumo_diario_ativo():
         print(f"[{ts}] ❌ [gerar_resumo_diario_ativo] Erro inesperado: {e}")
         return "⚠️ Erro ao buscar dados no MT5. Verifique a conexão da corretora."
 
-def toggle_bot_from_telegram(turn_on: bool):
-    global BOT_RUNNING, BOT_START_TIME, TOTAL_ALERTS, ALERTS_PER_ASSET
+def toggle_bot_from_telegram(turn_on: bool, tf=None, short_sma=None, long_sma=None):
+    global BOT_RUNNING, BOT_START_TIME, TOTAL_ALERTS, ALERTS_PER_ASSET, MONITOR_TIMEFRAME, SMA_SHORT, SMA_LONG
     if turn_on:
         if BOT_RUNNING:
             return "O robô já está 🟢 LIGADO."
+        
+        # Atualiza parâmetros se fornecidos
+        if tf: MONITOR_TIMEFRAME = tf
+        if short_sma: SMA_SHORT = int(short_sma)
+        if long_sma: SMA_LONG = int(long_sma)
+        
         BOT_RUNNING = True
         BOT_START_TIME = datetime.now()
-        TOTAL_ALERTS = 0 # Mantendo para não quebrar compatibilidade
+        TOTAL_ALERTS = 0 
         ALERTS_PER_ASSET.clear()
-        return "▶️ O robô foi 🟢 LIGADO pelo Telegram e começou a monitorar os ativos."
+        
+        return (f"✅ **Robô de Ações LIGADO!**\n"
+                f"Timeframe: {MONITOR_TIMEFRAME}\n"
+                f"Cruzamento: {SMA_SHORT} x {SMA_LONG}\n"
+                f"Volume: 1 Ação (Fracionário).")
     else:
         if not BOT_RUNNING:
             return "O robô já está 🔴 DESLIGADO."
@@ -461,6 +473,24 @@ def executar_ordem_mt5(action, symbol, volume):
     if not connected:
         return False, f"Erro MT5: {err}"
         
+    # --- Lógica de Mercado Fracionário B3 ---
+    # Se o ativo tem 5 caracteres (ex: PETR4, VALE3) e não é WIN/WDO, adiciona "F"
+    is_b3_stock = any(char.isdigit() for char in symbol) and not (symbol.startswith("WIN") or symbol.startswith("WDO"))
+    
+    if len(symbol) == 5 and is_b3_stock:
+        symbol_frac = symbol + "F"
+        if mt5.symbol_select(symbol_frac, True):
+            print(f"🔄 [MT5] Convertendo {symbol} para fracionário: {symbol_frac}")
+            symbol = symbol_frac
+            volume = 1.0 # B3 Fracionário = 1 ação
+        else:
+            print(f"⚠️ [MT5] Tentativa de fracionário {symbol_frac} falhou, usando padrão.")
+    elif is_b3_stock or len(symbol) >= 6 and any(char.isdigit() for char in symbol):
+        volume = 1.0 # Outros B3 (ex: KLBN11)
+    elif not (symbol.startswith("WIN") or symbol.startswith("WDO")):
+        # Se não tem números e não é WIN/WDO, provavelmente é Forex
+        volume = 0.01 # Mercado Forex
+            
     if not mt5.symbol_select(symbol, True):
         return False, f"Ativo {symbol} não encontrado no Market Watch."
 
@@ -548,6 +578,15 @@ def handle_telegram_callback(data, chat_id, message_id):
             # Remove os botões e avança
             global_notifier.editar_mensagem(chat_id, message_id, f"✅ Timeframe *{tf}* selecionado.")
             global_notifier.enviar_mensagem(f"🎯 *Configuração do Scalper ({tf})*\n\nQual o *Stop Loss* (em pontos)?\n(Ex: 100)", target_chat_id=chat_id)
+
+    elif len(parts) >= 2 and parts[0] == "smatf":
+        tf = parts[1]
+        if chat_id in global_notifier.user_states:
+            global_notifier.user_states[chat_id]['tf'] = tf
+            global_notifier.user_states[chat_id]['state'] = 'WAITING_SMA_SHORT'
+            
+            global_notifier.editar_mensagem(chat_id, message_id, f"✅ Timeframe *{tf}* selecionado.")
+            global_notifier.enviar_mensagem(f"📈 Qual o período da *Média Móvel CURTA*? (ex: 9, 20)", target_chat_id=chat_id)
 
 def enviar_alerta_teste(chat_id):
     symbol = "PETR4F"
@@ -845,9 +884,9 @@ def run_telegram_monitor():
                     df = pd.DataFrame(rates)
                     df['time'] = pd.to_datetime(df['time'], unit='s')
                     
-                    # 2. Calcula SMA 20 e 50
-                    df['SMA_Short'] = df['close'].rolling(window=20).mean()
-                    df['SMA_Long'] = df['close'].rolling(window=50).mean()
+                    # 2. Calcula SMA Curta e Longa Dinâmicas
+                    df['SMA_Short'] = df['close'].rolling(window=SMA_SHORT).mean()
+                    df['SMA_Long'] = df['close'].rolling(window=SMA_LONG).mean()
                     
                     # 3. Verifica Cruzamento (usando apenas vela fechada para evitar sinais falsos)
                     current = df.iloc[-2]
@@ -915,8 +954,8 @@ def run_telegram_monitor():
                                 f"🎯 *ATIVO:* {symbol}  |  ⏱️ *TF:* {MONITOR_TIMEFRAME}\n\n"
                                 f"💰 *PREÇO ATUAL:* {current['close']:.2f}\n\n"
                                 f"📊 *CRUZAMENTO DAS MÉDIAS:*\n"
-                                f"🔸 SMA 20: {c_short:.2f}\n"
-                                f"🔹 SMA 50: {c_long:.2f}\n\n"
+                                f"🔸 SMA {SMA_SHORT}: {c_short:.2f}\n"
+                                f"🔹 SMA {SMA_LONG}: {c_long:.2f}\n\n"
                                 f"📅 *DATA/HORA:* {current['time'].strftime('%d/%m/%Y às %H:%M:%S')}"
                             )
                             print(f"\n⚡ [Monitor] ALERTA ENVIADO para {symbol}: {signal_text}")
@@ -997,6 +1036,91 @@ def run_telegram_monitor():
                     break
                 time.sleep(1)
 
+def monitor_posicoes_encerradas():
+    """
+    Monitora posições abertas e envia alerta quando uma é fechada.
+    """
+    print("👀 [Monitor] Iniciando Thread de Monitoramento de Posições Encerradas...")
+    posicoes_rastreadas = set()
+    
+    # Inicializa com as posições já abertas
+    try:
+        if not mt5.terminal_info():
+            ensure_mt5_connected()
+        pos = mt5.positions_get()
+        if pos:
+            for p in pos:
+                posicoes_rastreadas.add(p.ticket)
+    except:
+        pass
+
+    while True:
+        try:
+            connected, err = ensure_mt5_connected()
+            if not connected:
+                time.sleep(10)
+                continue
+                
+            pos_ativas = mt5.positions_get()
+            tickets_atuais = set()
+            
+            if pos_ativas is not None:
+                for p in pos_ativas:
+                    tickets_atuais.add(p.ticket)
+                    # Se surgiu uma nova posição, adiciona ao rastreio
+                    if p.ticket not in posicoes_rastreadas:
+                        posicoes_rastreadas.add(p.ticket)
+            
+            # Identifica posições que sumiram (fechadas)
+            fechadas = posicoes_rastreadas - tickets_atuais
+            
+            for ticket in fechadas:
+                # Busca no histórico o que aconteceu com esse ticket
+                # Pega histórico de hoje e ontem para garantir
+                fim = datetime.now()
+                inicio = fim - timedelta(days=2)
+                
+                deals = mt5.history_deals_get(inicio, fim)
+                if deals:
+                    # Deal do fechamento tem entry=1 (IN) ou entry=out (OUT) ou logicamente relacionado ao ticket
+                    # Procuramos o deal de saída (OUT) para este ticket
+                    deal_saida = None
+                    deal_entrada = None
+                    
+                    for d in deals:
+                        if d.position_id == ticket:
+                            if d.entry == mt5.DEAL_ENTRY_OUT:
+                                deal_saida = d
+                            elif d.entry == mt5.DEAL_ENTRY_IN:
+                                deal_entrada = d
+                                
+                    if deal_saida and deal_entrada:
+                        ativo = deal_saida.symbol
+                        tipo = "COMPRA" if deal_entrada.type == mt5.ORDER_TYPE_BUY else "VENDA"
+                        preco_in = deal_entrada.price
+                        preco_out = deal_saida.price
+                        lucro = deal_saida.profit + deal_saida.commission + deal_saida.swap
+                        
+                        icon = "💰" if lucro >= 0 else "📉"
+                        msg = (
+                            f"{icon} **Trade de Ação Encerrado!** {icon}\n\n"
+                            f"🔹 **Ativo:** {ativo}\n"
+                            f"🔹 **Tipo:** {tipo}\n"
+                            f"🔹 **Entrada:** R$ {preco_in:.2f}\n"
+                            f"🔹 **Saída:** R$ {preco_out:.2f}\n"
+                            f"💵 **Lucro/Prejuízo:** R$ {lucro:.2f}"
+                        )
+                        global_notifier.enviar_mensagem(msg)
+                        print(f"✅ [Monitor] Trade encerrado detectado: {ativo} | Lucro: {lucro:.2f}")
+                
+                # Remove do rastreio após processar
+                posicoes_rastreadas.remove(ticket)
+                
+        except Exception as e:
+            print(f"❌ [Monitor Posições] Erro: {e}")
+            
+        time.sleep(5) # Verifica a cada 5 segundos
+
 # Inicia a thread de monitoramento apenas se não for o reloader do Flask (para não duplicar)
 if os.environ.get("WERKZEUG_RUN_MAIN") == "true" or __name__ == "__main__":
     import atexit
@@ -1013,6 +1137,10 @@ if os.environ.get("WERKZEUG_RUN_MAIN") == "true" or __name__ == "__main__":
 
     monitor_thread = threading.Thread(target=run_telegram_monitor, daemon=True)
     monitor_thread.start()
+    
+    # Thread de monitoramento de fechamento de ordens
+    positions_thread = threading.Thread(target=monitor_posicoes_encerradas, daemon=True)
+    positions_thread.start()
 
 
 

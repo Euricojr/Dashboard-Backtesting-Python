@@ -210,8 +210,13 @@ class TelegramNotifier:
                     self.enviar_mensagem(sum_cb() if sum_cb else "Resumo indisponível.", target_chat_id=chat_id)
 
                 elif text == '🟢 Ligar Robô':
-                    tog_cb = callbacks.get('toggle_callback')
-                    if tog_cb: self.enviar_mensagem(tog_cb(True), target_chat_id=chat_id)
+                    self.user_states[chat_id] = {'state': 'WAITING_SMA_TF'}
+                    inline_kb = [
+                        [{"text": "M15", "callback_data": "smatf_M15"}, {"text": "H1", "callback_data": "smatf_H1"}, {"text": "D1", "callback_data": "smatf_D1"}],
+                        [{"text": "M5", "callback_data": "smatf_M5"}, {"text": "M30", "callback_data": "smatf_M30"}, {"text": "H4", "callback_data": "smatf_H4"}],
+                        [{"text": "❌ Cancelar", "callback_data": "cancel"}]
+                    ]
+                    self.enviar_mensagem("⏱️ *Qual Timeframe você deseja operar?*\n(Ex: M15, H1, D1)", target_chat_id=chat_id, inline_keyboard=inline_kb)
 
                 elif text == '🔴 Desligar Robô':
                     tog_cb = callbacks.get('toggle_callback')
@@ -272,6 +277,28 @@ class TelegramNotifier:
                             del self.user_states[chat_id]
                         except ValueError:
                             self.enviar_mensagem("⚠️ Valor inválido. Digite apenas números.", target_chat_id=chat_id)
+                    
+                    # --- NOVOS ESTADOS PARA O ROBÔ SMA ---
+                    elif u_state['state'] == 'WAITING_SMA_SHORT':
+                        try:
+                            short_val = int(text)
+                            u_state.update({'short_sma': short_val, 'state': 'WAITING_SMA_LONG'})
+                            self.enviar_mensagem("📉 Qual o período da *Média Móvel LONGA*? (ex: 21, 50)", target_chat_id=chat_id)
+                        except ValueError:
+                            self.enviar_mensagem("⚠️ Valor inválido. Digite um número inteiro (ex: 21).", target_chat_id=chat_id)
+                    
+                    elif u_state['state'] == 'WAITING_SMA_LONG':
+                        try:
+                            long_val = int(text)
+                            tog_cb = callbacks.get('toggle_callback')
+                            if tog_cb:
+                                self.enviar_mensagem(
+                                    tog_cb(True, tf=u_state['tf'], short_sma=u_state['short_sma'], long_sma=long_val),
+                                    target_chat_id=chat_id
+                                )
+                            del self.user_states[chat_id]
+                        except ValueError:
+                            self.enviar_mensagem("⚠️ Valor inválido. Digite um número inteiro (ex: 50).", target_chat_id=chat_id)
 
             except Exception as e:
                 # 🛡️ Blindagem final: NUNCA deixa o bot travar silenciosamente
