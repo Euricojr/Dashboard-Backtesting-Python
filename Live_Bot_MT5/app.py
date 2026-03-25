@@ -520,6 +520,7 @@ def executar_ordem_mt5(action, symbol, volume):
 
     result = mt5.order_send(request)
     if result.retcode != mt5.TRADE_RETCODE_DONE:
+        print(f"❌ [MT5] Ordem Rejeitada! Detalhes: {result.comment} / MT5 Error: {mt5.last_error()}")
         return False, f"Erro ao enviar ordem: {result.comment} (Code: {result.retcode})"
         
     tipo_str = "COMPRA" if action == "buy" else "VENDA"
@@ -876,9 +877,14 @@ def run_telegram_monitor():
                     # Define Timeframe (Default M5 se não achar)
                     mt5_tf = TIMEFRAMES.get(MONITOR_TIMEFRAME, mt5.TIMEFRAME_M5)
                     
+                    # --- HEARTBEAT LOG ---
+                    print(f"[{datetime.now().strftime('%H:%M:%S')}] 🫀 Buscando dados MT5 para {symbol}...")
+                    
                     # 1000 velas para dar o warm-up matematico exato da plataforma
                     rates = mt5.copy_rates_from_pos(symbol, mt5_tf, 0, 1000)
                     if rates is None or len(rates) < 55: # Precisa de pelo menos 50 + buffer
+                        err_code = mt5.last_error()
+                        print(f"⚠️ ERRO/AVISO: Falha ao obter dados suficientes para {symbol}. Código MT5: {err_code}")
                         continue
 
                     df = pd.DataFrame(rates)
@@ -896,6 +902,9 @@ def run_telegram_monitor():
                     c_long = current['SMA_Long']
                     p_short = prev['SMA_Short']
                     p_long = prev['SMA_Long']
+                    
+                    # --- EXECUTION LOG ---
+                    print(f"   ↳ Valores {symbol} - Curta: {c_short:.2f}, Longa: {c_long:.2f}")
                     
                     if not (pd.isna(c_short) or pd.isna(c_long) or pd.isna(p_short) or pd.isna(p_long)):
                         signal_text = None
@@ -916,6 +925,7 @@ def run_telegram_monitor():
                                 new_state = -1
                                 
                         if signal_text:
+                            print(f"   ⚠️ SINAL DETECTADO: {signal_text} para {symbol}")
                             # Filtro Temporal: Só alerta se o cruzamento for MAIS RECENTE que o start do Bot
                             sinal_time = current['time']
                             

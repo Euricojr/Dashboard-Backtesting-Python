@@ -6,6 +6,6 @@
     "sl": 150.0,
     "tp": 300.0,
     "sl_points": 50.0,
-    "tp_points": 300.0,
-    "timeframe": "M5"
+    "tp_points": 150.0,
+    "timeframe": "M1"
 }

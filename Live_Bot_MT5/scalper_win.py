@@ -158,8 +158,13 @@ def iniciar_robo():
         tf_str = controle.get("timeframe", "M5")
         mt5_tf = mt5.TIMEFRAME_M1 if tf_str == "M1" else mt5.TIMEFRAME_M5
         
+        # --- HEARTBEAT LOG ---
+        print(f"[{datetime.now().strftime('%H:%M:%S')}] 🫀 [Scalper] Buscando dados MT5 para {SYMBOL} no TF {tf_str}...")
+        
         rates = mt5.copy_rates_from_pos(SYMBOL, mt5_tf, 0, 300)
         if rates is None or len(rates) < 50:
+            err_code = mt5.last_error()
+            print(f"⚠️ [Scalper] ERRO/AVISO: Falha ao obter dados suficientes para {SYMBOL}. Código MT5: {err_code}")
             time.sleep(5)
             continue
             
@@ -192,6 +197,9 @@ def iniciar_robo():
         # Lógicas de Cruzamento (Compra e Venda)
         cross_up = prev['EMA9'] <= prev['SMA21'] and current['EMA9'] > current['SMA21']
         cross_down = prev['EMA9'] >= prev['SMA21'] and current['EMA9'] < current['SMA21']
+        
+        # --- EXECUTION LOG ---
+        print(f"   ↳ [Scalper] {SYMBOL} Valores Atuais - EMA9: {current['EMA9']:.2f}, SMA21: {current['SMA21']:.2f}, VWAP: {current['VWAP']:.2f}")
         
         # Só opera essa vela 1 vez
         if vela_time != ultima_vela_operada:
@@ -232,7 +240,7 @@ def iniciar_robo():
                     "type_filling": mt5.ORDER_FILLING_RETURN, # Comum B3
                 }
                 
-                print(f"📩 Enviando Ordem OCO: {msg_label} | Price: {price} | SL: {sl} | TP: {tp}")
+                print(f"📩 [Scalper] Enviando Ordem OCO: {msg_label} | Price: {price} | SL: {sl} | TP: {tp}")
                 res = mt5.order_send(request)
                 if res.retcode == mt5.TRADE_RETCODE_DONE:
                     # Montando pacote de dados pro Raio-X
@@ -246,7 +254,7 @@ def iniciar_robo():
                     }
                     wait_position_close(res.order, entrada_info)
                 else:
-                    print(f"❌ Erro na Ordem: {res.comment}")
+                    print(f"❌ [Scalper] Erro na Ordem: {res.comment} / MT5 Error: {mt5.last_error()} / Retcode: {res.retcode}")
         
         time.sleep(3) # Pausa pequena no meio da vela atual para não causar CPU estresse (~Tick loop)
 
