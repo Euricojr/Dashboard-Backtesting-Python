@@ -1496,10 +1496,7 @@ def run_backtest_scalper():
         df = pd.DataFrame(rates)
         df['time'] = pd.to_datetime(df['time'], unit='s')
 
-        # Auditoria de Retorno
-        print(f"[{datetime.now().strftime('%H:%M:%S')}] RUNNING BACKTEST v2 (INSTITUTIONAL METRICS)")
-        print(f"[{datetime.now().strftime('%H:%M:%S')}] Buscando dados de {data_inicio} até {data_fim}. Velas encontradas: {len(df)}")
-        
+        # Auditoria (Removido logs prolixos de teste)
         # 1. Análise de Volatilidade (Tamanho Médio do Candle)
         df['time_only'] = df['time'].dt.time
         from datetime import time as dt_time
@@ -1692,13 +1689,7 @@ def run_backtest_scalper():
         payoff = (avg_win_pts / abs(avg_loss_pts)) if avg_loss_pts > 0 else (999.99 if avg_win_pts > 0 else 0.0)
         recovery_factor = (lucro_total_rs / abs(max_drawdown_rs)) if max_drawdown_rs > 0 else (999.99 if lucro_total_rs > 0 else 0.0)
         
-        print(f"DEBUG FINAL MÉTRIQUES:")
-        print(f" - Lucro Total RS: {lucro_total_rs}, Max DD RS: {max_drawdown_rs}")
-        print(f" - Recovery Factor: {recovery_factor}")
-        print(f" - Gross Profit Pts: {gross_profit_pts}, Win Count: {win_count}, Avg Win: {avg_win_pts}")
-        print(f" - Gross Loss Pts: {gross_loss_pts}, Loss Count: {loss_count}, Avg Loss: {avg_loss_pts}")
-        print(f" - Payoff: {payoff}")
-        print(f" - Max Winning Streak: {max_winning_streak}")
+        # Debug Métricas (Removido logs prolixos)
 
         # ----- PREPARAÇÃO DOS DADOS VISUAIS (CHART) -----
         
