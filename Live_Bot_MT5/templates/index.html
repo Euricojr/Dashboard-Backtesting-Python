@@ -32,6 +32,22 @@
       --loss-color: #ef4444;
     }
 
+    html {
+      font-size: 16px;
+    }
+
+    @media screen and (max-height: 950px) {
+      html {
+        font-size: 14px;
+      }
+    }
+
+    @media screen and (max-height: 800px) {
+      html {
+        font-size: 12px;
+      }
+    }
+
     body {
       font-feature-settings: "cv03", "cv04", "cv11";
       background-color: var(--bg-color);
@@ -48,12 +64,12 @@
     .card-header {
       background-color: transparent;
       border-bottom: 1px solid var(--border-color);
-      padding-top: 0.5rem !important;
-      padding-bottom: 0.5rem !important;
+      padding-top: 0.25rem !important;
+      padding-bottom: 0.25rem !important;
     }
 
     .card-body {
-      padding: 0.75rem !important;
+      padding: 0.5rem !important;
     }
 
     .form-control,
@@ -86,7 +102,7 @@
 
     /* Price Display */
     .price-hero {
-      font-size: 3rem;
+      font-size: 2rem;
       font-weight: 800;
       color: var(--profit-color);
       line-height: 1;
@@ -124,7 +140,7 @@
       overflow: hidden;
       transition: all 0.3s ease;
       box-shadow: 0 0 8px rgba(0, 227, 150, 0.2) !important;
-      margin-bottom: 10px;
+      margin-bottom: 6px;
       position: relative;
       /* Add relative position */
     }
@@ -140,8 +156,8 @@
       background: transparent !important;
       border: none !important;
       color: white !important;
-      padding: 10px 15px !important;
-      font-size: 1rem !important;
+      padding: 5px 15px !important;
+      font-size: 0.9rem !important;
       font-weight: 600 !important;
       text-transform: uppercase;
       outline: none !important;
@@ -188,9 +204,8 @@
     }
 
     .big-chart-container {
-      /* Expand the chart to better fill the card while remaining responsive */
-      height: calc(100vh - 6rem);
-      min-height: 75vh;
+      /* Expand the chart to perfectly fill the flexible parent card */
+      flex: 1;
       width: 100%;
       border-radius: 4px;
       overflow: hidden;
@@ -828,9 +843,9 @@
 
     /* Asset Icon & Placeholder System */
     .asset-icon-wrapper {
-      width: 72px;
-      height: 72px;
-      margin: 0 auto 16px;
+      width: 60px;
+      height: 60px;
+      margin: 0 auto 6px;
       /* Fixed margins for layout stability */
       position: relative;
     }
@@ -1342,10 +1357,10 @@
       <div class="page-body">
         <div class="container-xl">
           <!-- Main Content Row (Equal Height Columns) -->
-          <div class="row g-3 align-items-stretch">
+          <div class="row g-3 align-items-stretch" style="height: calc(100vh - 4.5rem);">
             <!-- Sidebar / Controls -->
             <div class="col-md-3 d-flex flex-column scrollbar-hide"
-              style="max-height: calc(100vh - 4.5rem); overflow-y: auto;">
+              style="height: 100%; overflow-y: hidden;">
               <!-- Ativo & Preço (Mini destaque) -->
               <div class="card mb-2 flex-shrink-0">
                 <div class="card-body text-center">
@@ -1377,8 +1392,8 @@
                     {{ assets|length }} Ativos Disponíveis
                   </div>
 
-                  <div class="hr-text my-3">Preço Atual</div>
-                  <div class="price-hero" id="price" style="font-size: 2.5rem">
+                  <div class="hr-text my-2">Preço Atual</div>
+                  <div class="price-hero" id="price">
                     --.--
                   </div>
                 </div>
@@ -1637,7 +1652,7 @@
             <div class="col-md-9 d-flex flex-column">
               <!-- Main Chart Card -->
               <div class="card h-100 mb-0">
-                <div class="card-body p-0 position-relative">
+                <div class="card-body p-0 position-relative d-flex flex-column">
                   <!-- New Floating Toolbar (Simplified) -->
                   <!-- New Floating Toolbar (Simplified) -->
                   <div class="floating-toolbar">

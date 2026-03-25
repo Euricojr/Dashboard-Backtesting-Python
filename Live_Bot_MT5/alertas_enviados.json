@@ -1,0 +1,272 @@
+{
+    "ASAI3": {
+        "data": "2026-03-23",
+        "hora": "10:20",
+        "sinal": "COMPRA"
+    },
+    "COGN3": {
+        "data": "2026-03-23",
+        "hora": "10:10",
+        "sinal": "COMPRA"
+    },
+    "CSNA3": {
+        "data": "2026-03-23",
+        "hora": "10:15",
+        "sinal": "COMPRA"
+    },
+    "CYRE3": {
+        "data": "2026-03-23",
+        "hora": "10:25",
+        "sinal": "COMPRA"
+    },
+    "FLRY3": {
+        "data": "2026-03-23",
+        "hora": "10:35",
+        "sinal": "COMPRA"
+    },
+    "GOAU4": {
+        "data": "2026-03-23",
+        "hora": "10:15",
+        "sinal": "COMPRA"
+    },
+    "HAPV3": {
+        "data": "2026-03-23",
+        "hora": "10:40",
+        "sinal": "COMPRA"
+    },
+    "PRIO3": {
+        "data": "2026-03-23",
+        "hora": "10:15",
+        "sinal": "VENDA"
+    },
+    "UGPA3": {
+        "data": "2026-03-23",
+        "hora": "10:05",
+        "sinal": "COMPRA"
+    },
+    "VALE3": {
+        "data": "2026-03-23",
+        "hora": "10:25",
+        "sinal": "COMPRA"
+    },
+    "VBBR3": {
+        "data": "2026-03-23",
+        "hora": "10:30",
+        "sinal": "COMPRA"
+    },
+    "VIVT3": {
+        "data": "2026-03-23",
+        "hora": "10:25",
+        "sinal": "COMPRA"
+    },
+    "WEGE3": {
+        "data": "2026-03-23",
+        "hora": "10:15",
+        "sinal": "COMPRA"
+    },
+    "ABEV3": {
+        "data": "2026-03-23",
+        "hora": "10:20",
+        "sinal": "COMPRA"
+    },
+    "B3SA3": {
+        "data": "2026-03-23",
+        "hora": "10:25",
+        "sinal": "COMPRA"
+    },
+    "BBAS3": {
+        "data": "2026-03-23",
+        "hora": "10:15",
+        "sinal": "COMPRA"
+    },
+    "BEEF3": {
+        "data": "2026-03-23",
+        "hora": "11:00",
+        "sinal": "COMPRA"
+    },
+    "BRAP4": {
+        "data": "2026-03-23",
+        "hora": "10:20",
+        "sinal": "COMPRA"
+    },
+    "DXCO3": {
+        "data": "2026-03-23",
+        "hora": "10:10",
+        "sinal": "COMPRA"
+    },
+    "GGBR4": {
+        "data": "2026-03-23",
+        "hora": "10:15",
+        "sinal": "COMPRA"
+    },
+    "IRBR3": {
+        "data": "2026-03-23",
+        "hora": "10:20",
+        "sinal": "COMPRA"
+    },
+    "ITSA4": {
+        "data": "2026-03-23",
+        "hora": "10:25",
+        "sinal": "COMPRA"
+    },
+    "ITUB4": {
+        "data": "2026-03-23",
+        "hora": "10:15",
+        "sinal": "COMPRA"
+    },
+    "JHSF3": {
+        "data": "2026-03-23",
+        "hora": "10:40",
+        "sinal": "COMPRA"
+    },
+    "KLBN11": {
+        "data": "2026-03-23",
+        "hora": "10:20",
+        "sinal": "COMPRA"
+    },
+    "MRVE3": {
+        "data": "2026-03-23",
+        "hora": "10:20",
+        "sinal": "COMPRA"
+    },
+    "MULT3": {
+        "data": "2026-03-23",
+        "hora": "10:20",
+        "sinal": "COMPRA"
+    },
+    "QUAL3": {
+        "data": "2026-03-23",
+        "hora": "10:10",
+        "sinal": "COMPRA"
+    },
+    "RAIZ4": {
+        "data": "2026-03-23",
+        "hora": "11:20",
+        "sinal": "COMPRA"
+    },
+    "RECV3": {
+        "data": "2026-03-23",
+        "hora": "11:35",
+        "sinal": "COMPRA"
+    },
+    "RENT3": {
+        "data": "2026-03-23",
+        "hora": "10:15",
+        "sinal": "COMPRA"
+    },
+    "SBSP3": {
+        "data": "2026-03-23",
+        "hora": "10:35",
+        "sinal": "COMPRA"
+    },
+    "SLCE3": {
+        "data": "2026-03-23",
+        "hora": "10:10",
+        "sinal": "VENDA"
+    },
+    "SMTO3": {
+        "data": "2026-03-23",
+        "hora": "11:15",
+        "sinal": "VENDA"
+    },
+    "SUZB3": {
+        "data": "2026-03-23",
+        "hora": "11:20",
+        "sinal": "COMPRA"
+    },
+    "TIMS3": {
+        "data": "2026-03-23",
+        "hora": "10:45",
+        "sinal": "COMPRA"
+    },
+    "TOTS3": {
+        "data": "2026-03-23",
+        "hora": "10:15",
+        "sinal": "COMPRA"
+    },
+    "ALOS3": {
+        "data": "2026-03-23",
+        "hora": "10:25",
+        "sinal": "COMPRA"
+    },
+    "ARML3": {
+        "data": "2026-03-23",
+        "hora": "10:20",
+        "sinal": "COMPRA"
+    },
+    "BOVA11": {
+        "data": "2026-03-23",
+        "hora": "10:25",
+        "sinal": "COMPRA"
+    },
+    "BRSR6": {
+        "data": "2026-03-23",
+        "hora": "10:40",
+        "sinal": "COMPRA"
+    },
+    "CURY3": {
+        "data": "2026-03-23",
+        "hora": "10:30",
+        "sinal": "COMPRA"
+    },
+    "FESA4": {
+        "data": "2026-03-23",
+        "hora": "10:40",
+        "sinal": "COMPRA"
+    },
+    "GRND3": {
+        "data": "2026-03-23",
+        "hora": "10:20",
+        "sinal": "COMPRA"
+    },
+    "INTB3": {
+        "data": "2026-03-23",
+        "hora": "10:55",
+        "sinal": "COMPRA"
+    },
+    "KEPL3": {
+        "data": "2026-03-23",
+        "hora": "10:15",
+        "sinal": "COMPRA"
+    },
+    "MOVI3": {
+        "data": "2026-03-23",
+        "hora": "10:20",
+        "sinal": "COMPRA"
+    },
+    "ODPV3": {
+        "data": "2026-03-23",
+        "hora": "10:35",
+        "sinal": "COMPRA"
+    },
+    "PCAR3": {
+        "data": "2026-03-23",
+        "hora": "11:55",
+        "sinal": "VENDA"
+    },
+    "BRKM5": {
+        "data": "2026-03-23",
+        "hora": "12:10",
+        "sinal": "COMPRA"
+    },
+    "ALPA4": {
+        "data": "2026-03-23",
+        "hora": "12:20",
+        "sinal": "VENDA"
+    },
+    "PETR3": {
+        "data": "2026-03-23",
+        "hora": "12:30",
+        "sinal": "VENDA"
+    },
+    "PETR4": {
+        "data": "2026-03-23",
+        "hora": "12:35",
+        "sinal": "VENDA"
+    },
+    "WINJ26": {
+        "data": "2026-03-23",
+        "hora": "12:45",
+        "sinal": "VENDA"
+    }
+}
