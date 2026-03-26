@@ -215,3 +215,131 @@ def optimize_sma(df):
                 best_params = (short, long)
                 
     return best_params
+
+def backtest_scalper_engine(df, sl_manual=150.0, tp_manual=300.0, start_time="09:15", end_time="12:30"):
+    """
+    Engine de Simulação Iterativa Strict (Non-Vectorized)
+    Controla posições abertas, stops diários e filtros de horário dinâmicos.
+    Requer que o DataFrame de entrada já contenha: 'EMA9', 'SMA21', 'VWAP', 'date' e 'time_only'.
+    """
+    from datetime import datetime
+    t_start = datetime.strptime(start_time, "%H:%M").time()
+    t_end = datetime.strptime(end_time, "%H:%M").time()
+    
+    # Prepara coluna para sinais no grid se não existir
+    if 'trade_signal' not in df.columns:
+        df['trade_signal'] = None
+
+    in_position = False
+    trade_type = None
+    entry_price = 0.0
+    
+    total_trades = 0
+    win_count = 0
+    total_profit_pts = 0.0
+    
+    peak_rs = 0.0
+    max_drawdown_rs = 0.0
+    
+    current_trade_date = None
+    trades_today = 0
+    entry_index = 0
+    
+    for i in range(2, len(df)):
+        row = df.iloc[i]
+        
+        row_date = row['date']
+        if current_trade_date != row_date:
+            current_trade_date = row_date
+            trades_today = 0
+        
+        if in_position:
+            high = row['high']
+            low = row['low']
+            closed_trade = False
+            profit_pts = 0.0
+            
+            if trade_type == 'BUY':
+                if low <= entry_price - sl_manual:
+                    profit_pts = -sl_manual
+                    closed_trade = True
+                    df.at[df.index[i], 'trade_signal'] = 'LOSS_BUY'
+                elif high >= entry_price + tp_manual:
+                    profit_pts = tp_manual
+                    closed_trade = True
+                    df.at[df.index[i], 'trade_signal'] = 'WIN_BUY'
+            
+            elif trade_type == 'SELL':
+                if high >= entry_price + sl_manual:
+                    profit_pts = -sl_manual
+                    closed_trade = True
+                    df.at[df.index[i], 'trade_signal'] = 'LOSS_SELL'
+                elif low <= entry_price - tp_manual:
+                    profit_pts = tp_manual
+                    closed_trade = True
+                    df.at[df.index[i], 'trade_signal'] = 'WIN_SELL'
+                    
+            if closed_trade:
+                in_position = False
+                total_trades += 1
+                if profit_pts > 0:
+                    win_count += 1
+                
+                total_profit_pts += profit_pts
+                
+                # Avalia Drawdown cumulativo (R$ 0.20 por ponto de WIN)
+                current_balance_rs = total_profit_pts * 0.20
+                if current_balance_rs > peak_rs:
+                    peak_rs = current_balance_rs
+                
+                dd = peak_rs - current_balance_rs
+                if dd > max_drawdown_rs:
+                    max_drawdown_rs = dd
+                    
+            continue 
+            
+        hora_atual = row['time_only']
+        
+        # Filtro de Atraso e Janela Otimizada (Condição Principal Refatorada)
+        if t_start <= hora_atual <= t_end and trades_today < 3:
+            current_closed = df.iloc[i-1]
+            prev_closed = df.iloc[i-2]
+            
+            c_ema9 = current_closed['EMA9']
+            c_sma21 = current_closed['SMA21']
+            p_ema9 = prev_closed['EMA9']
+            p_sma21 = prev_closed['SMA21']
+            
+            c_close = current_closed['close']
+            c_vwap = current_closed['VWAP']
+            
+            cross_up = (p_ema9 <= p_sma21) and (c_ema9 > c_sma21)
+            cross_down = (p_ema9 >= p_sma21) and (c_ema9 < c_sma21)
+            
+            if cross_up and c_close > c_vwap:
+                in_position = True
+                trade_type = 'BUY'
+                entry_price = row['open']  # Entrada na abertura atual realista
+                entry_index = i
+                trades_today += 1
+                df.at[df.index[i], 'trade_signal'] = 'BUY'
+
+            elif cross_down and c_close < c_vwap:
+                in_position = True
+                trade_type = 'SELL'
+                entry_price = row['open']
+                entry_index = i
+                trades_today += 1
+                df.at[df.index[i], 'trade_signal'] = 'SELL'
+
+    lucro_total_rs = total_profit_pts * 0.20
+    winrate = (win_count / total_trades * 100) if total_trades > 0 else 0.0
+    
+    return {
+        "start_time": start_time,
+        "end_time": end_time,
+        "total_trades": total_trades,
+        "winrate": winrate,
+        "lucro_total_rs": lucro_total_rs,
+        "max_drawdown_rs": max_drawdown_rs,
+    }
