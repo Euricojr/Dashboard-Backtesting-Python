@@ -272,10 +272,16 @@ def toggle_bot_from_telegram(turn_on: bool, tf=None, short_sma=None, long_sma=No
         TOTAL_ALERTS = 0 
         ALERTS_PER_ASSET.clear()
         
+        algo_alerta = ""
+        tinfo = mt5.terminal_info()
+        if tinfo and not tinfo.trade_allowed:
+            algo_alerta = "\n\n⚠️ *ATENÇÃO*: O botão 'Algo Trading' está DESLIGADO no MT5! O robô não conseguirá operar até você ativá-lo."
+        
         return (f"✅ **Robô de Ações LIGADO!**\n"
                 f"Timeframe: {MONITOR_TIMEFRAME}\n"
                 f"Cruzamento: {SMA_SHORT} x {SMA_LONG}\n"
-                f"Volume: 1 Ação (Fracionário).")
+                f"Volume: 1 Ação (Fracionário)."
+                f"{algo_alerta}")
     else:
         if not BOT_RUNNING:
             return "O robô já está 🔴 DESLIGADO."
@@ -689,11 +695,18 @@ def handle_telegram_toggle_scalper(turn_on=None, sl=None, tp=None, timeframe=Non
         json.dump(state, f, indent=4)
         
     status_msg = "🟢 LIGADO" if state['status'] == 'ON' else "🔴 DESLIGADO"
+    
+    algo_alerta = ""
+    if state['status'] == 'ON':
+        tinfo = mt5.terminal_info()
+        if tinfo and not tinfo.trade_allowed:
+            algo_alerta = "\n\n⚠️ *ATENÇÃO*: O botão 'Algo Trading' está DESLIGADO no MT5! O robô não conseguirá operar até você ativá-lo."
+            
     if state['status'] == 'ON':
         tf_show = state.get('timeframe', 'M5')
         sl_show = state.get('sl_points', 0)
         tp_show = state.get('tp_points', 0)
-        msg = f"✅ Robô Scalper {status_msg}!\n⏱️ TF: {tf_show} | 🛑 SL: {sl_show} pts | 🎯 TP: {tp_show} pts"
+        msg = f"✅ Robô Scalper {status_msg}!\n⏱️ TF: {tf_show} | 🛑 SL: {sl_show} pts | 🎯 TP: {tp_show} pts{algo_alerta}"
     else:
         msg = f"O Robô Scalper de Índice foi {status_msg} com sucesso."
     
