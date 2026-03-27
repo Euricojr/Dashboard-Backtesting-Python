@@ -1,8 +1,8 @@
 {
     "status": "OFF",
-    "trades_hoje": 0,
-    "lucro_hoje": 0.0,
-    "data": "2026-03-26",
+    "trades_hoje": 1,
+    "lucro_hoje": -10.0,
+    "data": "2026-03-27",
     "sl": 150.0,
     "tp": 300.0,
     "sl_points": 50.0,

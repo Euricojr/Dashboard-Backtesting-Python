@@ -111,19 +111,19 @@ def wait_position_close(ticket, entrada_info):
     pontos_estimados = abs(lucro) / 0.20 # 1 contrato WIN = R$ 0,20 por ponto
     
     msg_telegram = (
-        f"🧾 *RAIO-X DA OPERAÇÃO | {SYMBOL}*\n"
-        f"🧭 Direção: *{direcao_str}*\n"
-        f"⏰ Duração: {int(minutos)}m e {int(segundos)}s\n\n"
-        f"� *MOTIVO DA ENTRADA:*\n"
-        f"• Gatilho: {entrada_info['preco']}\n"
-        f"• EMA 9: {entrada_info['ema9']:.2f} | EMA 21: {entrada_info['ema21']:.2f}\n"
-        f"• VWAP: {entrada_info['vwap']:.2f}\n\n"
-        f"�💰 *RESULTADO FINAL:*\n"
+        f" *RAIO-X DA OPERAÇÃO | {SYMBOL}*\n"
+        f" Direção: *{direcao_str}*\n"
+        f" Duração: {int(minutos)}m e {int(segundos)}s\n\n"
+        f" *MOTIVO DA ENTRADA:*\n"
+        f"- Gatilho: {entrada_info['preco']}\n"
+        f"- EMA 9: {entrada_info['ema9']:.2f} | EMA 21: {entrada_info['ema21']:.2f}\n"
+        f"- VWAP: {entrada_info['vwap']:.2f}\n\n"
+        f" *RESULTADO FINAL:*\n"
         f"{resultado_str} de R$ {lucro:.2f} ({int(pontos_estimados)} pts)\n"
-        f"📉 Status Dia: {data['trades_hoje']} trades (R$ {data['lucro_hoje']:.2f})"
+        f" Status Dia: {data['trades_hoje']} trades (R$ {data['lucro_hoje']:.2f})"
     )
     
-    print(f"💰 Trade fechado. Lucro/Prejuízo: R$ {lucro:.2f}")
+    print(f" Trade fechado. Lucro/Prejuízo: R$ {lucro:.2f}")
     telegram_bot.enviar_mensagem(msg_telegram)
 
 def iniciar_robo():
@@ -161,7 +161,7 @@ def iniciar_robo():
         # --- HEARTBEAT LOG ---
         print(f"[{datetime.now().strftime('%H:%M:%S')}] 🫀 [Scalper] Buscando dados MT5 para {SYMBOL} no TF {tf_str}...")
         
-        rates = mt5.copy_rates_from_pos(SYMBOL, mt5_tf, 0, 300)
+        rates = mt5.copy_rates_from_pos(SYMBOL, mt5_tf, 0, 1000)
         if rates is None or len(rates) < 50:
             err_code = mt5.last_error()
             print(f"⚠️ [Scalper] ERRO/AVISO: Falha ao obter dados suficientes para {SYMBOL}. Código MT5: {err_code}")
