@@ -29,7 +29,7 @@ COOLDOWN_MINUTES = 5 # Tempo de espera entre trades para evitar overtrading
 
 # Filtro de Horário (Golden Zone)
 HORA_INICIO = dt_time(9, 15)
-HORA_FIM = dt_time(12, 30)
+HORA_FIM = dt_time(17, 0)
 
 def load_controle():
     if not os.path.exists(CONTROLE_FILE):
@@ -192,9 +192,9 @@ def iniciar_robo():
         # 1. Regra de Ouro: Ler status antes de tudo
         controle = load_controle()
         
-        if controle["trades_hoje"] >= MAX_TRADES_DIA:
-            time.sleep(60)
-            continue
+        # if controle["trades_hoje"] >= MAX_TRADES_DIA:
+        #     time.sleep(60)
+        #     continue
             
         # 1.5. Verifica Sistema de Cooldown
         if controle.get("ultima_saida"):
@@ -316,6 +316,15 @@ def iniciar_robo():
                     print(f"📩 [Scalper] Enviando Ordem OCO: {msg_label} | Price: {price} | SL: {sl} | TP: {tp}")
                     res = mt5.order_send(request)
                     if res.retcode == mt5.TRADE_RETCODE_DONE:
+                        msg_telegram_entrada = (
+                            f"🟢 *ORDEM EXECUTADA!* 🟢\n"
+                            f"Ativo: {SYMBOL}\n"
+                            f"Direção: {msg_label}\n"
+                            f"Preço de Entrada: {price}\n"
+                            f"Aguardando fechamento..."
+                        )
+                        telegram_bot.enviar_mensagem(msg_telegram_entrada)
+                        
                         # Montando pacote de dados pro Raio-X
                         entrada_info = {
                             "hora_entrada": datetime.now(),
