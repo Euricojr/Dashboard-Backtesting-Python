@@ -186,6 +186,7 @@ def iniciar_robo():
     print("🤖 Robô Scalper WIN Inicializado. Lendo Regra de Ouro...")
     
     ultima_vela_operada = None
+    ultima_vela_vista = None
     
     while True:
         # 1. Regra de Ouro: Ler status antes de tudo
@@ -223,10 +224,8 @@ def iniciar_robo():
         tf_str = controle.get("timeframe", "M5")
         mt5_tf = mt5.TIMEFRAME_M1 if tf_str == "M1" else mt5.TIMEFRAME_M5
         
-        # --- HEARTBEAT LOG ---
-        print(f"[{datetime.now().strftime('%H:%M:%S')}] 🫀 [Scalper] Buscando dados MT5 para {SYMBOL} no TF {tf_str}...")
-        
-        rates = mt5.copy_rates_from_pos(SYMBOL, mt5_tf, 0, 1000)
+        # Reduzindo de 1000 para 100 velas pois processamos a cada 0.1s
+        rates = mt5.copy_rates_from_pos(SYMBOL, mt5_tf, 0, 100)
         if rates is None or len(rates) < 50:
             err_code = mt5.last_error()
             print(f"⚠️ [Scalper] ERRO/AVISO: Falha ao obter dados suficientes para {SYMBOL}. Código MT5: {err_code}")
@@ -236,92 +235,102 @@ def iniciar_robo():
         df = pd.DataFrame(rates)
         df['time'] = pd.to_datetime(df['time'], unit='s')
         
-        # Filtro de VWAP (só pega volume do dia de hoje para ser fidedigno)
-        start_hoje = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-        df_hoje = df[df['time'] >= start_hoje].copy()
-        if not df_hoje.empty:
-            df_hoje['Typical_Price'] = (df_hoje['high'] + df_hoje['low'] + df_hoje['close']) / 3
-            df_hoje['Vol_x_TP'] = df_hoje['tick_volume'] * df_hoje['Typical_Price']
-            df_hoje['Cum_Vol_x_TP'] = df_hoje['Vol_x_TP'].cumsum()
-            df_hoje['Cum_Vol'] = df_hoje['tick_volume'].cumsum()
-            df_hoje['VWAP'] = df_hoje['Cum_Vol_x_TP'] / df_hoje['Cum_Vol']
-            df['VWAP'] = df_hoje['VWAP']
-        else:
-            df['VWAP'] = df['close']
-
-        # Calculo das Médias (EMA 9 e SMA 21 para consistência)
-        df['EMA9'] = df['close'].ewm(span=9, adjust=False).mean()
-        df['SMA21'] = df['close'].rolling(window=21).mean()
+        vela_atual_time = df.iloc[-1]['time']
         
-        # Analisa a última vela fechada para evitar a "Síndrome da Vela Aberta"
-        current = df.iloc[-2]
-        prev = df.iloc[-3]
-        
-        vela_time = current['time']
-        
-        # Lógicas de Cruzamento (Compra e Venda)
-        cross_up = prev['EMA9'] <= prev['SMA21'] and current['EMA9'] > current['SMA21']
-        cross_down = prev['EMA9'] >= prev['SMA21'] and current['EMA9'] < current['SMA21']
-        
-        # --- EXECUTION LOG ---
-        print(f"   ↳ [Scalper] {SYMBOL} Valores Atuais - EMA9: {current['EMA9']:.2f}, SMA21: {current['SMA21']:.2f}, VWAP: {current['VWAP']:.2f}")
-        
-        # Só opera essa vela 1 vez
-        if vela_time != ultima_vela_operada:
-            action = None
+        # O GATILHO (NEW BAR DETECTION)
+        if ultima_vela_vista is None or vela_atual_time != ultima_vela_vista:
+            ultima_vela_vista = vela_atual_time
             
-            # Sinal de COMPRA: EMA9 passa pra cima E o preço atual está acima do VWAP
-            if cross_up and current['close'] > current['VWAP']:
-                action = mt5.ORDER_TYPE_BUY
-            # Sinal de VENDA: EMA9 passa pra baixo E o preço atual está abaixo do VWAP
-            elif cross_down and current['close'] < current['VWAP']:
-                action = mt5.ORDER_TYPE_SELL
+            # --- HEARTBEAT LOG ---
+            print(f"[{datetime.now().strftime('%H:%M:%S')}] 🫀 [Scalper] Nova Vela Detectada ({vela_atual_time}). Processando análises para {SYMBOL} no TF {tf_str}...")
+            
+            # Filtro de VWAP (só pega volume do dia de hoje para ser fidedigno)
+            start_hoje = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+            df_hoje = df[df['time'] >= start_hoje].copy()
+            if not df_hoje.empty:
+                df_hoje['Typical_Price'] = (df_hoje['high'] + df_hoje['low'] + df_hoje['close']) / 3
+                df_hoje['Vol_x_TP'] = df_hoje['tick_volume'] * df_hoje['Typical_Price']
+                df_hoje['Cum_Vol_x_TP'] = df_hoje['Vol_x_TP'].cumsum()
+                df_hoje['Cum_Vol'] = df_hoje['tick_volume'].cumsum()
+                df_hoje['VWAP'] = df_hoje['Cum_Vol_x_TP'] / df_hoje['Cum_Vol']
+                df['VWAP'] = df_hoje['VWAP']
+            else:
+                df['VWAP'] = df['close']
+    
+            # Calculo das Médias (EMA 9 e SMA 21 para consistência)
+            df['EMA9'] = df['close'].ewm(span=9, adjust=False).mean()
+            df['SMA21'] = df['close'].rolling(window=21).mean()
+            
+            # Analisa a última vela fechada para evitar a "Síndrome da Vela Aberta"
+            current = df.iloc[-2]
+            prev = df.iloc[-3]
+            
+            vela_time = current['time']
+            
+            # Lógicas de Cruzamento (Compra e Venda)
+            cross_up = prev['EMA9'] <= prev['SMA21'] and current['EMA9'] > current['SMA21']
+            cross_down = prev['EMA9'] >= prev['SMA21'] and current['EMA9'] < current['SMA21']
+            
+            # --- EXECUTION LOG ---
+            print(f"   ↳ [Scalper] {SYMBOL} Valores Atuais - EMA9: {current['EMA9']:.2f}, SMA21: {current['SMA21']:.2f}, VWAP: {current['VWAP']:.2f}")
+            
+            # Só opera essa vela 1 vez
+            if vela_time != ultima_vela_operada:
+                action = None
                 
-            if action is not None:
-                ultima_vela_operada = vela_time
-                if action == mt5.ORDER_TYPE_BUY:
-                    price = mt5.symbol_info_tick(SYMBOL).ask
-                    sl = price - float(controle.get("sl_points", SL_POINTS))
-                    tp = price + float(controle.get("tp_points", TP_POINTS))
-                    msg_label = "COMPRA"
-                else: # SELL
-                    price = mt5.symbol_info_tick(SYMBOL).bid
-                    sl = price + float(controle.get("sl_points", SL_POINTS))
-                    tp = price - float(controle.get("tp_points", TP_POINTS))
-                    msg_label = "VENDA"
-                
-                request = {
-                    "action": mt5.TRADE_ACTION_DEAL,
-                    "symbol": SYMBOL,
-                    "volume": float(VOLUME),
-                    "type": action,
-                    "price": price,
-                    "sl": float(sl),
-                    "tp": float(tp),
-                    "deviation": 20,
-                    "magic": MAGIC_NUMBER,
-                    "comment": "ScalperWIN_Auto",
-                    "type_time": mt5.ORDER_TIME_GTC,
-                    "type_filling": mt5.ORDER_FILLING_RETURN, # Comum B3
-                }
-                
-                print(f"📩 [Scalper] Enviando Ordem OCO: {msg_label} | Price: {price} | SL: {sl} | TP: {tp}")
-                res = mt5.order_send(request)
-                if res.retcode == mt5.TRADE_RETCODE_DONE:
-                    # Montando pacote de dados pro Raio-X
-                    entrada_info = {
-                        "hora_entrada": datetime.now(),
-                        "direcao": action,
-                        "preco": price,
-                        "ema9": current['EMA9'],
-                        "sma21": current['SMA21'],
-                        "vwap": current['VWAP']
+                # Sinal de COMPRA: EMA9 passa pra cima E o preço atual está acima do VWAP
+                if cross_up and current['close'] > current['VWAP']:
+                    action = mt5.ORDER_TYPE_BUY
+                # Sinal de VENDA: EMA9 passa pra baixo E o preço atual está abaixo do VWAP
+                elif cross_down and current['close'] < current['VWAP']:
+                    action = mt5.ORDER_TYPE_SELL
+                    
+                if action is not None:
+                    ultima_vela_operada = vela_time
+                    if action == mt5.ORDER_TYPE_BUY:
+                        price = mt5.symbol_info_tick(SYMBOL).ask
+                        sl = price - float(controle.get("sl_points", SL_POINTS))
+                        tp = price + float(controle.get("tp_points", TP_POINTS))
+                        msg_label = "COMPRA"
+                    else: # SELL
+                        price = mt5.symbol_info_tick(SYMBOL).bid
+                        sl = price + float(controle.get("sl_points", SL_POINTS))
+                        tp = price - float(controle.get("tp_points", TP_POINTS))
+                        msg_label = "VENDA"
+                    
+                    request = {
+                        "action": mt5.TRADE_ACTION_DEAL,
+                        "symbol": SYMBOL,
+                        "volume": float(VOLUME),
+                        "type": action,
+                        "price": price,
+                        "sl": float(sl),
+                        "tp": float(tp),
+                        "deviation": 20,
+                        "magic": MAGIC_NUMBER,
+                        "comment": "ScalperWIN_Auto",
+                        "type_time": mt5.ORDER_TIME_GTC,
+                        "type_filling": mt5.ORDER_FILLING_RETURN, # Comum B3
                     }
-                    wait_position_close(res.order, entrada_info)
-                else:
-                    print(f"❌ [Scalper] Erro na Ordem: {res.comment} / MT5 Error: {mt5.last_error()} / Retcode: {res.retcode}")
+                    
+                    print(f"📩 [Scalper] Enviando Ordem OCO: {msg_label} | Price: {price} | SL: {sl} | TP: {tp}")
+                    res = mt5.order_send(request)
+                    if res.retcode == mt5.TRADE_RETCODE_DONE:
+                        # Montando pacote de dados pro Raio-X
+                        entrada_info = {
+                            "hora_entrada": datetime.now(),
+                            "direcao": action,
+                            "preco": price,
+                            "ema9": current['EMA9'],
+                            "sma21": current['SMA21'],
+                            "vwap": current['VWAP']
+                        }
+                        wait_position_close(res.order, entrada_info)
+                    else:
+                        print(f"❌ [Scalper] Erro na Ordem: {res.comment} / MT5 Error: {mt5.last_error()} / Retcode: {res.retcode}")
         
-        time.sleep(3) # Pausa pequena no meio da vela atual para não causar CPU estresse (~Tick loop)
+        # Ciclo Ultra-Rápido (0.1s para reação quase imediata no mt5)
+        time.sleep(0.1)
 
 if __name__ == "__main__":
     iniciar_robo()
