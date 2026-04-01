@@ -3,6 +3,7 @@ import json
 import os
 import MetaTrader5 as mt5
 import pandas as pd
+import csv
 from datetime import datetime, timedelta, time as dt_time
 from dotenv import load_dotenv
 
@@ -79,12 +80,25 @@ def wait_position_close(ticket, entrada_info):
     print(f"⏳ Aguardando fechamento da posição (Ticket: {ticket})...")
     
     hora_entrada = entrada_info['hora_entrada']
+    preco_entrada = entrada_info['preco']
+    direcao = entrada_info['direcao']
+    
+    trace_pontos = []
     
     while True:
         pos = mt5.positions_get(ticket=ticket)
         if pos is None or len(pos) == 0:
             break
-        time.sleep(2)
+            
+        preco_atual = pos[0].price_current
+        if direcao == mt5.ORDER_TYPE_BUY:
+            pontos = preco_atual - preco_entrada
+        else:
+            pontos = preco_entrada - preco_atual
+            
+        trace_pontos.append(int(pontos))
+        # O sono dura apenas 1 segundo pra ter precisao na trajetoria
+        time.sleep(1)
         
     hora_saida = datetime.now()
     duracao = hora_saida - hora_entrada
@@ -114,10 +128,20 @@ def wait_position_close(ticket, entrada_info):
     direcao_str = "COMPRA" if entrada_info['direcao'] == mt5.ORDER_TYPE_BUY else "VENDA"
     pontos_estimados = abs(lucro) / 0.20 # 1 contrato WIN = R$ 0,20 por ponto
     
+    max_positivo = max(trace_pontos) if trace_pontos else 0
+    max_negativo = min(trace_pontos) if trace_pontos else 0
+    
+    # Adiciona relatorio final para atualizar o CSV se necessario
+    entrada_info['trace_pontos'] = trace_pontos
+    registrar_log_auditoria(entrada_info) # Chama denovo pro arquivo consolidar com a trajetoria no final
+    
     msg_telegram = (
         f" *RAIO-X DA OPERAÇÃO | {SYMBOL}*\n"
         f" Direção: *{direcao_str}*\n"
         f" Duração: {int(minutos)}m e {int(segundos)}s\n\n"
+        f" *VOLATILIDADE (Em Pontos):*\n"
+        f"- Bateu Máximo: +{int(max_positivo)} pts\n"
+        f"- Bateu Mínimo: {int(max_negativo)} pts\n\n"
         f" *MOTIVO DA ENTRADA:*\n"
         f"- Gatilho: {entrada_info['preco']}\n"
         f"- EMA 9: {entrada_info['ema9']:.2f} | EMA 21: {entrada_info['ema21']:.2f}\n"
@@ -129,6 +153,33 @@ def wait_position_close(ticket, entrada_info):
     
     print(f" Trade fechado. Lucro/Prejuízo: R$ {lucro:.2f}")
     telegram_bot.enviar_mensagem(msg_telegram)
+
+def registrar_log_auditoria(entrada_info):
+    hoje_str = datetime.now().strftime('%Y-%m-%d')
+    nome_arquivo = f"scalper_auditoria_{hoje_str}.csv"
+    
+    cabecalho_existe = os.path.exists(nome_arquivo)
+    
+    try:
+        with open(nome_arquivo, mode='a', newline='', encoding='utf-8') as f:
+            writer = csv.writer(f)
+            if not cabecalho_existe:
+                writer.writerow(['Hora_Ocorrencia_Exata', 'Direcao_Executada', 'Preco_Entrada', 'Gatilho_EMA9', 'Gatilho_SMA21', 'Filtro_VWAP', 'Trajetoria_Pontos'])
+                
+            direcao_str = "COMPRA" if entrada_info['direcao'] == mt5.ORDER_TYPE_BUY else "VENDA"
+            hora_str = entrada_info['hora_entrada'].strftime('%Y-%m-%d %H:%M:%S')
+            
+            writer.writerow([
+                hora_str, 
+                direcao_str, 
+                round(entrada_info['preco'], 2), 
+                round(entrada_info['ema9'], 2), 
+                round(entrada_info['sma21'], 2), 
+                round(entrada_info['vwap'], 2),
+                str(entrada_info.get('trace_pontos', []))
+            ])
+    except Exception as e:
+        print(f"Erro ao salvar log de auditoria: {e}")
 
 def iniciar_robo():
     ensure_mt5_connection()

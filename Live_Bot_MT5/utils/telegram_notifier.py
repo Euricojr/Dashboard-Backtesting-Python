@@ -23,7 +23,8 @@ class TelegramNotifier:
                 [{"text": "📊 Status"}, {"text": "📊 Resumo Diário"}],
                 [{"text": "🟢 Ligar Robô"}, {"text": "🔴 Desligar Robô"}],
                 [{"text": "💼 Minha Carteira"}, {"text": "📜 Histórico Hoje"}],
-                [{"text": "🤖 Ligar/Desligar Scalper"}, {"text": "📊 Stats Scalper"}]
+                [{"text": "🤖 Ligar/Desligar Scalper"}, {"text": "📊 Stats Scalper"}],
+                [{"text": "📄 Auditoria Hoje"}]
             ],
             "resize_keyboard": True
         }
@@ -99,6 +100,55 @@ class TelegramNotifier:
                 return False
         except Exception as e:
             print(f"❌ Erro de conexão com Telegram ao enviar foto: {e}")
+            return False
+
+    def enviar_documento(self, file_path, caption="", target_chat_id=None, inline_keyboard=None):
+        import json
+        chat = target_chat_id or self.chat_id
+        if not self.token or not chat:
+            print("❌ Erro: Token ou Chat ID configurados.")
+            return False
+
+        if not os.path.exists(file_path):
+            self.enviar_mensagem(f"⚠️ O arquivo `{os.path.basename(file_path)}` ainda não existe.", target_chat_id=chat)
+            return False
+
+        url = f"https://api.telegram.org/bot{self.token}/sendDocument"
+        
+        reply_markup = {
+            "keyboard": [
+                [{"text": "📊 Status"}, {"text": "📊 Resumo Diário"}],
+                [{"text": "🟢 Ligar Robô"}, {"text": "🔴 Desligar Robô"}],
+                [{"text": "💼 Minha Carteira"}, {"text": "📜 Histórico Hoje"}],
+                [{"text": "🤖 Ligar/Desligar Scalper"}, {"text": "📊 Stats Scalper"}],
+                [{"text": "📄 Auditoria Hoje"}]
+            ],
+            "resize_keyboard": True
+        }
+
+        if inline_keyboard:
+            reply_markup = {"inline_keyboard": inline_keyboard}
+
+        data = {
+            "chat_id": chat,
+            "caption": caption,
+            "parse_mode": "Markdown",
+            "reply_markup": json.dumps(reply_markup)
+        }
+        
+        try:
+            with open(file_path, 'rb') as f:
+                files = {"document": (os.path.basename(file_path), f)}
+                response = self.session.post(url, data=data, files=files, timeout=15)
+                
+            if response.status_code == 200:
+                print(f"[{datetime.now().strftime('%H:%M:%S')}] ✅ Documento enviado com sucesso!")
+                return True
+            else:
+                print(f"⚠️ Falha ao enviar documento: {response.text}")
+                return False
+        except Exception as e:
+            print(f"❌ Erro de conexão com Telegram ao enviar documento: {e}")
             return False
 
     def editar_mensagem(self, chat_id, message_id, texto, inline_keyboard=None):
@@ -254,6 +304,10 @@ class TelegramNotifier:
                 elif text == '📊 Stats Scalper':
                     sts_cb = callbacks.get('stats_scalper_cb')
                     if sts_cb: self.enviar_mensagem(sts_cb(), target_chat_id=chat_id)
+                
+                elif text == '📄 Auditoria Hoje':
+                    auditoria_cb = callbacks.get('auditoria_callback')
+                    if auditoria_cb: auditoria_cb(chat_id)
 
                 # Lógica da Máquina de Estados
                 elif chat_id in self.user_states:

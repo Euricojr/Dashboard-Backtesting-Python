@@ -728,6 +728,14 @@ def handle_telegram_stats_scalper():
         f"Lucro/Prej: R$ {float(state.get('lucro_hoje', 0.0)):.2f}"
     )
 
+def handle_telegram_auditoria_hj(chat_id):
+    hoje_str = datetime.now().strftime('%Y-%m-%d')
+    nome_arquivo = f"scalper_auditoria_{hoje_str}.csv"
+    if os.path.exists(nome_arquivo):
+        global_notifier.enviar_documento(nome_arquivo, caption=f"📄 *Relatório de Auditoria e Trajetória* ({hoje_str})\n\nVerifique a coluna final para o rastreio MFE/MAE em pontos.", target_chat_id=chat_id)
+    else:
+        global_notifier.enviar_mensagem(f"⚠️ *Auditoria Vazia*\nNenhuma operação scalper registrada para a data de hoje ({hoje_str}). O arquivo ainda não existe.", target_chat_id=chat_id)
+
 # Inicia o Listener de Comandos (/start) apenas no processo final (não no reloader pai)
 if os.environ.get("WERKZEUG_RUN_MAIN") == "true" or (__name__ == "__main__" and not os.environ.get("WERKZEUG_RUN_MAIN")):
     global_notifier.start_listener(
@@ -740,7 +748,8 @@ if os.environ.get("WERKZEUG_RUN_MAIN") == "true" or (__name__ == "__main__" and 
         historico_callback=ver_historico_mt5,
         toggle_scalper_cb=handle_telegram_toggle_scalper,
         stats_scalper_cb=handle_telegram_stats_scalper,
-        get_scalper_state_cb=get_scalper_state
+        get_scalper_state_cb=get_scalper_state,
+        auditoria_callback=handle_telegram_auditoria_hj
     )
 
 def sincronizar_historico_hoje():
