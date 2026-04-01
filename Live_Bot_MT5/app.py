@@ -1548,6 +1548,7 @@ def run_backtest_scalper():
         in_position = False
         trade_type = None # 'BUY' ou 'SELL'
         entry_price = 0.0
+        cooldown_until = None
         
         total_trades = 0
         win_count = 0
@@ -1639,9 +1640,14 @@ def run_backtest_scalper():
                     if dd > max_drawdown_rs:
                         max_drawdown_rs = dd
                         
+                    cooldown_until = row['time'] + pd.Timedelta(minutes=5)
+                        
                 continue 
                 
             # Não posicionado: Procura entrada
+            if cooldown_until is not None and row['time'] < cooldown_until:
+                continue
+                
             hora_atual = row['time_only']
             
             # Só opera na golden zone e se não bateu o limite de 3 trades no dia

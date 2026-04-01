@@ -24,6 +24,7 @@ SL_POINTS = 100.0
 TP_POINTS = 200.0  
 MAGIC_NUMBER = 777777 # Magic exclusivo para isolar as negociações do Scalper
 MAX_TRADES_DIA = 3
+COOLDOWN_MINUTES = 5 # Tempo de espera entre trades para evitar overtrading
 
 # Filtro de Horário (Golden Zone)
 HORA_INICIO = dt_time(9, 15)
@@ -42,6 +43,7 @@ def load_controle():
             if "sl_points" not in data: data["sl_points"] = SL_POINTS
             if "tp_points" not in data: data["tp_points"] = TP_POINTS
             if "timeframe" not in data: data["timeframe"] = "M5"
+            if "ultima_saida" not in data: data["ultima_saida"] = None
             
             # Reset diário dos lucros e trades se virou o dia
             if data.get("data") != hoje_str:
@@ -58,7 +60,8 @@ def load_controle():
             "data": datetime.now().strftime('%Y-%m-%d'),
             "sl_points": SL_POINTS,
             "tp_points": TP_POINTS,
-            "timeframe": "M5"
+            "timeframe": "M5",
+            "ultima_saida": None
         }
 
 def save_controle(data):
@@ -100,10 +103,11 @@ def wait_position_close(ticket, entrada_info):
             if deal.position_id == ticket and getattr(deal, 'entry', 0) == 1:
                 lucro += deal.profit
                 
-    # Atualiza JSON
+    # Atualiza JSON com o lucro e salva a hora de saída
     data = load_controle()
     data["trades_hoje"] += 1
     data["lucro_hoje"] += lucro
+    data["ultima_saida"] = datetime.now().isoformat()
     save_controle(data)
     
     resultado_str = "🟢 GAIN" if lucro > 0 else "🔴 LOSS"
@@ -139,6 +143,16 @@ def iniciar_robo():
         if controle["trades_hoje"] >= MAX_TRADES_DIA:
             time.sleep(60)
             continue
+            
+        # 1.5. Verifica Sistema de Cooldown
+        if controle.get("ultima_saida"):
+            ultima_saida_dt = datetime.fromisoformat(controle["ultima_saida"])
+            agora = datetime.now()
+            if agora < ultima_saida_dt + timedelta(minutes=COOLDOWN_MINUTES):
+                tempo_restante = (ultima_saida_dt + timedelta(minutes=COOLDOWN_MINUTES)) - agora
+                print(f"⏳ [Cooldown] Robô em descanso. Faltam {int(tempo_restante.total_seconds())} segundos para reativar análises.")
+                time.sleep(10)
+                continue
 
         if controle["status"] == "OFF":
             # Sleep longo e PULA para reavaliar no proximo tick

@@ -233,6 +233,7 @@ def backtest_scalper_engine(df, sl_manual=150.0, tp_manual=300.0, start_time="09
     in_position = False
     trade_type = None
     entry_price = 0.0
+    cooldown_until = None
     
     total_trades = 0
     win_count = 0
@@ -296,9 +297,25 @@ def backtest_scalper_engine(df, sl_manual=150.0, tp_manual=300.0, start_time="09
                 if dd > max_drawdown_rs:
                     max_drawdown_rs = dd
                     
+                try:
+                    import pandas as pd
+                    cooldown_until = row['time'] + pd.Timedelta(minutes=5)
+                except (KeyError, ImportError):
+                    cooldown_until = i + 1 # fallback to 1 candle cooldown if `time` missing
+                    
             continue 
             
         hora_atual = row['time_only']
+        
+        # Filtro de Cooldown
+        try:
+            if cooldown_until is not None:
+                if 'time' in row and row['time'] < cooldown_until:
+                    continue
+                elif isinstance(cooldown_until, int) and i < cooldown_until:
+                    continue
+        except Exception:
+            pass
         
         # Filtro de Atraso e Janela Otimizada (Condição Principal Refatorada)
         if t_start <= hora_atual <= t_end and trades_today < 3:
