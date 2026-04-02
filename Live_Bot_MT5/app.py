@@ -1523,7 +1523,7 @@ def run_backtest_scalper():
         df['time_only'] = df['time'].dt.time
         from datetime import time as dt_time
         hora_inicio = dt_time(9, 15)
-        hora_fim = dt_time(12, 30)
+        hora_fim = dt_time(17, 0)
 
         # Filtra candles pelo horário operacional
         df_operacional = df[(df['time_only'] >= hora_inicio) & (df['time_only'] <= hora_fim)].copy()
@@ -1649,18 +1649,15 @@ def run_backtest_scalper():
                     if dd > max_drawdown_rs:
                         max_drawdown_rs = dd
                         
-                    cooldown_until = row['time'] + pd.Timedelta(minutes=5)
+                    # Cooldown removido
                         
                 continue 
                 
             # Não posicionado: Procura entrada
-            if cooldown_until is not None and row['time'] < cooldown_until:
-                continue
-                
             hora_atual = row['time_only']
             
-            # Só opera na golden zone e se não bateu o limite de 3 trades no dia
-            if hora_inicio <= hora_atual <= hora_fim and trades_today < 3:
+            # Só opera na golden zone (Sem limites de trades diários)
+            if hora_inicio <= hora_atual <= hora_fim:
                 # Lógica da vela fechada (i-1 = vela que acabou de fechar, i-2 = anterior a ela)
                 current_closed = df.iloc[i-1]
                 prev_closed = df.iloc[i-2]
