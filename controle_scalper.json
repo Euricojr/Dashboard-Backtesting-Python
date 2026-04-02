@@ -1,11 +1,12 @@
 {
     "status": "OFF",
-    "trades_hoje": 0,
-    "lucro_hoje": 0.0,
+    "trades_hoje": 1,
+    "lucro_hoje": -10.0,
     "data": "2026-04-01",
     "sl": 150.0,
     "tp": 300.0,
-    "sl_points": 50.0,
-    "tp_points": 300.0,
-    "timeframe": "M5"
+    "sl_points": "150",
+    "tp_points": "300",
+    "timeframe": "M1",
+    "ultima_saida": "2026-04-01T14:55:33.846203"
 }

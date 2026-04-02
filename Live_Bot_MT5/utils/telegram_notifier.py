@@ -5,12 +5,30 @@ import time
 from datetime import datetime
 
 class TelegramNotifier:
+    def _create_resilient_session(self):
+        from requests.adapters import HTTPAdapter
+        from urllib3.util.retry import Retry
+        session = requests.Session()
+        
+        # 🛡️ Blindagem de DNS e Connection Reset
+        # Tenta reenviar as mensagens automaticamente se sua internet piscar (até 5 vezes)
+        retry_strategy = Retry(
+            total=5,
+            backoff_factor=1.5,
+            status_forcelist=[429, 500, 502, 503, 504],
+            allowed_methods=["HEAD", "GET", "OPTIONS", "POST"]
+        )
+        adapter = HTTPAdapter(max_retries=retry_strategy)
+        session.mount("https://", adapter)
+        session.mount("http://", adapter)
+        return session
+
     def __init__(self, token=None, chat_id=None):
         self.token = token or os.getenv("TELEGRAM_TOKEN")
         self.chat_id = chat_id or os.getenv("TELEGRAM_CHAT_ID")
         self.base_url = f"https://api.telegram.org/bot{self.token}/sendMessage"
         self.user_states = {}  # {chat_id: {'state': '...', 'sl': ..., 'tp': ...}}
-        self.session = requests.Session() # Reuse connection for performance
+        self.session = self._create_resilient_session()
 
     def enviar_mensagem(self, texto, target_chat_id=None, inline_keyboard=None):
         chat = target_chat_id or self.chat_id
@@ -400,14 +418,13 @@ class TelegramNotifier:
                 except requests.exceptions.ConnectionError as e:
                     restart_count += 1
                     ts = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
-                    print(f"[{ts}] 🔴 [Telegram] QUEDA DE REDE detectada (recovery #{restart_count}): {e}")
-                    print(f"[{ts}] 🔄 [Telegram] Bot se auto-recuperando em 5s... (Total de quedas: {restart_count})")
-                    # Recria sessão para limpar conexões stale
+                    print(f"[{ts}] 🔄 [Telegram] Micro-queda de rede detectada. Tratando silenciosamente... (Total: {restart_count})")
+                    # Recria sessão blindada
                     try:
                         self.session.close()
                     except Exception:
                         pass
-                    self.session = requests.Session()
+                    self.session = self._create_resilient_session()
                     time.sleep(5)
                     continue
 

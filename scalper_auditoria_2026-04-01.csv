@@ -1,0 +1,2 @@
+Hora_Ocorrencia_Exata,Direcao_Executada,Preco_Entrada,Gatilho_EMA9,Gatilho_SMA21,Filtro_VWAP,Trajetoria_Pontos
+2026-04-01 14:55:02,COMPRA,189720.0,189690.89,189680.95,189697.44,"[10, 5, -15, -25, -30, -25, -15, -20, -10, -15, -15, -20, -20, -15, -20, -15, -15, -15, -30, -40, -30, -35, -35, -30, -30, -30, -35, -35, -35]"

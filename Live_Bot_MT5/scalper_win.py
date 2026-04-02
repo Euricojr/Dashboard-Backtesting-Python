@@ -196,15 +196,7 @@ def iniciar_robo():
         #     time.sleep(60)
         #     continue
             
-        # 1.5. Verifica Sistema de Cooldown
-        if controle.get("ultima_saida"):
-            ultima_saida_dt = datetime.fromisoformat(controle["ultima_saida"])
-            agora = datetime.now()
-            if agora < ultima_saida_dt + timedelta(minutes=COOLDOWN_MINUTES):
-                tempo_restante = (ultima_saida_dt + timedelta(minutes=COOLDOWN_MINUTES)) - agora
-                print(f"⏳ [Cooldown] Robô em descanso. Faltam {int(tempo_restante.total_seconds())} segundos para reativar análises.")
-                time.sleep(10)
-                continue
+        # Sistema de Cooldown removido a pedido do usuario
 
         if controle["status"] == "OFF":
             # Sleep longo e PULA para reavaliar no proximo tick

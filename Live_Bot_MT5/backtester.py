@@ -216,7 +216,7 @@ def optimize_sma(df):
                 
     return best_params
 
-def backtest_scalper_engine(df, sl_manual=150.0, tp_manual=300.0, start_time="09:15", end_time="12:30"):
+def backtest_scalper_engine(df, sl_manual=150.0, tp_manual=300.0, start_time="09:15", end_time="17:00"):
     """
     Engine de Simulação Iterativa Strict (Non-Vectorized)
     Controla posições abertas, stops diários e filtros de horário dinâmicos.
@@ -296,29 +296,14 @@ def backtest_scalper_engine(df, sl_manual=150.0, tp_manual=300.0, start_time="09
                 dd = peak_rs - current_balance_rs
                 if dd > max_drawdown_rs:
                     max_drawdown_rs = dd
-                    
-                try:
-                    import pandas as pd
-                    cooldown_until = row['time'] + pd.Timedelta(minutes=5)
-                except (KeyError, ImportError):
-                    cooldown_until = i + 1 # fallback to 1 candle cooldown if `time` missing
-                    
+                    # Cooldown removido a pedido do usuario
             continue 
             
         hora_atual = row['time_only']
-        
-        # Filtro de Cooldown
-        try:
-            if cooldown_until is not None:
-                if 'time' in row and row['time'] < cooldown_until:
-                    continue
-                elif isinstance(cooldown_until, int) and i < cooldown_until:
-                    continue
-        except Exception:
-            pass
+        # Filtro de Cooldown removido
         
         # Filtro de Atraso e Janela Otimizada (Condição Principal Refatorada)
-        if t_start <= hora_atual <= t_end and trades_today < 3:
+        if t_start <= hora_atual <= t_end:
             current_closed = df.iloc[i-1]
             prev_closed = df.iloc[i-2]
             
