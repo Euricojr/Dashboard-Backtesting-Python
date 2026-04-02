@@ -25,9 +25,10 @@ O FinSense é dividido em módulos principais, cada um com um propósito especí
 | Módulo / Ferramenta  | Objetivo Principal                                        | Fonte de Dados                            | Ambiente            | Foco Principal                                              |
 | :------------------- | :-------------------------------------------------------- | :---------------------------------------- | :------------------ | :---------------------------------------------------------- |
 | **Backtest_Project** | Laboratório: Pesquisa, Validação e Avaliação da robustez. | Yahoo Finance (Histórico Diário/Semanal). | Offline / Estático  | _"Esta ideia de trade é lucrativa no longo prazo?"_         |
-| **Live_Bot_MT5**     | Ação: Monitoramento e Execução em Tempo Real das ordens.  | MetaTrader 5 (Tick, M1, M5, H1, etc).     | Online / Dinâmico   | _"O cruzamento das médias aconteceu agora! Executar."_      |
+| **App (Dashboard)**  | Monitoramento visual, histórico, botões Telegram.         | MetaTrader 5 (Tick, H1, etc).             | Web (Localhost 5002)| _"Ligar/Desligar robôs pelo Telegram, ver carteira."_       |
+| **Scalper WIN**      | Motor Autônomo (Background) de scalping de Índice/B3.     | MetaTrader 5 (M1, M5) + VWAP + EMAs       | Online / Dinâmico   | _"Executa operações velozes e soft-stops automaticamente."_ |
+| **Watchdog**         | Guardião do ecossistema e Menu Inicial no Telegram        | Ações do Usuário via Telegram             | Online / Background | _"Sobe ou desce todos os processos em Python num clique."_  |
 | **Scanner Elite**    | Peneira: Busca os melhores ativos em um universo amplo.   | Yahoo Finance (Intraday/Diário).          | Offline (Preparo)   | _"Quais dos 120 ativos da B3 têm o melhor Profit Factor?"_  |
-| **Telegram Monitor** | Alerta: Envia os sinais diretos para o celular.           | Sinais do Live_Bot.                       | Online / Background | _"O que o robô está fazendo enquanto estou longe da tela?"_ |
 
 ---
 
@@ -52,14 +53,7 @@ python -m venv venv
 # (Opcional) Ativação no Windows (CMD)
 venv\Scripts\activate.bat
 ```
-#################################################
-cd Live_Bot_MT5
-python app.py
 
-cd Live_Bot_MT5
-python watchdog.py
-
-###############################################
 ### 3. Instalando as Dependências
 
 Com o ambiente ativado, instale todos os pacotes:
@@ -126,20 +120,25 @@ python api.py
 
 **Acesso:** Abra no navegador através de `http://localhost:5000`
 
-### C. Para Executar as Operações Reais / Monitoramento (Live_Bot_MT5)
+### C. Para Executar a Orquestra Completa (Watchdog / App / Scalper)
 
-Este é o core da plataforma de execução. Ele se acopla ao seu MT5 logado e, opcionalmente, abre uma thread em background para enviar disparos ao seu Telegram através do `bot_viagem.py` encapsulado.
-⚠️ **Pré-requisito:** O programa MetaTrader 5 deve estar _Aberto_, _Logado_ e com o _Algo Trading Habilitado_.
+Esta é a espinha dorsal operacional. Para operar em alta velocidade e receber informações e alertas no Telegram sem precisar deixar milhares de terminais manuais expostos, o sistema unificou-se através de um *Guardião (Watchdog)*.
 
+⚠️ **Pré-requisito Crítico:** O MetaTrader 5 deve estar _Aberto_, _Logado na conta XP Demo (ou Real)_, e com o botão _Algo Trading na cor verde (Habilitado)_.
+
+**Passo a passo diário na prática:**
+1. Abra o terminal na pasta e inicie o Guardião:
 ```powershell
 cd Live_Bot_MT5
-python app.py
+python watchdog.py
 ```
+2. No Bot do Watchdog no Telegram, envie o comando `/start`.
+3. Clique no botão de atalho **"🟢 Ligar"**.
+4. Apenas pressionando esse botão, o Watchdog engatilhará os dois robôs essenciais (A *"Torre de Controle"* via `app.py`, e o *"Motor Scalper Executivo"* via `scalper_win.py`) que blindam a sua carteira e sobem seus alertas aos segundos corretos de operação.
 
-**Acesso:** Abra no navegador através de `http://localhost:5002`
-
-- Você terá o painel operacional para pausar/iniciar os robôs da b3.
-- Inclui um botão dinâmico na interface para **Ativar/Desativar o Bot do Telegram**.
+**Acessando a Interface Visual do Dashboard na Web:**
+Embora os alertas de posição e robôs trabalhem via background invisível pelo Telegram, se desejar acompanhar os gráficos *Neo-Tech*, plotagem de histórico ou fazer análises profundas de Candlesticks atualizados no milissegundo:
+👉 Abra o seu navegador web favorito e acesse: **`http://localhost:5002`**
 
 ---
 
@@ -156,13 +155,13 @@ Strategy/
 │   └── frontend/              # Interface web exploratória
 │
 ├── Live_Bot_MT5/              # Módulo de produção e ação rápida
-│   ├── app.py                 # Aplicação Central e Server Flask (porta 5002)
+│   ├── watchdog.py            # Sistema-Guardião p/ ligar/desligar a orquestra inteira via Telegram
+│   ├── app.py                 # (Torre de Controle) Servidor Web Flask (porta 5002) + Menu Padrão Telegram
+│   ├── scalper_win.py         # (Motor) Sistema 100% autônomo M5 com VWAP, EMA e Soft-Stops dinâmicos
+│   ├── controle_scalper.json  # Arquivo-Ponte. O app.py preenche, os robôs respeitam e leem limites
 │   ├── scanner_elite.py       # Peneira algorítmica de ativos em Python
-│   ├── bot_viagem.py          # Lógica do Telegram Bot (Alertas, Botões Inline e Notificações)
-│   ├── alertas_enviados.json  # Persistência em cache de logs para geração do Resumo Diário
-│   ├── templates/             # HTML (+ Tailwind/Vanilha CSS) do Dashboard Moderno
-│   ├── static/                # ARquivos JS para atualizações em tempo real das SMAs e botões On/Off
-│   └── data/                  # Base de dados (e.g., backtest_results.csv)
+│   ├── templates/, static/    # UI/UX Interface Web (Glassmorphism + Gráficos 3D TradingView)
+│   └── data/                  # Base de dados, CSVs de rastreio contínuo e logs de auditoria
 │
 ├── requirements.txt           # Bibliotecas e dependências de todo o projeto
 └── README.md                  # Este arquivo central de documentação
