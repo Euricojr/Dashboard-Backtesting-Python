@@ -12,6 +12,13 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from utils.telegram_notifier import TelegramNotifier
 
+# Força o terminal Windows a usar UTF-8 para evitar crash nos prints com Emojis
+if sys.stdout.encoding != 'utf-8':
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+    except Exception:
+        pass
+
 load_dotenv()
 
 # Instância do Telegram global para o Scalper
@@ -76,12 +83,17 @@ def ensure_mt5_connection():
                        server="XPMT5-DEMO")
         
 def wait_position_close(ticket, entrada_info):
-    """Fica em loop até o SL ou TP bater na corretora e fechar a posição"""
+    """Fica em loop até o SL ou TP bater na corretora ou forçar fechamento via software"""
     print(f"⏳ Aguardando fechamento da posição (Ticket: {ticket})...")
     
     hora_entrada = entrada_info['hora_entrada']
     preco_entrada = entrada_info['preco']
     direcao = entrada_info['direcao']
+    
+    # Carrega limites para fallback de segurança
+    controle_atual = load_controle()
+    sl_points_ativos = float(controle_atual.get("sl_points", SL_POINTS))
+    tp_points_ativos = float(controle_atual.get("tp_points", TP_POINTS))
     
     trace_pontos = []
     
@@ -97,6 +109,29 @@ def wait_position_close(ticket, entrada_info):
             pontos = preco_entrada - preco_atual
             
         trace_pontos.append(int(pontos))
+        
+        # Fallback de Software (Soft-Stop e Soft-TakeProfit)
+        # Se a corretora ignorou os limites da boleta OCO original, fecha a mercado!
+        if pontos <= -sl_points_ativos or pontos >= tp_points_ativos:
+            print(f"⚠️ Alerta: SL/TP atingido. Forçando fechamento via Software (Proteção contra Falha de OCO B3)...")
+            close_action = mt5.ORDER_TYPE_SELL if direcao == mt5.ORDER_TYPE_BUY else mt5.ORDER_TYPE_BUY
+            
+            req_close = {
+                "action": mt5.TRADE_ACTION_DEAL,
+                "symbol": SYMBOL,
+                "volume": pos[0].volume,
+                "type": close_action,
+                "position": ticket,
+                "magic": MAGIC_NUMBER,
+                "comment": "Fechamento Emergencial B3",
+                "type_time": mt5.ORDER_TIME_GTC,
+                "type_filling": mt5.ORDER_FILLING_RETURN,
+            }
+            mt5.order_send(req_close)
+            # Aguarda pra confirmar que fechou (se fechar, próxima volta do while sairá no break do len(pos) == 0)
+            time.sleep(1.5)
+            continue
+            
         # O sono dura apenas 1 segundo pra ter precisao na trajetoria
         time.sleep(1)
         
@@ -216,8 +251,8 @@ def iniciar_robo():
         tf_str = controle.get("timeframe", "M5")
         mt5_tf = mt5.TIMEFRAME_M1 if tf_str == "M1" else mt5.TIMEFRAME_M5
         
-        # Reduzindo de 1000 para 100 velas pois processamos a cada 0.1s
-        rates = mt5.copy_rates_from_pos(SYMBOL, mt5_tf, 0, 100)
+        # Reduzindo de 1000 para 200 velas pois o mercado B3 tem 108 velas de M5, isso garante 100% da VWAP Diária
+        rates = mt5.copy_rates_from_pos(SYMBOL, mt5_tf, 0, 200)
         if rates is None or len(rates) < 50:
             err_code = mt5.last_error()
             print(f"⚠️ [Scalper] ERRO/AVISO: Falha ao obter dados suficientes para {SYMBOL}. Código MT5: {err_code}")
