@@ -179,7 +179,7 @@ def wait_position_close(ticket, entrada_info):
         f"- Bateu Mínimo: {int(max_negativo)} pts\n\n"
         f" *MOTIVO DA ENTRADA:*\n"
         f"- Gatilho: {entrada_info['preco']}\n"
-        f"- EMA 9: {entrada_info['ema9']:.2f} | EMA 21: {entrada_info['ema21']:.2f}\n"
+        f"- EMA 9: {entrada_info['ema9']:.2f} | SMA 21: {entrada_info['sma21']:.2f}\n"
         f"- VWAP: {entrada_info['vwap']:.2f}\n\n"
         f" *RESULTADO FINAL:*\n"
         f"{resultado_str} de R$ {lucro:.2f} ({int(pontos_estimados)} pts)\n"
@@ -280,7 +280,7 @@ def iniciar_robo():
                 df_hoje['Cum_Vol_x_TP'] = df_hoje['Vol_x_TP'].cumsum()
                 df_hoje['Cum_Vol'] = df_hoje['tick_volume'].cumsum()
                 df_hoje['VWAP'] = df_hoje['Cum_Vol_x_TP'] / df_hoje['Cum_Vol']
-                df['VWAP'] = df_hoje['VWAP']
+                df['VWAP'] = df_hoje['VWAP'].reindex(df.index).ffill().bfill()
             else:
                 df['VWAP'] = df['close']
     
@@ -342,7 +342,9 @@ def iniciar_robo():
                     
                     print(f"📩 [Scalper] Enviando Ordem OCO: {msg_label} | Price: {price} | SL: {sl} | TP: {tp}")
                     res = mt5.order_send(request)
-                    if res.retcode == mt5.TRADE_RETCODE_DONE:
+                    if res is None:
+                        print(f"❌ [Scalper] Falha crítica: mt5.order_send() retornou None. MT5 Error: {mt5.last_error()}")
+                    elif res.retcode == mt5.TRADE_RETCODE_DONE:
                         msg_telegram_entrada = (
                             f"🟢 *ORDEM EXECUTADA!* 🟢\n"
                             f"Ativo: {SYMBOL}\n"
