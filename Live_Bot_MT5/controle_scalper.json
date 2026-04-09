@@ -1,10 +1,10 @@
 {
     "status": "OFF",
-    "trades_hoje": 11,
-    "lucro_hoje": -102.0,
+    "trades_hoje": 0,
+    "lucro_hoje": 0.0,
     "sl_points": 50.0,
     "tp_points": 300.0,
     "timeframe": "M1",
-    "data": "2026-04-08",
+    "data": "2026-04-09",
     "ultima_saida": "2026-04-08T15:20:05.730467"
 }

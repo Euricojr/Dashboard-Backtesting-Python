@@ -718,15 +718,92 @@ def stats_scalper():
 
     return f"O Robô Scalper de Índice foi {'🟢 LIGADO' if state['status'] == 'ON' else '🔴 DESLIGADO'} com sucesso."
 
-def handle_telegram_stats_scalper():
+def handle_telegram_stats_scalper(chat_id):
+    import io
+    import mplfinance as mpf
+    
     state = get_scalper_state()
-    status_fmt = "ON 🟢" if state['status'] == "ON" else "OFF 🔴"
-    return (
-        f"🤖 *Status Scalper WIN*\n\n"
-        f"Status: {status_fmt}\n"
+    SYMBOL = "WINJ26"
+    status_fmt = "ON 🟢" if state.get('status') == "ON" else "OFF 🔴"
+    tf_str = state.get('timeframe', "M5")
+    
+    msg_base = (
+        f"🤖 *Status Scalper {SYMBOL}*\n\n"
+        f"Status: {status_fmt} | TF: {tf_str}\n"
         f"Trades Hoje: {state.get('trades_hoje', 0)}\n"
-        f"Lucro/Prej: R$ {float(state.get('lucro_hoje', 0.0)):.2f}"
+        f"Lucro/Prej: R$ {float(state.get('lucro_hoje', 0.0)):.2f}\n"
     )
+    
+    try:
+        mt5_tf = mt5.TIMEFRAME_M1 if tf_str == "M1" else mt5.TIMEFRAME_M5
+        
+        connected, err = ensure_mt5_connected()
+        if not connected:
+            global_notifier.enviar_mensagem(f"{msg_base}\n⚠️ Falha ao conectar no MT5:\n_{err}_", target_chat_id=chat_id)
+            return
+            
+        rates = mt5.copy_rates_from_pos(SYMBOL, mt5_tf, 0, 200)
+        
+        if rates is None or len(rates) < 50:
+            global_notifier.enviar_mensagem(f"{msg_base}\n⚠️ Falha ao obter dados do MT5 para gerar gráfico.", target_chat_id=chat_id)
+            return
+
+        df = pd.DataFrame(rates)
+        df['time'] = pd.to_datetime(df['time'], unit='s')
+        
+        # Filtro de VWAP fiel ao scalper_win.py
+        start_hoje = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        df_hoje = df[df['time'] >= start_hoje].copy()
+        if not df_hoje.empty:
+            df_hoje['Typical_Price'] = (df_hoje['high'] + df_hoje['low'] + df_hoje['close']) / 3
+            df_hoje['Vol_x_TP'] = df_hoje['tick_volume'] * df_hoje['Typical_Price']
+            df_hoje['Cum_Vol_x_TP'] = df_hoje['Vol_x_TP'].cumsum()
+            df_hoje['Cum_Vol'] = df_hoje['tick_volume'].cumsum()
+            df_hoje['VWAP'] = df_hoje['Cum_Vol_x_TP'] / df_hoje['Cum_Vol']
+            df['VWAP'] = df_hoje['VWAP'].reindex(df.index).ffill().bfill()
+        else:
+            df['VWAP'] = df['close']
+
+        # Calculo das Médias Exangues do robô (EMA9 e SMA21)
+        df['EMA9'] = df['close'].ewm(span=9, adjust=False).mean()
+        df['SMA21'] = df['close'].rolling(window=21).mean()
+        
+        df.set_index('time', inplace=True)
+        
+        # Recorta as ultimas 60 velas para nítidez em celular
+        df_plot = df.tail(60).copy()
+        current = df_plot.iloc[-1]
+        
+        msg_final = (
+            f"{msg_base}\n"
+            f"🔎 *Raio-X (Último Fechamento)*\n"
+            f"🔹 Preço: {current['close']:.2f}\n"
+            f"🔹 EMA 9: {current['EMA9']:.2f}\n"
+            f"🔸 SMA 21: {current['SMA21']:.2f}\n"
+            f"🟡 VWAP: {current['VWAP']:.2f}"
+        )
+        
+        # Plot Visual MPF
+        mc = mpf.make_marketcolors(up='#00e676', down='#ff1744', edge='inherit', wick='inherit', volume='in', ohlc='i')
+        rc_params = {'text.color': 'white', 'axes.labelcolor': 'white', 'xtick.color': 'white', 'ytick.color': 'white'}
+        s  = mpf.make_mpf_style(marketcolors=mc, facecolor='#121212', edgecolor='#2c2c2c', figcolor='#121212', gridcolor='#2c2c2c', gridstyle='--', rc=rc_params)
+        
+        ap = [
+            mpf.make_addplot(df_plot['EMA9'], color='#00BFFF', width=1.5),
+            mpf.make_addplot(df_plot['SMA21'], color='#FF00FF', width=1.5),
+            mpf.make_addplot(df_plot['VWAP'], color='#FFFF00', width=1.5)
+        ]
+        
+        buf = io.BytesIO()
+        mpf.plot(df_plot, type='candle', style=s, addplot=ap, volume=False,
+                 figsize=(8, 4), tight_layout=True,
+                 title='\nEMA 9 (Azul) | SMA 21 (Rosa) | VWAP (Amarelo)', savefig=dict(fname=buf, dpi=120, bbox_inches='tight', pad_inches=0.1))
+        
+        global_notifier.enviar_foto(buf, msg_final, target_chat_id=chat_id)
+        
+    except Exception as e:
+        print(f"Erro ao gerar grafico do Scalper: {e}")
+        global_notifier.enviar_mensagem(f"{msg_base}\n❌ Ocorreu um erro ao renderizar o gráfico.", target_chat_id=chat_id)
 
 def handle_telegram_auditoria_hj(chat_id):
     hoje_str = datetime.now().strftime('%Y-%m-%d')

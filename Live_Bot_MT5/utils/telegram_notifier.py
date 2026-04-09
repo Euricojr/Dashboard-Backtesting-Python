@@ -321,7 +321,7 @@ class TelegramNotifier:
 
                 elif text == '📊 Stats Scalper':
                     sts_cb = callbacks.get('stats_scalper_cb')
-                    if sts_cb: self.enviar_mensagem(sts_cb(), target_chat_id=chat_id)
+                    if sts_cb: sts_cb(chat_id)
                 
                 elif text == '📄 Auditoria Hoje':
                     auditoria_cb = callbacks.get('auditoria_callback')
