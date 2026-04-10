@@ -250,13 +250,27 @@ def iniciar_robo():
         # Mapeia timeframe do JSON para constante MT5
         tf_str = controle.get("timeframe", "M5")
         mt5_tf = mt5.TIMEFRAME_M1 if tf_str == "M1" else mt5.TIMEFRAME_M5
+        tf_minutes = 1 if tf_str == "M1" else 5
         
+        # OTIMIZAÇÃO ZERO-LAG: Lemos o tick direto da RAM do MT5 (super leve, não bate na corretora)
+        tick = mt5.symbol_info_tick(SYMBOL)
+        if tick is None:
+            time.sleep(1)
+            continue
+            
+        vela_atual_estimada = tick.time - (tick.time % (tf_minutes * 60))
+        
+        # Só gastamos requisição cara (que causa bloqueio na XP) se a vela estimada mudou!
+        if ultima_vela_vista is not None and vela_atual_estimada == ultima_vela_vista:
+            time.sleep(0.1) # Aguarda na velocidade ninja
+            continue
+            
         # Reduzindo de 1000 para 200 velas pois o mercado B3 tem 108 velas de M5, isso garante 100% da VWAP Diária
         rates = mt5.copy_rates_from_pos(SYMBOL, mt5_tf, 0, 200)
         if rates is None or len(rates) < 50:
             err_code = mt5.last_error()
             print(f"⚠️ [Scalper] ERRO/AVISO: Falha ao obter dados suficientes para {SYMBOL}. Código MT5: {err_code}")
-            time.sleep(5)
+            time.sleep(1)
             continue
             
         df = pd.DataFrame(rates)
@@ -264,7 +278,7 @@ def iniciar_robo():
         
         vela_atual_time = df.iloc[-1]['time']
         
-        # O GATILHO (NEW BAR DETECTION)
+        # O GATILHO OFICIAL (NEW BAR DETECTION)
         if ultima_vela_vista is None or vela_atual_time != ultima_vela_vista:
             ultima_vela_vista = vela_atual_time
             
@@ -316,23 +330,18 @@ def iniciar_robo():
                     ultima_vela_operada = vela_time
                     if action == mt5.ORDER_TYPE_BUY:
                         price = mt5.symbol_info_tick(SYMBOL).ask
-                        sl = price - float(controle.get("sl_points", SL_POINTS))
-                        tp = price + float(controle.get("tp_points", TP_POINTS))
                         msg_label = "COMPRA"
                     else: # SELL
                         price = mt5.symbol_info_tick(SYMBOL).bid
-                        sl = price + float(controle.get("sl_points", SL_POINTS))
-                        tp = price - float(controle.get("tp_points", TP_POINTS))
                         msg_label = "VENDA"
                     
+                    # Ordem inicial a Mercado SEM SL/TP definidos
                     request = {
                         "action": mt5.TRADE_ACTION_DEAL,
                         "symbol": SYMBOL,
                         "volume": float(VOLUME),
                         "type": action,
                         "price": price,
-                        "sl": float(sl),
-                        "tp": float(tp),
                         "deviation": 20,
                         "magic": MAGIC_NUMBER,
                         "comment": "ScalperWIN_Auto",
@@ -340,16 +349,50 @@ def iniciar_robo():
                         "type_filling": mt5.ORDER_FILLING_RETURN, # Comum B3
                     }
                     
-                    print(f"📩 [Scalper] Enviando Ordem OCO: {msg_label} | Price: {price} | SL: {sl} | TP: {tp}")
+                    print(f"📩 [Scalper] Enviando Ordem a Mercado: {msg_label} | Request Price: {price}")
                     res = mt5.order_send(request)
+                    
                     if res is None:
                         print(f"❌ [Scalper] Falha crítica: mt5.order_send() retornou None. MT5 Error: {mt5.last_error()}")
                     elif res.retcode == mt5.TRADE_RETCODE_DONE:
+                        preco_executado = res.price
+                        ticket = res.order
+                        print(f"✅ [Scalper] Ordem executada! Ticket: {ticket} | Preço de Execução: {preco_executado}")
+                        
+                        # 2. Configurar SL e TP usando TRADE_ACTION_SLTP (Pós-Execução)
+                        sl_points_atual = float(controle.get("sl_points", SL_POINTS))
+                        tp_points_atual = float(controle.get("tp_points", TP_POINTS))
+                        
+                        if action == mt5.ORDER_TYPE_BUY:
+                            sl = round(preco_executado - sl_points_atual, 2)
+                            tp = round(preco_executado + tp_points_atual, 2)
+                        else:
+                            sl = round(preco_executado + sl_points_atual, 2)
+                            tp = round(preco_executado - tp_points_atual, 2)
+                            
+                        req_sltp = {
+                            "action": mt5.TRADE_ACTION_SLTP,
+                            "symbol": SYMBOL,
+                            "sl": float(sl),
+                            "tp": float(tp),
+                            "position": ticket,
+                            "magic": MAGIC_NUMBER
+                        }
+                        
+                        print(f"📩 [Scalper] Configurando OCO pós-execução... SL: {sl} | TP: {tp}")
+                        res_sltp = mt5.order_send(req_sltp)
+                        if res_sltp and res_sltp.retcode == mt5.TRADE_RETCODE_DONE:
+                            print(f"✅ [Scalper] Limites de Proteção (SL/TP) registrados com sucesso na corretora.")
+                        else:
+                            err_msg = res_sltp.comment if res_sltp else mt5.last_error()
+                            print(f"⚠️ [Scalper] Aviso: Falha ao posicionar limite visual B3 ({err_msg}). O Scalper irá atuar via software (Soft-Stop).")
+
                         msg_telegram_entrada = (
                             f"🟢 *ORDEM EXECUTADA!* 🟢\n"
                             f"Ativo: {SYMBOL}\n"
                             f"Direção: {msg_label}\n"
-                            f"Preço de Entrada: {price}\n"
+                            f"Preço de Execução: {preco_executado}\n"
+                            f"SL: {sl} | TP: {tp}\n"
                             f"Aguardando fechamento..."
                         )
                         telegram_bot.enviar_mensagem(msg_telegram_entrada)
@@ -358,16 +401,16 @@ def iniciar_robo():
                         entrada_info = {
                             "hora_entrada": datetime.now(),
                             "direcao": action,
-                            "preco": price,
+                            "preco": preco_executado,
                             "ema9": current['EMA9'],
                             "sma21": current['SMA21'],
                             "vwap": current['VWAP']
                         }
-                        wait_position_close(res.order, entrada_info)
+                        wait_position_close(ticket, entrada_info)
                     else:
                         print(f"❌ [Scalper] Erro na Ordem: {res.comment} / MT5 Error: {mt5.last_error()} / Retcode: {res.retcode}")
         
-        # Ciclo Ultra-Rápido (0.1s para reação quase imediata no mt5)
+        # Ciclo Ultra-Rápido (0.1s) protegido: O loop só atinge essa linha se trocar de vela ou no primeiro start
         time.sleep(0.1)
 
 if __name__ == "__main__":
