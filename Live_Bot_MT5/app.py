@@ -716,8 +716,6 @@ def handle_telegram_toggle_scalper(turn_on=None, sl=None, tp=None, timeframe=Non
 def stats_scalper():
     return jsonify(get_scalper_state())
 
-    return f"O Robô Scalper de Índice foi {'🟢 LIGADO' if state['status'] == 'ON' else '🔴 DESLIGADO'} com sucesso."
-
 def handle_telegram_stats_scalper(chat_id):
     import io
     import mplfinance as mpf

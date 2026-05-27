@@ -76,8 +76,12 @@ def execute_ligar(chat_id):
         
         import sys
         script_dir = os.path.dirname(os.path.abspath(__file__))
-        # Força o uso do python.exe para garantir que rode em nova janela no Windows
-        subprocess.Popen([sys.executable, 'app.py'], cwd=script_dir, creationflags=subprocess.CREATE_NEW_CONSOLE)
+        # Tenta localizar o python do .venv no diretório pai para garantir execução correta
+        parent_dir = os.path.dirname(script_dir)
+        venv_python = os.path.join(parent_dir, '.venv', 'Scripts', 'python.exe')
+        python_exe = venv_python if os.path.exists(venv_python) else sys.executable
+        # Força o uso do python.exe correspondente para garantir que rode em nova janela no Windows
+        subprocess.Popen([python_exe, 'app.py'], cwd=script_dir, creationflags=subprocess.CREATE_NEW_CONSOLE)
         bot.send_message(chat_id, "✅ Sistema ligado e operando!")
     except Exception as e:
         error_msg = f"❌ Erro ao ligar o sistema: {e}"
@@ -116,7 +120,11 @@ def execute_reiniciar(chat_id):
         time.sleep(3)
         import sys
         script_dir = os.path.dirname(os.path.abspath(__file__))
-        subprocess.Popen([sys.executable, 'app.py'], cwd=script_dir, creationflags=subprocess.CREATE_NEW_CONSOLE)
+        # Tenta localizar o python do .venv no diretório pai para garantir execução correta
+        parent_dir = os.path.dirname(script_dir)
+        venv_python = os.path.join(parent_dir, '.venv', 'Scripts', 'python.exe')
+        python_exe = venv_python if os.path.exists(venv_python) else sys.executable
+        subprocess.Popen([python_exe, 'app.py'], cwd=script_dir, creationflags=subprocess.CREATE_NEW_CONSOLE)
         bot.send_message(chat_id, "✅ Sistema reiniciado e operando!")
     except Exception as e:
         error_msg = f"❌ Erro ao reiniciar o sistema: {e}"
