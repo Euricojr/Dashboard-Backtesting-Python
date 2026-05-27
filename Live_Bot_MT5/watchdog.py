@@ -1,9 +1,18 @@
 import os
+import sys
 import time
 import psutil
 import subprocess
 import telebot
 from dotenv import load_dotenv
+
+# Reconfigura o encoding da saída no Windows para evitar erros com emojis
+if sys.platform.startswith('win'):
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+    except AttributeError:
+        pass
+
 
 # Carrega as variáveis de ambiente (como o WATCHDOG_TOKEN)
 load_dotenv()
